@@ -1,11 +1,21 @@
 
 
-- Netzwerk
+- Netzwerk (Struktur, Hilfsfunktionen, Training, Test)
 - Loss (was bei Hindernissen)?
-- Trainingsbeispiele (MantaFlow)
+- Struktur: Trainingsbeispiele generieren (MantaFlow)
 - Generierung der initialen Bedingungen
 - Visualisierungen des Flusses
 - Visualisierung des Trainings-/Validierungs-/Testfehlers (live? nachher? Konsole?)
 - Speichern der Trainingsbeispiele und der Netzwerkparameter
+- Konvertierung Mantaflow -> Tensorflow (vielleicht Flag-Grid mit Zelltypen mit konvertieren?)
 - Zeitschritt?
 - Optimizer?
+- Command Line Parser? (David: von customPlot.py übernehmen?)
+
+
+
+Aufteilung:
+- David:
+- Dennis:
+- Sebastian:
+- Stefan: 
