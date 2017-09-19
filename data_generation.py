@@ -106,12 +106,8 @@ for y_index in range(sample_set_size):
 		inter = 10
 		if 0 and (t % inter == 0):
 			gui.screenshot( 'karman_%04d.png' % int(t/inter) );
-	#if t==300:
-		#PyArrayContainer array #?
-		#copyGridToArrayVec3(vel,);
-		#np.save();
 
-	# save velocity to file
+	# write velocity array to file		
 	target = np.empty(shape=(2*res, res, 3))
 	copyGridToArrayVec3(vel, target)
 	np.save("fluidSamples/{:03d}".format(y_index), target)
