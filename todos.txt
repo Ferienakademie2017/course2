@@ -1,0 +1,11 @@
+
+
+- Netzwerk
+- Loss (was bei Hindernissen)?
+- Trainingsbeispiele (MantaFlow)
+- Generierung der initialen Bedingungen
+- Visualisierungen des Flusses
+- Visualisierung des Trainings-/Validierungs-/Testfehlers (live? nachher? Konsole?)
+- Speichern der Trainingsbeispiele und der Netzwerkparameter
+- Zeitschritt?
+- Optimizer?
