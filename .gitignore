@@ -17,6 +17,10 @@
 build/*
 TexCode/*
 
+manta
+
+src/.idea/*
+
 *.hi
 !references/*.pdf
 .cproject

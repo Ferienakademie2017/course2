@@ -1,0 +1,23 @@
+Status anzeigen:
+git status
+
+Alles hinzufügen:
+git add .
+
+Committen (alles nicht neue, mit direkter Nachricht):
+git commit -am 'my message'
+
+Pushen:
+git push
+git push -u origin mybranch
+
+Remotes anzeigen:
+git remove -v
+
+
+
+git push github -u group4
+
+git pull origin group4
+
+

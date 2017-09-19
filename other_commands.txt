@@ -1,0 +1,6 @@
+Im manta/build Ordner:
+./manta ../scenes/karman.py
+
+
+
+
