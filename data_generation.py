@@ -1,4 +1,5 @@
 from manta import *
+import numpy as np
 
 secOrderBc = True
 dim        = 2
@@ -59,7 +60,7 @@ if (GUI):
 	#gui.pause()
 
 #main loop
-for t in range(25000):
+for t in range(300):
 	mantaMsg('\nFrame %i, simulation time %f' % (s.frame, s.timeTotal))
 
 	densInflow.applyToGrid( grid=density, value=2. )
@@ -90,4 +91,8 @@ for t in range(25000):
 	inter = 10
 	if 0 and (t % inter == 0):
 		gui.screenshot( 'karman_%04d.png' % int(t/inter) );
+	#if t==300:
+		#PyArrayContainer array #?
+		#copyGridToArrayVec3(vel,);
+		#np.save();
 
