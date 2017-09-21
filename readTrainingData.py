@@ -17,6 +17,8 @@ def scaleImage(inputField,scaleParam):
     return scaledField
 
 def showImage(inputField):
+    if inputField.shape[2] < 3:
+        inputField[:,:,2] = np.zeros(inputField.shape[0:2])
     scaledImage = inputField - np.min(inputField)
     scaledImage = scaledImage / (np.max(scaledImage) - np.min(scaledImage))
     imgplot = plt.imshow(scaledImage)
