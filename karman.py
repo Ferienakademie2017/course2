@@ -8,11 +8,12 @@ noise = 1
 # obstacleCenter = vec3(0.25,0.75,0.5)
 t_ref = 200
 # yPositions = np.linspace(0,1,32)
-yPositions = np.array([0.5])
+yPositions = np.ones([32])*0.75
+# yPositions = np.array([0.5])
 # script_dir = os.path.dirname(__file__)
 # targetFileDir = r'\trainingData\trainingKarman1.p'
 # abs_file_path = os.path.join(script_dir, targetFileDir)
-targetFile = open( r'C:\Users\Nico\Documents\Ferienakademie\course2\trainingData\trainingKarman1.p', "wb" )
+targetFile = open( r'C:\Users\Nico\Documents\Ferienakademie\course2\trainingData\trainingKarman32.p', "wb" )
 
 #write params to pickle
 pickle.dump(yPositions, targetFile)
