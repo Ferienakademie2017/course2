@@ -45,7 +45,12 @@ fig = plt.figure()
 ax = fig.gca()
 image_i = 0
 def sim1resToImage(result):
-    global image_i
+    global image_i, fig, ax
+    if image_i == 0:
+        # Initialize figures
+        fig = plt.figure()
+        ax = fig.gca()
+
     data = result.npVel
     obstacles = result.obstacles
     width = len(data)
@@ -81,8 +86,9 @@ class LossLogger:
     def __init__(self, gui=True):
         # plt.ion()
         self.gui = gui
-        self.fig = plt.figure("TestFigure")
-        self.ax = self.fig.gca() #self.fig.add_axes([0.1, 0.1, 0.8, 0.8]) #self.fig.gca()
+        self.fig = plt.figure()
+        self.ax = self.fig.gca()
+        self.ax.set(title='Loss function')
         self.x = []
         self.y = []
 
@@ -94,5 +100,14 @@ class LossLogger:
             self.ax.clear()
             self.ax.plot(self.x, self.y)
             self.ax.set_ylim([0, max(self.y)])
-            self.ax.set_xlim([0, max(1000, len(self.x))])
+            self.ax.set_xlim([0, max(500, len(self.x))])
+            self.fig.canvas.draw()
             plt.pause(0.01)
+
+    def save(self):
+        self.ax.clear()
+        self.ax.plot(self.x, self.y)
+        self.ax.set_ylim([0, max(self.y)])
+        self.ax.set_xlim([0, max(1000, len(self.x))])
+        ensureDir("images/")
+        self.fig.savefig("images/loss.png")
