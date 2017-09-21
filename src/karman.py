@@ -26,7 +26,7 @@ def generateTrainingExamples(trainingConfiguration):
     savedata = trainingConfiguration.savedata
     saveppm = trainingConfiguration.saveppm
     # savepng = trainingConfiguration.savepng  # todo
-    interval = trainingConfiguration.stepIntervall
+    interval = trainingConfiguration.saveInterval
     offset = 0
     npVel = numpy.zeros( (trainingConfiguration.resY, trainingConfiguration.resX, 3), dtype='f')
     npObs = numpy.zeros( (trainingConfiguration.resY, trainingConfiguration.resX), dtype='f')
@@ -91,7 +91,7 @@ def generateTrainingExamples(trainingConfiguration):
             #gui.pause()
 
         #main loop
-        for t in range(101):
+        for t in range(trainingConfiguration.NumSteps + 1):
             mantaMsg('\nFrame %i, simulation time %f' % (s.frame, s.timeTotal))
 
             densInflow.applyToGrid( grid=density, value=2. )
@@ -128,7 +128,7 @@ def generateTrainingExamples(trainingConfiguration):
                 copyGridToArrayLevelset(source = phiObs, target = npObs)
                 result = Sim1Result.Sim1Result(npVel, pos, npObs)
                 utils.sim1resToImage(result)
-                utils.serialize('data/vel_{}_{}.p'.format(tf,simNo), result)
+                utils.serialize(simPath+trainingConfiguration.getFileNameFor(simNo,t), result)
                 if(saveppm):
                     projectPpmFull( density, simPath + 'density_{}_{}.ppm'.format(simNo, tf), 0, 1.0 )
 
