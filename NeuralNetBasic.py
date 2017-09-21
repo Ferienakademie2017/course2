@@ -2,6 +2,7 @@ import tensorflow as tf
 import numpy as np
 import scipy.misc
 import readTrainingData
+import flow
 
 # script for first basic neural net where input layer
 # (y coordinate of obstacle) is directly forwarded to output layer with 256 flow values
@@ -69,5 +70,6 @@ for epoch in range(trainingEpochs):
                 scipy.misc.toimage(valiData[:, :, 1], cmin=0.0, cmax=1.0).save("iny_%d.png" % i)
                 scipy.misc.toimage(vout_img[:, :, 0], cmin=0.0, cmax=1.0).save("outx_%d.png" % i)
                 scipy.misc.toimage(vout_img[:, :, 1], cmin=0.0, cmax=1.0).save("outy_%d.png" % i)
+                flow.plot_flow_triple(valiData, vout_img)
 
 print("Done")
