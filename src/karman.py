@@ -13,6 +13,8 @@ if (dim==2): gs.z = 1
 s          = FluidSolver(name='main', gridSize = gs, dim=dim)
 s.timestep = 1.
 
+GUI = False
+
 #Zylinder_Position
 pos = [0.25,0.5,0.5]
 
@@ -68,7 +70,7 @@ for simNo in range(1,2):
         noise.clamp    = True
         noise.clampNeg = -1.
         noise.clampPos =  1.
-        testall = s.create(RealGrid); testall.setConst(-1.);
+        testall = s.create(RealGrid); testall.setConst(-1.)
         addNoise(flags=flags, density=density, noise=noise, sdf=testall, scale=0.1 )
 
     setComponent(target=vel, source=density, component=1)
@@ -95,13 +97,13 @@ for simNo in range(1,2):
         advectSemiLagrange(flags=flags, vel=vel, grid=vel    , order=2, strength=1.0)
 
         if(secOrderBc):
-            extrapolateMACSimple( flags=flags, vel=vel, distance=2 , intoObs=True);
+            extrapolateMACSimple( flags=flags, vel=vel, distance=2 , intoObs=True)
             setWallBcs(flags=flags, vel=vel, fractions=fractions, phiObs=phiObs)
 
             setInflowBcs(vel=vel,dir='xX',value=velInflow)
             solvePressure( flags=flags, vel=vel, pressure=pressure, fractions=fractions, cgAccuracy=cgAcc, cgMaxIterFac=cgIter)
 
-            extrapolateMACSimple( flags=flags, vel=vel, distance=5 , intoObs=True);
+            extrapolateMACSimple( flags=flags, vel=vel, distance=5 , intoObs=True)
             setWallBcs(flags=flags, vel=vel, fractions=fractions, phiObs=phiObs)
         else:
             setWallBcs(flags=flags, vel=vel)
@@ -131,4 +133,4 @@ for simNo in range(1,2):
 
         inter = 10
         if 0 and (t % inter == 0):
-            gui.screenshot( 'karman_{}.png'.format(int(t/inter)) );
+            gui.screenshot( 'karman_{}.png'.format(int(t/inter)) )
