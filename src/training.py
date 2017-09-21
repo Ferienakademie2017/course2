@@ -2,9 +2,8 @@
 import tensorflow as tf
 import numpy as np
 
-import models
 import random
-import scipy.ndimage
+import evaluation
 
 class MinibatchSampler:
     def __init__(self, trainingData):
@@ -47,13 +46,7 @@ def trainNetwork(flagFieldNN, sampler, minibatchSize=4, numMinibatches=200):
 
     for i in range(numMinibatches):
         mb = sampler.nextMinibatch(minibatchSize)
-        xValues = np.array([ex.x for ex in mb])
-        yValues = np.array([ex.y for ex in mb])
-        ffValues = np.array([ex.flagField for ex in mb])
-        optResult, lossResult = sess.run([opt, flagFieldNN.loss],
-                                         {flagFieldNN.x: xValues,
-                                          flagFieldNN.y: yValues,
-                                          flagFieldNN.flagField: ffValues})
+        optResult, lossResult = sess.run([opt, flagFieldNN.loss], evaluation.getFeedDict(flagFieldNN, mb))
         print("Loss: {}".format(lossResult))
         # todo: evtl. hier eine ErrorReporter-Klasse rein
         # todo: oder gleich Klasse, die auch noch die Abbruchbedingung festlegt oder eine Änderung der Learning Rate
