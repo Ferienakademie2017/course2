@@ -5,8 +5,8 @@ import matplotlib.pyplot as plt
 
 if __name__ == "__main__":
     
-    real_flow = np.load("../res/test_data.npy")
-    net_flow = np.load("../res/test_data.npy")
+    real_flow = np.load("../res/karman_data/vel16.npy")
+    net_flow = np.load("../res/net_image.npy")
     
     # takes ONE output and produces a quiver plot from it
     real_flow = real_flow.transpose((1,0,2))
