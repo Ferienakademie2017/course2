@@ -61,9 +61,21 @@ def simpleModel5(x):
     layer = tf.layers.dense(x, 256)
     layer = tf.reshape(layer, [-1, 16, 8, 2])
     for i in range(3):
-        layer = tf.contrib.layers.conv2d(layer, 2, [3, 3], [1, 1], "SAME", activation_fn=None,
+        oldLayer = layer
+        layer = tf.contrib.layers.conv2d(layer, 2, [7, 7], [1, 1], "SAME", activation_fn=None,
                                          weights_initializer=tf.truncated_normal_initializer(stddev=0.02),
                                          biases_initializer=tf.constant_initializer(0.0))
+        layer = tf.contrib.layers.batch_norm(layer, decay=0.9, updates_collections=None, epsilon=1e-5, scale=True,
+                                     scope="batch_norm{}".format(i))
+        layer = tf.nn.relu(layer)
+        layer = tf.contrib.layers.conv2d(layer, 2, [7, 7], [1, 1], "SAME", activation_fn=None,
+                                         weights_initializer=tf.truncated_normal_initializer(stddev=0.02),
+                                         biases_initializer=tf.constant_initializer(0.0))
+        layer = tf.contrib.layers.batch_norm(layer, decay=0.9, updates_collections=None, epsilon=1e-5, scale=True,
+                                         scope="batch_norm{}".format(i))
+        layer = layer + oldLayer
+        # layer = tf.nn.dropout(layer, 0.8)
+
     return layer
 
 def simpleLoss1(yPred, y, flagField):

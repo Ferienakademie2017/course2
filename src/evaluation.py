@@ -48,6 +48,6 @@ def getFeedDict(network, data):
 
 def validateModel(flagFieldNN, validationData, name="final"):
     sess = tf.Session()
-    flagFieldNN.restore(sess, name)
+    flagFieldNN.load(sess, name)
     lossResult = sess.run(flagFieldNN.loss, getFeedDict(flagFieldNN, validationData))
     print("Validation loss: {}".format(lossResult))
