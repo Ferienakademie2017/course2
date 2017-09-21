@@ -14,9 +14,11 @@
 *.dpth
 *.md5
 
+*.p
+
+
 build/*
 TexCode/*
-
 manta
 
 src/.idea/*

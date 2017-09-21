@@ -54,8 +54,8 @@ def sim1resToImage(result):
     obstacles = result.obstacles
     width = len(data)
     height = len(data[0])
-    assert(width == len(obstacles))
-    assert(height == len(obstacles[0]))
+    # assert(width == len(obstacles))
+    # assert(height == len(obstacles[0]))
     assert(width == len(data))
     assert(height == len(data[0]))
 
@@ -67,13 +67,8 @@ def sim1resToImage(result):
     obstacles = np.clip(np.reshape(obstacles, (width, height)), 0, 1)
 
     ax.set(aspect=1, title='Vector field')
-    # ax.invert_yaxis()
-    # ax.imshow(obstacles, interpolation='none', extent=[0, width, height, 0])
     ax.imshow(np.transpose(obstacles), interpolation='none')
-    # ax.imshow(obstacles, interpolation='none')
-    # ax.quiver(x[skip], y[skip], dx[skip], dy[skip])
     ax.quiver(np.transpose(dx), np.transpose(dy))
-    # ax.quiver(dx, dy)
 
     ax.invert_yaxis()
     # fig.canvas.draw()
