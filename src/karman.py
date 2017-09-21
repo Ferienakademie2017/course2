@@ -11,7 +11,7 @@ def generateTrainingExamples(TrainingConfiguartion):
     dim        = 2
     res        = 32
     #res        = 124
-    gs         = vec3(TrainingConfiguartion.resX,TrainingConfiguartion.resY,res)
+    gs         = vec3(TrainingConfiguartion.resX,TrainingConfiguartion.resY,TrainingConfiguration.resY)
     if (dim==2): gs.z = 1
     s          = FluidSolver(name='main', gridSize = gs, dim=dim)
     s.timestep = 1.
