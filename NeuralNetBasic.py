@@ -6,7 +6,7 @@ import readTrainingData
 # script for first basic neural net where input layer
 # (y coordinate of obstacle) is directly forwarded to output layer with 256 flow values
 
-trainingEpochs = 5000
+trainingEpochs = 100
 batchSize = 1
 inSize = 1 # warning - hard coded to scalar values 1
 
@@ -37,11 +37,10 @@ opt = tf.train.GradientDescentOptimizer(0.2).minimize(cost)
 # now we can start training...
 
 # read input  and training data
-# position_y = 0.5
-# training_data = np.linspace(-1, 4, 256, dtype=float)
-# training_data = np.reshape(training_data, newshape = [-1, 8,16, 2])
 position_y, training_data = readTrainingData.loadData(r'C:\Users\Annika\Saved Games\Desktop\course2\trainingData\trainingKarman1.p')
 # training_data = np.reshape(training_data, newshape=[-1, 8, 16, 2])
+scaling = np.ndarray.max(abs(training_data))
+training_data = training_data/scaling
 
 print("Starting training...")
 sess = tf.InteractiveSession()
@@ -59,12 +58,16 @@ for epoch in range(trainingEpochs):
 
     if epoch == trainingEpochs - 1:
         [valiCost, vout] = sess.run([cost, y_pred], feed_dict={x: position_y, y: training_data})
-        print(" Validation: cost %f , validation cost %f " % (currentCost, valiCost))
-        # print("Validation cost %f " % (valiCost) )
+        print(" Validation: cost %f " % (valiCost))
 
-        # if epoch == trainingEpochs - 1:
-        #     for i in range(len(training_data)):
-        #         scipy.misc.toimage(training_data, cmin=0.0, cmax=1.0).save("in_%d.png" % i)
-        #         scipy.misc.toimage(np.reshape(vout[i], [8, 16, 2]), cmin=0.0, cmax=1.0).save("out_%d.png" % i)
+        #
+        if epoch == trainingEpochs - 1:
+            for i in range(len(training_data)):
+                valiData = readTrainingData.transformToImage(training_data, [8, 16, 2])
+                vout_img = readTrainingData.transformToImage(vout[i], [8, 16, 2])
+                scipy.misc.toimage(valiData[:,:,0], cmin=0.0, cmax=1.0).save("inx_%d.png" % i)
+                scipy.misc.toimage(valiData[:, :, 1], cmin=0.0, cmax=1.0).save("iny_%d.png" % i)
+                scipy.misc.toimage(vout_img[:, :, 0], cmin=0.0, cmax=1.0).save("outx_%d.png" % i)
+                scipy.misc.toimage(vout_img[:, :, 1], cmin=0.0, cmax=1.0).save("outy_%d.png" % i)
 
 print("Done")
