@@ -1,4 +1,5 @@
 import tensorflow as tf
+import utils
 
 def simpleModel1(x):
     #fc1_w = tf.get_variable("fc1_w", initializer=tf.random_normal([1, 256], stddev=0.1))
@@ -20,20 +21,19 @@ class NeuralNetwork(object):
         self.y = y
         self.yPred = yPred
         self.loss = loss
+        self.saver = tf.train.Saver()
 
     def compute(self, x, sess):
         return sess.run(self.yPred, {self.x: x})
 
     def save(self, sess, name):
-        saver = tf.train.Saver()
         name = "training/{}.ckpt".format(name)
         utils.ensureDir(name)
-        saver.save(sess, name)
+        self.saver.save(sess, name)
 
     def restore(self, sess, name):
-        saver = tf.train.Saver()
         name = "training/{}.ckpt".format(name)
-        saver.restore(sess, name)
+        self.saver.restore(sess, name)
 
 class FlagFieldNN(NeuralNetwork):
     def __init__(self, x, y, yPred, loss, flagField):
