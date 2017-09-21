@@ -57,6 +57,15 @@ def simpleModel4(x):
     #                                 biases_initializer=tf.constant_initializer(0.0))
     return layer, regFactor * loss
 
+def simpleModel5(x):
+    layer = tf.layers.dense(x, 256)
+    layer = tf.reshape(layer, [-1, 16, 8, 2])
+    for i in range(3):
+        layer = tf.contrib.layers.conv2d(layer, 2, [3, 3], [1, 1], "SAME", activation_fn=None,
+                                         weights_initializer=tf.truncated_normal_initializer(stddev=0.02),
+                                         biases_initializer=tf.constant_initializer(0.0))
+    return layer
+
 def simpleLoss1(yPred, y, flagField):
     # loss = tf.reduce_mean(tf.square(yPred - y))
     loss = tf.reduce_mean(tf.abs(yPred - y))
@@ -99,6 +108,9 @@ def computeNN3():
 
 def computeNN4():
     return computeSimpleNNWithReg(simpleModel4, simpleLoss1, inputDim=2)
+
+def computeNN5():
+    return computeSimpleNN(simpleModel5, simpleLoss1, inputDim=2)
 
 def computeSimpleNN(modelFunc, lossFunc, inputDim = 1):
     x = tf.placeholder(tf.float32, shape=[None, inputDim])
