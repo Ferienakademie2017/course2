@@ -11,9 +11,4 @@ data = []  # todo
 # data = trainConfig.loadData()
 
 trainingData, validationData, testData = evaluation.generateParametricExamples(data)
-training.trainNetwork(models.computeNN1(), training.MinibatchSampler(trainingData))
-
-
-
-
-
+training.trainNetwork(models.computeNN1(), training.MinibatchSampler(trainingData), utils.LossLogger())

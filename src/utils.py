@@ -82,7 +82,7 @@ def sim1resToImage(result):
     ax.clear()
 
 class LossLogger:
-    def __init__(self, gui=False):
+    def __init__(self, gui=True):
         # plt.ion()
         self.gui = gui
         self.fig = plt.figure()
