@@ -72,7 +72,7 @@ if (True):
 
 #main loop
 for t in range(300):
-	mantaMsg('\nFrame %i, simulation time %f' % (s.frame, s.timeTotal))
+	#mantaMsg('\nFrame %i, simulation time %f' % (s.frame, s.timeTotal))
 
 	densInflow.applyToGrid( grid=density, value=2. )
 
@@ -107,13 +107,20 @@ for t in range(300):
 target = np.empty(shape=(res, 2*res, 3))
 copyGridToArrayVec3(vel, target)
 
-# save high res image
-np.save("fluidSamples6432/{:04d}".format(y_index), target)
+# create colorful image
 pil_image = scipy.misc.toimage(target)
 pil_image.save("fluidSamples6432Images/{:04d}.png".format(y_index))
 
+# throw away z axis
+target = target[:,:,:2]
+print(target)
+print(target.shape)
+
+# save high res image
+np.save("fluidSamples6432/{:04d}".format(y_index), target)
+
 # scale down image
-target = scipy.ndimage.zoom(target, [0.25, 0.25, 1.0], order=1)
+target = scipy.ndimage.zoom(target, [0.25, 0.25, 1], order=1)
 # save low res image
 np.save("fluidSamples1608/{:04d}".format(y_index), target)
 
