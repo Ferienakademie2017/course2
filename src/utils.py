@@ -2,6 +2,7 @@ import os
 import os.path
 import numpy as np
 import matplotlib.pyplot as plt
+import scipy.ndimage
 
 import pickle
 
@@ -44,31 +45,40 @@ def deserialize(filename):
 image_i = 0
 def sim1resToImage(result):
     global image_i, fig, ax
-    if image_i == 0:
+    try:
+        fig
+    except NameError:
         # Initialize figures
         fig = plt.figure()
         ax = fig.gca()
 
     data = result.npVel
+    if data.shape[2] == 3:
+        # Remove z coordinate
+        data = np.delete(data, 2, 2)
     obstacles = result.obstacles
-    width = len(data)
-    height = len(data[0])
-    # assert(width == len(obstacles))
-    # assert(height == len(obstacles[0]))
-    assert(width == len(data))
-    assert(height == len(data[0]))
+    widthMin = min(len(data), len(obstacles))
+    heightMin = min(len(data[0]), len(obstacles[0]))
+    widthMax = max(len(data), len(obstacles))
+    heightMax = max(len(data[0]), len(obstacles[0]))
+    # Fix for now to make it comparable
+    widthMin = widthMax // 4
+    heightMin = heightMax // 4
 
-    x, y = np.mgrid[0:width, 0:height]
-    # Every 3rd arrow
-    skip = (slice(None, None, 3), slice(None, None, 3))
-    dx, dy, _ = np.transpose(data, (2, 0, 1))
+    dx, dy = np.transpose(data, (2, 0, 1))
     # Draw obstacles in the background
     obstacles = np.clip(obstacles, 0, 1)
 
+    # Every n-th arrow
+    skipData = (slice(None, None, len(data) // widthMin),
+                slice(None, None, len(data[0]) // heightMin))
+    skipCoord = (slice(None, None, len(obstacles) // widthMin),
+                 slice(None, None, len(obstacles[0]) // heightMin))
+    x, y = np.mgrid[0:widthMax, 0:heightMax]
+
     ax.set(aspect=1, title='Vector field')
     ax.imshow(obstacles, interpolation='none')
-    # ax.quiver(x[skip], y[skip], dx[skip], dy[skip])
-    ax.quiver(dx, dy)
+    ax.quiver(y[skipCoord], x[skipCoord], dx[skipData], dy[skipData])
 
     ax.invert_yaxis()
     # fig.canvas.draw()
