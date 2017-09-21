@@ -2,10 +2,14 @@ import tensorflow as tf
 import numpy as np
 import scipy.misc
 import readTrainingData
+<<<<<<< HEAD
 import random
 
 np.random.seed(13)
 tf.set_random_seed(13)
+=======
+import flow
+>>>>>>> remotes/origin/Group2
 
 # script for first basic neural net where input layer
 # (y coordinate of obstacle) is directly forwarded to output layer with 256 flow values
@@ -70,6 +74,7 @@ for epoch in range(trainingEpochs):
         print(" Validation: cost %f " % (valiCost))
 
         #
+<<<<<<< HEAD
         # if epoch == trainingEpochs - 1:
         #     for i in range(len(training_data)):
         #         valiData = readTrainingData.transformToImage(training_data, [8, 16, 2])
@@ -78,5 +83,16 @@ for epoch in range(trainingEpochs):
         #         scipy.misc.toimage(valiData[:, :, 1], cmin=0.0, cmax=1.0).save("iny_%d.png" % i)
         #         scipy.misc.toimage(vout_img[:, :, 0], cmin=0.0, cmax=1.0).save("outx_%d.png" % i)
         #         scipy.misc.toimage(vout_img[:, :, 1], cmin=0.0, cmax=1.0).save("outy_%d.png" % i)
+=======
+        if epoch == trainingEpochs - 1:
+            for i in range(len(training_data)):
+                valiData = readTrainingData.transformToImage(training_data, [8, 16, 2])
+                vout_img = readTrainingData.transformToImage(vout[i], [8, 16, 2])
+                scipy.misc.toimage(valiData[:,:,0], cmin=0.0, cmax=1.0).save("inx_%d.png" % i)
+                scipy.misc.toimage(valiData[:, :, 1], cmin=0.0, cmax=1.0).save("iny_%d.png" % i)
+                scipy.misc.toimage(vout_img[:, :, 0], cmin=0.0, cmax=1.0).save("outx_%d.png" % i)
+                scipy.misc.toimage(vout_img[:, :, 1], cmin=0.0, cmax=1.0).save("outy_%d.png" % i)
+                flow.plot_flow_triple(valiData, vout_img)
+>>>>>>> remotes/origin/Group2
 
 print("Done")
