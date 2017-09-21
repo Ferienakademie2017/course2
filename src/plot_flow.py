@@ -34,7 +34,7 @@ if __name__ == "__main__":
     
     real_flow_sq = real_flow[:,:,0]**2 + real_flow[:,:,1]**2
     real_norm = math.sqrt(np.sum(real_flow_sq))
-    print "Average error: %f" % (diff_norm/real_norm)
+    print("Average error: %f" % (diff_norm/real_norm))
     
     plt.show()
     exit()
