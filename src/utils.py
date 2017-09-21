@@ -1,8 +1,5 @@
 import os
 import os.path
-import math
-import scipy
-import scipy.misc
 import numpy as np
 import matplotlib.pyplot as plt
 
