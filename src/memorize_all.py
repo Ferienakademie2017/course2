@@ -31,6 +31,17 @@ def create_trainer(output, ground_truth):
     train_step = tf.train.GradientDescentOptimizer(0.1).minimize(loss)
     return train_step, loss
 
+def load_data():
+    training_image = []
+    training_val = []
+    for i in range(31):
+        path = "../res/karman_data/vel"+str(i+1)+".npy"
+        training_image.append(np.load(path).flatten())
+        training_val.append((i+1)/32.)
+    
+    training_data = [training_val,training_image]
+    return training_data
+
 def train_and_get_data():
     x = tf.placeholder(tf.float32, [1, 1])
     output = create_net(x)
@@ -41,6 +52,17 @@ def train_and_get_data():
     tf.global_variables_initializer().run()
 
     data = np.load("../res/test_data.npy").flatten()
+    print("data: ",data)
+    print(data.shape)
+    
+    training_data = load_data()
+
+    for val in training_data[0]:
+        print("val: ",val)
+
+    for image in training_data[1]:
+        print("image: ",image.shape)
+
 
     #train
     for i in range(120):
