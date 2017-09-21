@@ -19,10 +19,10 @@ def plot_flow_triple(real_flow, net_flow):
     ax1.set_xlim(0, image_size[0])
     ax1.set_ylim(0, image_size[1])
     ax2.set_title("Output of network")
-    ax2.quiver(X,Y, net_flow[::2,::2,0], net_flow[::2,::2,1], scale=S)
+    ax2.quiver(X,Y, net_flow[::1,::1,0], net_flow[::1,::1,1], scale=S)
 
     ax3.set_title("Plot of velocity differences (real-net)")
-    ax3.quiver(X,Y,real_flow[::2,::2,0]-net_flow[::2,::2,0],real_flow[::2,::2,1]-net_flow[::2,::2,1], scale=S)
+    ax3.quiver(X,Y,real_flow[::1,::1,0]-net_flow[::1,::1,0],real_flow[::1,::1,1]-net_flow[::1,::1,1], scale=S)
 
     # compute error
     diff_flow = (real_flow[:,:,0]-net_flow[:,:,0])**2 + (real_flow[:,:,1]-net_flow[:,:,1])**2
