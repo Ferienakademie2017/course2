@@ -87,7 +87,7 @@ class NeuralNetwork(object):
         utils.ensureDir(name)
         self.saver.save(sess, name)
 
-    def restore(self, sess, name):
+    def load(self, sess, name):
         name = "training/{}.ckpt".format(name)
         self.saver.restore(sess, name)
 

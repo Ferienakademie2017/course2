@@ -1,5 +1,4 @@
-import numpy
-
+import numpy as np
 
 class Sim1Result(object):
     """Sim1Resluts is a class that holds the trainingdata for the first simple example
