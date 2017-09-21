@@ -49,8 +49,8 @@ def sim1resToImage(result):
         fig = plt.figure()
         ax = fig.gca()
 
-    data = result.npVel
-    obstacles = result.obstacles
+    data = np.transpose(result.npVel, (1, 0, 2))
+    obstacles = np.transpose(result.obstacles)
     width = len(data)
     height = len(data[0])
     # assert(width == len(obstacles))
@@ -98,7 +98,7 @@ class LossLogger:
             self.ax.clear()
             self.ax.plot(self.x, self.y)
             self.ax.set_ylim([0, max(self.y)])
-            self.ax.set_xlim([0, max(500, len(self.x))])
+            self.ax.set_xlim([0, max(500, max(self.x))])
             self.fig.canvas.draw()
             plt.pause(0.01)
 

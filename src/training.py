@@ -39,22 +39,19 @@ class MinibatchSampler:
         return self.numTotalSamples
 
 
-def trainNetwork(flagFieldNN, sampler, lossLogger, minibatchSize=4, numMinibatches=100):
-    opt = [tf.train.AdamOptimizer(0.05 * math.pow(0.2, j)).minimize(flagFieldNN.loss) for j in range(1)]
-    # opt = tf.train.GradientDescentOptimizer(20).minimize(flagFieldNN.loss)
+def trainNetwork(flagFieldNN, sampler, lossLogger, minibatchSize=4, numMinibatches=200):
+    opt = [tf.train.AdamOptimizer(0.05 * math.pow(0.5, j)).minimize(flagFieldNN.loss) for j in range(1)]
+    # opt = tf.train.AdamOptimizer(0.05).minimize(flagFieldNN.loss)
+    # opt = [tf.train.GradientDescentOptimizer(10 * math.pow(0.3, j)).minimize(flagFieldNN.loss) for j in range(4)]
     init = tf.global_variables_initializer()
-    # opt = tf.train.AdamOptimizer(0.001).minimize(flagFieldNN.loss)
-    # opt = tf.train.GradientDescentOptimizer(20).minimize(flagFieldNN.loss)
     sess = tf.Session()
     sess.run(init)
 
-    adamParam = 0.05
-
-    for optIndex in range(len(opt)):
+    for j in range(len(opt)):
         for i in range(numMinibatches):
             mb = sampler.nextMinibatch(minibatchSize)
-            optResult, lossResult = sess.run([opt[optIndex], flagFieldNN.loss], evaluation.getFeedDict(flagFieldNN, mb))
-            lossLogger.logLoss(i, lossResult)
+            optResult, lossResult = sess.run([opt[j], flagFieldNN.loss], evaluation.getFeedDict(flagFieldNN, mb))
+            lossLogger.logLoss(sampler.getNumTotalSamples(), lossResult)
             # todo: evtl. hier eine ErrorReporter-Klasse rein
             # todo: oder gleich Klasse, die auch noch die Abbruchbedingung festlegt oder eine Änderung der Learning Rate
 

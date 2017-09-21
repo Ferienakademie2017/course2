@@ -12,7 +12,7 @@
 - Optimizer?
 - Command Line Parser? (David: von customPlot.py übernehmen?)
 - initiale Bedingungen exportieren? (und random samplen?)
-- Mantaflow-Ausgabe entfernen
+- Geschwindigkeiten in Hindernissen
 
 
 Aufteilung:
@@ -20,3 +20,7 @@ Aufteilung:
 - Dennis:
 - Sebastian:
 - Michael: 
+
+
+Erledigt:
+- Mantaflow-Ausgabe entfernen

@@ -4,14 +4,61 @@ import utils
 def simpleModel1(x):
     #fc1_w = tf.get_variable("fc1_w", initializer=tf.random_normal([1, 256], stddev=0.1))
     #fc1_b = tf.get_variable("fc1_b", initializer=tf.constant(1.0, shape=[256]))
-    #fc1_z = tf.add(tf.matmul(x, fc1_w), fc1_b)
-    #fc1_a = tf.tanh(fc1_z)
+    #fc1_a = tf.add(tf.matmul(x, fc1_w), fc1_b)
+    #fc1_a = tf.tanh(fc1_a)
     # fc1_a = tf.dropout(fc1_a, 0.5)
-    fc1_a = tf.layers.dense(x, 256)  # activation = tf.tanh
+    fc1_a = tf.layers.dense(x, 256, kernel_initializer=tf.random_normal([1, 256], stddev=0.1))  # activation = tf.tanh
     y_pred = tf.reshape(fc1_a, [-1, 16, 8, 2])
     return y_pred
 
+def simpleModel2(x):
+    layer = tf.layers.dense(x, 2, activation=tf.nn.relu)
+    layer = tf.layers.dense(layer, 4, activation=tf.nn.relu)
+    layer = tf.layers.dense(layer, 8, activation=tf.nn.relu)
+    layer = tf.layers.dense(layer, 16, activation=tf.nn.relu)
+    layer = tf.layers.dense(layer, 32, activation=tf.nn.relu)
+    layer = tf.layers.dense(layer, 64, activation=tf.nn.relu)
+    layer = tf.layers.dense(layer, 128, activation=tf.nn.relu)
+    fc2_a = tf.layers.dense(layer, 256)
+    y_pred = tf.reshape(fc2_a, [-1, 16, 8, 2])
+    return y_pred
+
+def simpleModel3(x):
+    layer = tf.layers.dense(x, 64, activation=tf.nn.relu)
+    layer = tf.reshape(layer, [-1, 8, 4, 2])
+    layer = tf.contrib.layers.conv2d_transpose(layer, 8, [3, 3], [2, 2], "SAME", activation_fn=tf.nn.relu,
+                                               weights_initializer=tf.truncated_normal_initializer(stddev=0.02),
+                                               biases_initializer=tf.constant_initializer(0.0))
+    layer = tf.contrib.layers.conv2d(layer, 2, [3, 3], [1, 1], "SAME", activation_fn=None,
+                                     weights_initializer=tf.truncated_normal_initializer(stddev=0.02),
+                                     biases_initializer=tf.constant_initializer(0.0))
+    #y_pred = tf.reshape(layer, [-1, 16, 8, 2])
+    return layer
+
+def simpleModel4(x):
+    regFactor = 0.1
+    weights = tf.get_variable("fc1_w", initializer=tf.random_normal([2, 8], stddev=0.1))
+    biases = tf.get_variable("fc1_b", initializer=tf.constant(1.0, shape=[8]))
+    layer = tf.add(tf.matmul(x, weights), biases)
+    loss = tf.reduce_sum(tf.square(weights))
+    #layer = tf.layers.dense(x, 8)
+    #layer = tf.nn.dropout(layer, 0.7)
+    layer = tf.nn.relu(layer)
+    #layer = tf.layers.dense(x, 8, activation=tf.nn.relu)
+    # layer = tf.layers.dense(x, 16, activation=tf.nn.relu)
+    #layer = tf.layers.dense(layer, 256)
+    weights2 = tf.get_variable("fc2_w", initializer=tf.random_normal([8, 256], stddev=0.1))
+    biases2 = tf.get_variable("fc2_b", initializer=tf.constant(1.0, shape=[256]))
+    layer = tf.add(tf.matmul(layer, weights2), biases2)
+    layer = tf.reshape(layer, [-1, 16, 8, 2])
+    loss = loss + tf.reduce_sum(tf.square(weights2))
+    #layer = tf.contrib.layers.conv2d(layer, 2, [3, 3], [1, 1], "SAME", activation_fn=None,
+    #                                 weights_initializer=tf.truncated_normal_initializer(stddev=0.02),
+    #                                 biases_initializer=tf.constant_initializer(0.0))
+    return layer, regFactor * loss
+
 def simpleLoss1(yPred, y, flagField):
+    # loss = tf.reduce_mean(tf.square(yPred - y))
     loss = tf.reduce_mean(tf.abs(yPred - y))
     return loss
 
@@ -42,9 +89,29 @@ class FlagFieldNN(NeuralNetwork):
 
 
 def computeNN1():
-    x = tf.placeholder(tf.float32, shape=[None, 1])
+    return computeSimpleNN(simpleModel1, simpleLoss1)
+
+def computeNN2():
+    return computeSimpleNN(simpleModel2, simpleLoss1)
+
+def computeNN3():
+    return computeSimpleNN(simpleModel3, simpleLoss1, inputDim=2)
+
+def computeNN4():
+    return computeSimpleNNWithReg(simpleModel4, simpleLoss1, inputDim=2)
+
+def computeSimpleNN(modelFunc, lossFunc, inputDim = 1):
+    x = tf.placeholder(tf.float32, shape=[None, inputDim])
     y = tf.placeholder(tf.float32, shape=[None, 16, 8, 2])
-    yPred = simpleModel1(x)
+    yPred = modelFunc(x)
     flagField = tf.placeholder(tf.float32, shape=[None, 16, 8])
-    loss = simpleLoss1(yPred, y, flagField)
+    loss = lossFunc(yPred, y, flagField)
+    return FlagFieldNN(x, y, yPred, loss, flagField)
+
+def computeSimpleNNWithReg(modelFunc, lossFunc, inputDim = 1):
+    x = tf.placeholder(tf.float32, shape=[None, inputDim])
+    y = tf.placeholder(tf.float32, shape=[None, 16, 8, 2])
+    yPred, regLoss = modelFunc(x)
+    flagField = tf.placeholder(tf.float32, shape=[None, 16, 8])
+    loss = regLoss + lossFunc(yPred, y, flagField)
     return FlagFieldNN(x, y, yPred, loss, flagField)
