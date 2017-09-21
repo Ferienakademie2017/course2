@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 
 if __name__ == "__main__":
     
-    real_flow = np.load("../res/karman_data/vel16.npy")
+    real_flow = np.load("../res/karman_data_norm/vel16.npy")
     net_flow = np.load("../res/net_image.npy")
     
     # takes ONE output and produces a quiver plot from it
