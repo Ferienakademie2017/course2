@@ -15,15 +15,16 @@ if __name__ == "__main__":
     net_flow = net_flow.transpose((1, 0, 2))
     image_size = real_flow.shape
 
-    X, Y = np.mgrid[0:image_size[0]:2, 0:image_size[1]:2]
+    skip = 2
+    X, Y = np.mgrid[0:image_size[0]:skip, 0:image_size[1]:skip]
 
     [f, (ax1, ax2, ax3)] = plt.subplots(3, sharex=True, sharey=True)
-    ax1.quiver(X, Y, real_flow[::2, ::2, 0], real_flow[::2, ::2, 1],units='inches')
+    ax1.quiver(X, Y, real_flow[::skip, ::skip, 0], real_flow[::skip, ::skip, 1],units='inches')
     ax1.set_title("Real flow")
     ax1.set_xlim(0, image_size[0])
     ax1.set_ylim(0, image_size[1])
     ax2.set_title("Output of network")
-    ax2.quiver(X, Y, net_flow[::2, ::2, 0], net_flow[::2, ::2, 1],units='inches')
+    ax2.quiver(X, Y, net_flow[::skip, ::skip, 0], net_flow[::skip, ::skip, 1],units='inches')
 
     # compute error 
     diff_flow = (real_flow[:, :, 0] - net_flow[:, :, 0]) ** 2 + (real_flow[:, :, 1] - net_flow[:, :, 1]) ** 2
@@ -37,7 +38,7 @@ if __name__ == "__main__":
     diff_max = np.amax(diff_flow)
 
     ax3.set_title("Plot of velocity differences (real-net)")
-    ax3.quiver(X, Y, real_flow[::2, ::2, 0] - net_flow[::2, ::2, 0], real_flow[::2, ::2, 1] - net_flow[::2, ::2, 1],scale=real_max,units='inches')
+    ax3.quiver(X, Y, real_flow[::skip, ::skip, 0] - net_flow[::skip, ::skip, 0], real_flow[::skip, ::skip, 1] - net_flow[::skip, ::skip, 1],scale=real_max,units='inches')
     
     plt.show()
     exit()

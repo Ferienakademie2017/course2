@@ -2,6 +2,7 @@ import tensorflow as tf
 import numpy as np
 from subprocess import call
 
+
 def weight_variable(shape):
     initial = tf.truncated_normal(shape, stddev=1)
     return tf.Variable(initial)
@@ -17,7 +18,7 @@ def to_image_form(data):
     return np.append(d, np.zeros([32, 64, 1]), axis=2)
 
 
-def create_net(x):
+def create_net(x): #TODO: change net architecture
     hidden_layer_size = 20
 
     # hidden layer
@@ -34,18 +35,20 @@ def create_net(x):
 
 def create_trainer(output, ground_truth):
     loss = tf.reduce_mean(tf.reduce_sum(tf.pow(ground_truth - output, 2), reduction_indices=[1]))
-    train_step = tf.train.AdamOptimizer(0.1).minimize(loss)
+    global_step = tf.Variable(0, trainable=False)
+    lr = tf.train.piecewise_constant(global_step, [20000, 25000], [0.1, 0.05, 0.01])
+    train_step = tf.train.AdamOptimizer(lr).minimize(loss, global_step=global_step)
     return train_step, loss
 
 
 def load_data():
     training_image = []
     training_val = []
-    for i in range(31):
-        if i == 15: continue
-        path = "../res/karman_data_norm/vel" + str(i + 1) + ".npy"
+    for i in range(1, 32):
+        if i == 16: continue
+        path = "../res/karman_data_norm/vel" + str(i) + ".npy"
         training_image.append(np.load(path).flatten())
-        training_val.append((i + 1) / 32)
+        training_val.append(i / 32)
 
     training_data = [np.reshape(training_val, (30, 1)), training_image]
     return training_data
@@ -67,9 +70,10 @@ def train():
 
     training_data = load_data()
     # train
-    for i in range(5000):
+    for i in range(30000):
         _, loss_val = sess.run([train_step, loss], feed_dict={x: training_data[0], ground_truth: training_data[1]})
-        print("Epoch {}: Loss = {}".format(i, loss_val))
+        if i % 100 == 0:
+            print("Epoch {}: Loss = {}".format(i, loss_val))
 
     test_input = 0.5
     net_data = sess.run(output, feed_dict={x: np.reshape([test_input], (1, 1))})
