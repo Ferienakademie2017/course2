@@ -63,7 +63,7 @@ class SimulationExample(object):
         func = lambda x: 1.0 if x < 0.0 else 0.0
         self.flagField = np.vectorize(func)(sim1Result.obstacles)
 
-def generateParametricExamples(data, trainingFraction=0.6, validationFraction=0.2, testFraction=0.2):
+def generateParametricExamples(data, trainingFraction=0.6, validationFraction=0.2):
     dataSize = len(data)
     trainingEnd = int(dataSize*trainingFraction)
     validationEnd = int(dataSize*(trainingFraction+validationFraction))
