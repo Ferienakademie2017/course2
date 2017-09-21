@@ -1,6 +1,6 @@
 import tensorflow as tf
 import numpy as np
-
+from subprocess import call
 
 def weight_variable(shape):
     initial = tf.truncated_normal(shape, stddev=1)
@@ -67,16 +67,18 @@ def train():
 
     training_data = load_data()
     # train
-    for i in range(2000):
+    for i in range(5000):
         _, loss_val = sess.run([train_step, loss], feed_dict={x: training_data[0], ground_truth: training_data[1]})
         print("Epoch {}: Loss = {}".format(i, loss_val))
 
     test_input = 0.5
     net_data = sess.run(output, feed_dict={x: np.reshape([test_input], (1, 1))})
     net_data *= get_scale_factor(test_input)
+    net_data += np.load("../res/karman_data_norm/mean.npy").flatten()
     output_img = to_image_form(net_data)
     np.save("../res/net_image", output_img)
 
+    call(["python", "plot_flow.py"])
 
 if __name__ == "__main__":
     train()
