@@ -14,7 +14,7 @@ random.shuffle(data)
 
 trainingData, validationData, testData = evaluation.generateParametricExamples(data, 0.6, 0.4, slice=[0, 1])
 model = models.computeNN5()
-minibatchSize = 8
+minibatchSize = 10
 lossLogger = utils.LossLogger()
 sess = training.trainNetwork(model, training.MinibatchSampler(trainingData), lossLogger, minibatchSize)
 
