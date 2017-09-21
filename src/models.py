@@ -14,3 +14,10 @@ def simple_loss_1(y_pred, y, flagField):
     loss = tf.reduce_mean(tf.abs(y_pred - y))
     return loss
 
+class NeuralNetwork:
+    def __init__(self):
+        pass
+        #self.x
+        #self.y
+        #self.loss
+

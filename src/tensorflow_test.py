@@ -2,8 +2,6 @@ import tensorflow as tf
 import numpy as np
 import models
 
-
-
 x = tf.placeholder(tf.float32, shape=[None, 1])
 y = tf.placeholder(tf.float32, shape=[None, 16, 8, 2])
 y_pred = models.simple_model_1(x)
