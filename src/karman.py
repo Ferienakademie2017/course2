@@ -3,6 +3,7 @@ import numpy
 import utils
 import Sim1Result
 import random
+import TrainingConfiguration
 
 def generateTrainingExamples(TrainingConfiguartion):
 
@@ -15,7 +16,7 @@ def generateTrainingExamples(TrainingConfiguartion):
     s          = FluidSolver(name='main', gridSize = gs, dim=dim)
     s.timestep = 1.
 
-GUI = False
+    GUI = False
 
     #Zylinder_Position
     pos = [0.25,0.5,0.5]
@@ -27,8 +28,8 @@ GUI = False
     savepng = TrainingConfiguartion.savepng
     interval = TrainingConfiguartion.stepIntervall
     offset = 0
-    npVel = numpy.zeros( (res, 2*res, 3), dtype='f')
-    npObs = numpy.zeros( (res, 2*res), dtype='f')
+    npVel = numpy.zeros( (TrainingConfiguration.resY, TrainingConfiguration.resX, 3), dtype='f')
+    npObs = numpy.zeros( (TrainingConfiguration.resY, TrainingConfiguration.resX), dtype='f')
 
     #Number of generated Images
     NumObsPosX = TrainingConfiguartion.NumObsPosX
