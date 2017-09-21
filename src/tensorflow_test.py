@@ -15,8 +15,9 @@ sess = tf.Session()
 sess.run(tf.global_variables_initializer())
 # loss_result = sess.run([loss], feed_dict={x: np.array([[1.0]]), y: target})
 loss_result = -1
-for i in range(10000):
-    _, loss_result = sess.run([opt, loss], feed_dict={x: np.array([[1.0]]), y: target})
+for i in range(1000):
+    _, loss_result, y_pred_result = sess.run([opt, loss, y_pred], feed_dict={x: np.array([[1.0]]), y: target})
 print(loss_result)
+print(y_pred_result)
 
 
