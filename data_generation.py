@@ -1,6 +1,8 @@
 from manta import *
 import numpy as np
 import sys
+import scipy.ndimage
+import scipy.misc
 
 # Variable Parameter
 y_position = float(sys.argv[1])
@@ -29,11 +31,11 @@ phiWalls  = s.create(LevelsetGrid)
 flags.initDomain(inflow="xX", phiWalls=phiWalls, boundaryWidth=0)
 
 #obstacle  = Sphere(   parent=s, center=gs*vec3(0.25,0.5,0.5), radius=res*0.2)
-obstacle  = Cylinder( parent=s, center=gs*vec3(0.25,y_position,0.5), radius=res*obstacle_radius_factor, z=gs*vec3(0, 0, 1.0))
+obstacle  = Cylinder( parent=s, center=vec3(16,y_position,1), radius=res*obstacle_radius_factor, z=gs*vec3(0, 0, 1.0))
 phiObs    = obstacle.computeLevelset()
 
 # slightly larger copy for density source
-densInflow  = Cylinder( parent=s, center=gs*vec3(0.25,y_position,0.5), radius=res*smoke_source_radius_factor, z=gs*vec3(0, 0, 1.0))
+densInflow  = Cylinder( parent=s, center=vec3(16,y_position,1), radius=res*smoke_source_radius_factor, z=gs*vec3(0, 0, 1.0))
 
 phiObs.join(phiWalls)
 updateFractions( flags=flags, phiObs=phiObs, fractions=fractions)
@@ -63,7 +65,7 @@ cgIter = 5
 timings = Timings()
 
 # GUI
-if (False):
+if (True):
 	gui = Gui()
 	gui.show()
 	#gui.pause()
@@ -94,7 +96,7 @@ for t in range(300):
 
 	setInflowBcs(vel=vel,dir='xX',value=velInflow)
 
-	timings.display()
+	#timings.display()
 	s.step()
 
 	inter = 10
@@ -102,8 +104,18 @@ for t in range(300):
 		gui.screenshot( 'karman_%04d.png' % int(t/inter) );
 
 # write velocity array to file		
-target = np.empty(shape=(2*res, res, 3))
+target = np.empty(shape=(3, res, 2*res))
 copyGridToArrayVec3(vel, target)
-np.save("fluidSamples/{:03d}".format(y_index), target)
+print(target)
+
+# save high res image
+np.save("fluidSamples6432/{:04d}".format(y_index), target)
+pil_image = scipy.misc.toimage(target)
+pil_image.save("fluidSamples6432Images/{:04d}.png".format(y_index))
+
+# scale down image
+target = scipy.ndimage.zoom(target, [0.25, 0.25, 1.0], order=1)
+# save low res image
+np.save("fluidSamples1608/{:04d}".format(y_index), target)
 
 print("Finished iteration " + str(y_index))

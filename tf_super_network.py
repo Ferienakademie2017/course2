@@ -43,29 +43,39 @@ inputHeight = 8
 inputWidth  = 16
 inSize      = inputHeight * inputWidth * 2 # warning - hard coded to scalar values 64^2
 
-# load data
-velocities = []
 
-# read y_positions in array
-y_positions = np.load(fluidDataPath + "y_position_array.npy")
-sample_count = y_positions.shape[0]
+def loadData():
+	# load data
+	velocities = []
 
-# read data from fluid sampling
-for index in range(sample_count):
-	vel = np.load(fluidDataPath + "{:03d}.npy".format(index))
-	velocities.append(vel)
+	# read y_positions in array
+	y_positions = np.load(fluidDataPath + "y_position_array.npy")
+	sample_count = y_positions.shape[0]
 
-#densities = np.reshape( densities, (len(densities), 64,64,1) )
+	# read data from fluid sampling
+	for index in range(sample_count):
+		vel = np.load(fluidDataPath + "{:03d}.npy".format(index))
+		velocities.append(vel)
 
-print("Read fluid data samples")
+	#densities = np.reshape( densities, (len(densities), 64,64,1) )
 
-validationSize = int(sample_count * 0.1) # take 10% as validation samples
-#print(str(velocities))
-validationData = velocities[sample_count-validationSize:sample_count][:] 
-trainingData = velocities[0:sample_count-validationSize][:]
-print("Split into %d training and %d validation samples" % (len(trainingData), len(validationData)) )
+	print("Read fluid data samples")
 
+	validationSize = int(sample_count * 0.1) # take 10% as validation samples
+	#print(str(velocities))
+	validationData = velocities[sample_count-validationSize:sample_count][:] 
+	trainingData = velocities[0:sample_count-validationSize][:]
+	print("Split into %d training and %d validation samples" % (len(trainingData), len(validationData)) )
 
+	return [trainingData, validationData]
+
+#def simpleModel(features, labels, mode):
+#
+#	input_layer = tf.reshape(features["x"], [1])
+
+#	output_layer = tf.layers.dense(inputs=input_layer, units=256, activation=tf.nn.relu)
+
+#	loss = tf.redcue_sum(tf.square(features["y"] - ))	
 
 # set up the network
 #
