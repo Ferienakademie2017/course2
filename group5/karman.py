@@ -3,13 +3,11 @@ import numpy as np
 import sys
 
 
-
+# generates example images for training the neural network
 def runsim(pos):
-
 	secOrderBc = True
 	dim        = 2
 	res        = 32
-	#res        = 124
 	gs         = vec3(2*res,res,res)
 	if (dim==2): gs.z = 1
 	s          = FluidSolver(name='main', gridSize = gs, dim=dim)
@@ -22,7 +20,6 @@ def runsim(pos):
 	pressure  = s.create(RealGrid)
 	fractions = s.create(MACGrid)
 	phiWalls  = s.create(LevelsetGrid)
-
 	
 
 	flags.initDomain(inflow="xX", phiWalls=phiWalls, boundaryWidth=0)
@@ -93,10 +90,11 @@ def runsim(pos):
 
 
 		
-		npVel = np.zeros( (res*2, res, 1, 3), dtype='f')
+		npVel = np.zeros((1, res, 2 * res, 3), dtype='f')
 		copyGridToArrayVec3(source=vel, target=npVel)
-		
-		np.save('./data_' + str(pos), npVel)
+		npVel = npVel[0, :, :]
+		npVel = npVel[:, :, :2]
+		np.save('./vel_' + str(pos), npVel)
 
 
 
