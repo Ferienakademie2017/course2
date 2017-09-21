@@ -61,6 +61,7 @@ if __name__ == "__main__":
     for i in range(trainingSize):
         currentOutput = pickle.load(sourceFile)
         # showVectorField(currentOutput[0,:,:,:])
+        showImage(currentOutput[0,:,:,:])
         currentOutput = scaleImage(currentOutput, 2)
         currentOutput = transformToLinear(currentOutput[0,:,:,0:2])
         trainingOutput[i,:] = currentOutput
