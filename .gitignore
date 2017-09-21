@@ -20,6 +20,8 @@
 build/*
 TexCode/*
 manta
+images/
+data/
 
 src/.idea/*
 

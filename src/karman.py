@@ -15,6 +15,8 @@ def generateTrainingExamples(TrainingConfiguartion):
     s          = FluidSolver(name='main', gridSize = gs, dim=dim)
     s.timestep = 1.
 
+GUI = False
+
     #Zylinder_Position
     pos = [0.25,0.5,0.5]
 
@@ -26,7 +28,7 @@ def generateTrainingExamples(TrainingConfiguartion):
     interval = TrainingConfiguartion.stepIntervall
     offset = 0
     npVel = numpy.zeros( (res, 2*res, 3), dtype='f')
-    npObs = numpy.zeros( (res, 2*res, 1), dtype='f')
+    npObs = numpy.zeros( (res, 2*res), dtype='f')
 
     #Number of generated Images
     NumObsPosX = TrainingConfiguartion.NumObsPosX
@@ -123,8 +125,6 @@ def generateTrainingExamples(TrainingConfiguartion):
                 #os.makedirs(framePath)
                 copyGridToArrayVec3(source = vel, target = npVel)
                 copyGridToArrayLevelset(source = phiObs, target = npObs)
-                npObs = numpy.transpose(npObs)
-                npVel = numpy.transpose(npVel, (1, 0, 2))
                 result = Sim1Result.Sim1Result(npVel, pos, npObs)
                 utils.sim1resToImage(result)
                 utils.serialize('data/vel_{}_{}.p'.format(tf,simNo), result)
