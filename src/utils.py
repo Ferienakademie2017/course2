@@ -45,13 +45,51 @@ def deserialize(filename):
     file.close()
     return result
 
-def sim1resToImage(result, path):
-    arrToImage(result.data, path)
+fig = plt.figure()
+ax = fig.gca()
+image_i = 0
+def sim1resToImage(result):
+    global image_i
+    data = result.npVel
+    obstacles = result.obstacles
+    width = len(data)
+    height = len(data[0])
+    assert(width == len(obstacles))
+    assert(height == len(obstacles[0]))
+    assert(width == len(data))
+    assert(height == len(data[0]))
 
-def nn1resToImage(result, path):
+    x, y = np.mgrid[0:width, 0:height]
+    # Every 3rd arrow
+    skip = (slice(None, None, 3), slice(None, None, 3))
+    dx, dy, _ = np.transpose(data, (2, 0, 1))
+    # Draw obstacles in the background
+    obstacles = np.clip(np.reshape(obstacles, (width, height)), 0, 1)
+
+    ax.set(aspect=1, title='Vector field')
+    # ax.invert_yaxis()
+    # ax.imshow(obstacles, interpolation='none', extent=[0, width, height, 0])
+    ax.imshow(np.transpose(obstacles), interpolation='none')
+    # ax.imshow(obstacles, interpolation='none')
+    # ax.quiver(x[skip], y[skip], dx[skip], dy[skip])
+    ax.quiver(np.transpose(dx), np.transpose(dy))
+    # ax.quiver(dx, dy)
+
+    ax.invert_yaxis()
+    # fig.canvas.draw()
+    # plt.show()
+    ensureDir("images/")
+    fig.savefig("images/fig_{}.png".format(image_i))
+    image_i += 1
+
+    # plt.pause(0.01)
+    ax.clear()
+
+def nn1resToImage(result):
     data = result.data
     scipy.ndimage.zoom(data, [2.0, 2.0, 1.0], order=1)
-    arrToImage(data, path)
+    ax, plt = arrToImage(data)
+    plt.show()
 
 def arrToImage(data):
     imageHeight = len(data)
@@ -64,4 +102,4 @@ def arrToImage(data):
     dx, dy = np.transpose(data, (2, 0, 1))
     ax.quiver(x[skip], y[skip], dx[skip], dy[skip])
     ax.set(aspect=1, title='Vector field')
-    plt.show()
+    return ax, plt
