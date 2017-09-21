@@ -6,6 +6,7 @@ import math
 import matplotlib.pyplot as plt
 
 if __name__ == "__main__":
+
     real_flow = np.load("../res/karman_data/vel16.npy")
     net_flow = np.load("../res/net_image.npy")
 
@@ -22,6 +23,7 @@ if __name__ == "__main__":
     ax1.set_xlim(0, image_size[0])
     ax1.set_ylim(0, image_size[1])
     ax2.set_title("Output of network")
+
     ax2.quiver(X, Y, net_flow[::2, ::2, 0], net_flow[::2, ::2, 1])
 
     ax3.set_title("Plot of velocity differences (real-net)")
