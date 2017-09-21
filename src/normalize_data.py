@@ -3,7 +3,7 @@ import os
 from scipy import misc
 from src.memorize_all import to_image_form
 
-# TODO: convolutional, time, look at proposal .txt file
+# TODO: convolutional, time, vary x position, look at proposal .txt file
 
 if __name__ == "__main__":
     files = ["vel{}.npy".format(i) for i in range(1, 32)]
