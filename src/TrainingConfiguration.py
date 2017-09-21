@@ -1,6 +1,6 @@
 import utils
 
-class TrainingConfiguration():
+class TrainingConfiguration(object):
 
 
     def __init__(self,simPath = 'data/',savedata = True,saveppm = False,NumObsPosX = 1,NumObsPosY = 10,GUI = False,resY = 32,resX = 64,saveInterval = 100,NumSteps=100):

@@ -1,14 +1,24 @@
 import tensorflow as tf
 import numpy as np
 import scipy.ndimage
+import copy
 
 class ParametricSimulationExample(object):
     def __init__(self, sim1Result):
-        self.x = sim1Result.obstacle_pos
-        np.delete(sim1Result.npVel, 2, 2)
-        self.y = scipy.ndimage.zoom(sim1Result.npVel, [0.25, 0.25, 1])
+        self.x = [sim1Result.obstacle_pos[1]]
+        print(sim1Result.npVel.shape)
+        arr = sim1Result.npVel
+        arr = np.delete(arr, 2, 2)
+        arr = np.transpose(arr, (1, 0, 2))
+        arr = scipy.ndimage.zoom(arr, [0.25, 0.25, 1])
+        print(arr.shape)
+        self.y = arr
         func = lambda x: 1.0 if x < 0.0 else 0.0
-        self.flagField = np.vectorize(func)(sim1Result.obstacles)
+
+        obs = sim1Result.obstacles
+        obs = np.transpose(obs, (1, 0))
+        obs = scipy.ndimage.zoom(obs, [0.25, 0.25])
+        self.flagField = np.vectorize(func)(obs)
 
 def generateParametricExamples(data, trainingFraction=0.6, validationFraction=0.2, exampleType=ParametricSimulationExample):
     dataSize = len(data)

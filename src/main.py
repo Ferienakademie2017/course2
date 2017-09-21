@@ -7,8 +7,11 @@ import evaluation
 import models
 
 trainConfig = utils.deserialize("data/trainConfig.p")
-data = []  # todo
-# data = trainConfig.loadData()
+# data = []  # todo
+data = trainConfig.loadGeneratedData()
 
 trainingData, validationData, testData = evaluation.generateParametricExamples(data)
-training.trainNetwork(models.computeNN1(), training.MinibatchSampler(trainingData), utils.LossLogger())
+model = models.computeNN1()
+minibatchSize = 8
+training.trainNetwork(model, training.MinibatchSampler(trainingData), utils.LossLogger(), minibatchSize)
+# evaluation.validateModel(model, validationData)

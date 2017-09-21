@@ -50,7 +50,8 @@ def generateTrainingExamples(trainingConfiguration):
     for simNo in range(0,NumObsPosX*NumObsPosY):
         #pos = [random.random(),random.random(),0.5]
         #pos = [0.4, 0.8, 0.5]
-        pos = [(simNo % NumObsPosX)*1.0/NumObsPosX,(simNo//NumObsPosX)*1.0/NumObsPosY,0.5]
+        #1. Komponente ist x-Komponente, 2. Komponente ist y-Komponente
+        pos = [(simNo % NumObsPosX)*1.0/NumObsPosX, (simNo//NumObsPosX)*1.0/NumObsPosY,0.5]
 
         #obstacle  = Sphere(   parent=s, center=gs*vec3(0.25,0.5,0.5), radius=res*0.2)
 

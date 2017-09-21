@@ -32,9 +32,8 @@ def readFromFile(filename):
 def serialize(filename, obj):
     ensureDir(filename)
     file = open(filename, 'wb')
-    pickle.dump(obj, file)
+    pickle.dump(obj, file, protocol=2)
     file.close()
-
 
 def deserialize(filename):
     file = open(filename, 'rb')
