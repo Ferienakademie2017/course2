@@ -81,8 +81,8 @@ class LossLogger:
     def __init__(self, gui=True):
         # plt.ion()
         self.gui = gui
-        self.fig = plt.figure()
-        self.ax = self.fig.gca()
+        self.fig = plt.figure("TestFigure")
+        self.ax = self.fig.gca() #self.fig.add_axes([0.1, 0.1, 0.8, 0.8]) #self.fig.gca()
         self.x = []
         self.y = []
 

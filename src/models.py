@@ -1,4 +1,5 @@
 import tensorflow as tf
+import utils
 
 def simpleModel1(x):
     #fc1_w = tf.get_variable("fc1_w", initializer=tf.random_normal([1, 256], stddev=0.1))
