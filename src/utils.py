@@ -64,11 +64,12 @@ def sim1resToImage(result):
     skip = (slice(None, None, 3), slice(None, None, 3))
     dx, dy, _ = np.transpose(data, (2, 0, 1))
     # Draw obstacles in the background
-    obstacles = np.clip(np.reshape(obstacles, (width, height)), 0, 1)
+    obstacles = np.clip(obstacles, 0, 1)
 
     ax.set(aspect=1, title='Vector field')
-    ax.imshow(np.transpose(obstacles), interpolation='none')
-    ax.quiver(np.transpose(dx), np.transpose(dy))
+    ax.imshow(obstacles, interpolation='none')
+    # ax.quiver(x[skip], y[skip], dx[skip], dy[skip])
+    ax.quiver(dx, dy)
 
     ax.invert_yaxis()
     # fig.canvas.draw()
