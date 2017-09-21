@@ -13,4 +13,4 @@ if __name__ == "__main__":
         scale_factors.append(m)
         print("File {} factor {}".format(file, m))
     print(scale_factors)
-    np.save("../res/karman_data_norm/scale_factors", scale_factors)  # TODO: use scaling, subtract mean, andere error function, convolutional, time
+    np.save("../res/karman_data_norm/scale_factors", scale_factors)  # TODO: subtract mean, convolutional, time
