@@ -3,12 +3,12 @@ import os
 from scipy import misc
 from src.memorize_all import to_image_form
 
-# TODO: subtract mean, stddev(?), convolutional, time
+# TODO: convolutional, time, look at proposal .txt file
 
 if __name__ == "__main__":
     files = ["vel{}.npy".format(i) for i in range(1, 32)]
 
-    # calculate mean
+    # calculate mean and stddev
     data = np.array([np.load("../res/karman_data/{}".format(f)) for f in files])
     print(data.shape)
     mean = np.mean(data, axis=0)
