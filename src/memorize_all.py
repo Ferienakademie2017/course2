@@ -42,10 +42,10 @@ def load_data():
     training_data = [training_val,training_image]
     return training_data
 
-def train_and_get_data():
-    x = tf.placeholder(tf.float32, [1, 1])
+def train():
+    x = tf.placeholder(tf.float32, [None, 1])
     output = create_net(x)
-    ground_truth = tf.placeholder(tf.float32, [1, 4096])
+    ground_truth = tf.placeholder(tf.float32, [None, 4096])
     train_step, loss = create_trainer(output, ground_truth)
 
     sess = tf.InteractiveSession()
@@ -63,21 +63,19 @@ def train_and_get_data():
     for image in training_data[1]:
         print("image: ",image.shape)
 
-
     #train
     for i in range(120):
+        # TODO: feed correct data
         _, loss_val = sess.run([train_step, loss], feed_dict={x: np.expand_dims(np.array([0.5]), 1),
                                                               ground_truth: np.expand_dims(data, 1).transpose()})
+        print("Epoch {}: Loss = {}".format(i, loss_val))
 
     # data = to_image_form(data)
-    net_data = sess.run(output, feed_dict={x: np.expand_dims(np.array([0.5]), 1)})
-    return data, net_data
+    # net_data = sess.run(output, feed_dict={x: np.expand_dims(np.array([0.5]), 1)})
+
 
 if __name__ == "__main__":
-    data, net_data = train_and_get_data()
-    diff = data - net_data.flatten()
-    print("Number of errors: {}".format(len(np.where(diff > 1e-6)[0])))
-    print(diff)
+    train()
 
     # misc.imsave("/home/mathias/PycharmProjects/Ferienakademie/original.png", data, "png")
     # misc.imsave("/home/mathias/PycharmProjects/Ferienakademie/net.png", net_data, "png")
