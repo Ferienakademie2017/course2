@@ -19,7 +19,13 @@ def to_image_form(data):
 
 
 
-def create_net(x,batch_size):
+def create_net(x):
+
+    #tensor_var = weight_variable([16,8,4])
+    #hidden = tf.multiply(x,tensor_var)
+
+    batch_size = 30
+    print("batch size: ", batch_size)
     # fully connected layer
     fc_neurons = 512
     w_fc0 = weight_variable([1,fc_neurons])
@@ -29,6 +35,7 @@ def create_net(x,batch_size):
     #hidden: 16x8x4 = 512, 4 channels of 16x8 layers
 
     # first deconv layer
+    batch_size = 30
     output_shape = [batch_size, 32, 16, 4] #[batch_size, height, width, channels]
     strides = [1, 2, 2, 1]
     w1 = tf.get_variable('w1', [5, 5, output_shape[-1], hidden.get_shape()[-1]],
@@ -59,7 +66,7 @@ def load_data():
     training_val = []
     for i in range(31):
         if i==15: continue
-        path = "../res/karman_data_norm/vel"+str(i+1)+".npy"
+        path = "../res/karman_data/vel"+str(i+1)+".npy"
         #current_image = np.reshape(np.load(path).flatten(),[4096])
         current_image = np.load(path).flatten()
         training_image.append(current_image)
@@ -70,8 +77,8 @@ def load_data():
 
 def train():
     x = tf.placeholder(tf.float32, [None, 1])
-    batch_size = 30
-    output = create_net(x,batch_size)
+    batch_size = tf.placeholder(tf.int32)
+    output = create_net(x)
     ground_truth = tf.placeholder(tf.float32, [None, 4096])
     train_step, loss = create_trainer(output, ground_truth)
 
@@ -81,8 +88,8 @@ def train():
     
     training_data = load_data()
 
-    #train
-    for i in range(100):
+    train
+    for i in range(10000):
         _, loss_val = sess.run([train_step, loss], feed_dict={x: training_data[0], ground_truth: training_data[1]})
         print("Epoch {}: Loss = {}".format(i, loss_val))
     
@@ -90,7 +97,8 @@ def train():
     test_input = np.reshape(0.5*np.ones(30),[30,1])
     #net_output = sess.run(output, feed_dict={x: np.expand_dims(np.array([0.5]), 1)})
     net_output = sess.run(output, feed_dict={x: test_input})
-    output_image = to_image_form(net_output)
+    print(net_output[0].shape)
+    output_image = to_image_form(net_output[0])
     np.save("../res/net_image",output_image)
 
 
