@@ -1,8 +1,10 @@
+# coding: utf-8
 import tensorflow as tf
 import numpy as np
 
 import models
 import random
+import scipy.ndimage
 
 class MinibatchSampler:
     def __init__(self, trainingData):
@@ -56,23 +58,6 @@ def trainNetwork(flagFieldNN, sampler, minibatchSize=4, numMinibatches=200):
         # todo: evtl. hier eine ErrorReporter-Klasse rein
         # todo: oder gleich Klasse, die auch noch die Abbruchbedingung festlegt oder eine Änderung der Learning Rate
 
-class SimulationExample(object):
-    def __init__(self, sim1Result):
-        self.x = sim1Result.obstacle_pos
-        self.y = sim1Result.npVel
-        func = lambda x: 1.0 if x < 0.0 else 0.0
-        self.flagField = np.vectorize(func)(sim1Result.obstacles)
 
-def generateParametricExamples(data, trainingFraction=0.6, validationFraction=0.2):
-    dataSize = len(data)
-    trainingEnd = int(dataSize*trainingFraction)
-    validationEnd = int(dataSize*(trainingFraction+validationFraction))
-    trainingData = [SimulationExample(res) for res in data[0:trainingEnd]]
-    validationData = [SimulationExample(res) for res in data[trainingEnd:validationEnd]]
-    testData = [SimulationExample(res) for res in data[validationEnd:dataSize]]
-    return trainingData, validationData, testData
-
-
-
-examples = []
-trainNetwork(models.computeNN1(), MinibatchSampler(examples))
+#examples = []
+#trainNetwork(models.computeNN1(), MinibatchSampler(examples))

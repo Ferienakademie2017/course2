@@ -5,13 +5,13 @@ import Sim1Result
 import random
 import TrainingConfiguration
 
-def generateTrainingExamples(TrainingConfiguartion):
+def generateTrainingExamples(trainingConfiguration):
 
     secOrderBc = True
     dim        = 2
     res        = 32
     #res        = 124
-    gs         = vec3(TrainingConfiguartion.resX,TrainingConfiguartion.resY,TrainingConfiguration.resY)
+    gs         = vec3(trainingConfiguration.resX,trainingConfiguration.resY,trainingConfiguration.resY)
     if (dim==2): gs.z = 1
     s          = FluidSolver(name='main', gridSize = gs, dim=dim)
     s.timestep = 1.
@@ -22,18 +22,18 @@ def generateTrainingExamples(TrainingConfiguartion):
     pos = [0.25,0.5,0.5]
 
     #Parameters for saving data
-    simPath = TrainingConfiguartion.simPath
-    savedata = TrainingConfiguartion.savedata
-    saveppm = TrainingConfiguartion.saveppm
-    savepng = TrainingConfiguartion.savepng
-    interval = TrainingConfiguartion.stepIntervall
+    simPath = trainingConfiguration.simPath
+    savedata = trainingConfiguration.savedata
+    saveppm = trainingConfiguration.saveppm
+    # savepng = trainingConfiguration.savepng  # todo
+    interval = trainingConfiguration.stepIntervall
     offset = 0
-    npVel = numpy.zeros( (TrainingConfiguration.resY, TrainingConfiguration.resX, 3), dtype='f')
-    npObs = numpy.zeros( (TrainingConfiguration.resY, TrainingConfiguration.resX), dtype='f')
+    npVel = numpy.zeros( (trainingConfiguration.resY, trainingConfiguration.resX, 3), dtype='f')
+    npObs = numpy.zeros( (trainingConfiguration.resY, trainingConfiguration.resX), dtype='f')
 
     #Number of generated Images
-    NumObsPosX = TrainingConfiguartion.NumObsPosX
-    NumObsPosY = TrainingConfiguartion.NumObsPosY
+    NumObsPosX = trainingConfiguration.NumObsPosX
+    NumObsPosY = trainingConfiguration.NumObsPosY
 
     flags     = s.create(FlagGrid)
     density   = s.create(RealGrid)
@@ -45,7 +45,7 @@ def generateTrainingExamples(TrainingConfiguartion):
 
     flags.initDomain(inflow="xX", phiWalls=phiWalls, boundaryWidth=0)
 
-    for simNo in range(0,NumObsPosX*NumObsPosY-1):
+    for simNo in range(0,NumObsPosX*NumObsPosY):
         #pos = [random.random(),random.random(),0.5]
         #pos = [0.4, 0.8, 0.5]
         pos = [(simNo % NumObsPosX)*1.0/NumObsPosX,(simNo//NumObsPosX)*1.0/NumObsPosY,0.5]
@@ -121,7 +121,7 @@ def generateTrainingExamples(TrainingConfiguartion):
 
             # save data
             if savedata and t>=offset and (t-offset)%interval==0:
-                tf = (t-offset)/interval
+                tf = (t-offset)//interval
                 #framePath = simPath + 'frame_%04d/' % tf
                 #os.makedirs(framePath)
                 copyGridToArrayVec3(source = vel, target = npVel)
