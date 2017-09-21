@@ -41,8 +41,6 @@ def deserialize(filename):
     file.close()
     return result
 
-fig = plt.figure()
-ax = fig.gca()
 image_i = 0
 def sim1resToImage(result):
     global image_i, fig, ax
@@ -86,9 +84,9 @@ class LossLogger:
     def __init__(self, gui=True):
         # plt.ion()
         self.gui = gui
-        self.fig = plt.figure()
+        self.fig = plt.figure('Loss function')
         self.ax = self.fig.gca()
-        self.ax.set(title='Loss function')
+        #self.ax.set(title='Loss function')
         self.x = []
         self.y = []
 

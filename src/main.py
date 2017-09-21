@@ -5,14 +5,16 @@ import scipy.ndimage
 import utils
 import evaluation
 import models
+import random
 
 trainConfig = utils.deserialize("data/trainConfig.p")
 # data = []  # todo
 data = trainConfig.loadGeneratedData()
+random.shuffle(data)
 
 trainingData, validationData, testData = evaluation.generateParametricExamples(data, 0.6, 0.4)
 model = models.computeNN1()
-minibatchSize = 8
+minibatchSize = 6
 lossLogger = utils.LossLogger()
 sess = training.trainNetwork(model, training.MinibatchSampler(trainingData), lossLogger, minibatchSize)
 
@@ -20,4 +22,4 @@ sess = training.trainNetwork(model, training.MinibatchSampler(trainingData), los
 model.save(sess, "final")
 # Save the result of the loss logger
 lossLogger.save()
-# evaluation.validateModel(model, validationData)
+evaluation.validateModel(model, validationData, "final")
