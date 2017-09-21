@@ -37,29 +37,42 @@ class MinibatchSampler:
         return self.numTotalSamples
 
 
-def trainParametricNetwork(modelFunc, lossFunc, sampler, minibatchSize=4):
-    x = tf.placeholder(tf.float32, shape=[None, 1])
-    y = tf.placeholder(tf.float32, shape=[None, 16, 8, 2])
-    flagField = tf.placeholder(tf.float32, shape=[None, 16, 8])
-    yPred = modelFunc(x)
-    loss = lossFunc(yPred, y, flagField)
-
+def trainNetwork(flagFieldNN, sampler, minibatchSize=4, numMinibatches=200):
     init = tf.global_variables_initializer()
-    opt = tf.train.AdamOptimizer(0.001).minimize(loss)
+    opt = tf.train.AdamOptimizer(0.001).minimize(flagFieldNN.loss)
     sess = tf.Session()
     sess.run(init)
 
-    for i in range(1000):
+    for i in range(numMinibatches):
         mb = sampler.nextMinibatch(minibatchSize)
         xValues = np.array([ex.x for ex in mb])
         yValues = np.array([ex.y for ex in mb])
         ffValues = np.array([ex.flagField for ex in mb])
-        optResult, lossResult = sess.run([opt, loss], {x: xValues, y: yValues, flagField: ffValues})
+        optResult, lossResult = sess.run([opt, flagFieldNN.loss],
+                                         {flagFieldNN.x: xValues,
+                                          flagFieldNN.y: yValues,
+                                          flagFieldNN.flagField: ffValues})
         print("Loss: {}".format(lossResult))
+        # todo: evtl. hier eine ErrorReporter-Klasse rein
+        # todo: oder gleich Klasse, die auch noch die Abbruchbedingung festlegt oder eine Änderung der Learning Rate
 
+class SimulationExample(object):
+    def __init__(self, sim1Result):
+        self.x = sim1Result.obstacle_pos
+        self.y = sim1Result.npVel
+        func = lambda x: 1.0 if x < 0.0 else 0.0
+        self.flagField = np.vectorize(func)(sim1Result.obstacles)
 
+def generateParametricExamples(data, trainingFraction=0.6, validationFraction=0.2, testFraction=0.2):
+    dataSize = len(data)
+    trainingEnd = int(dataSize*trainingFraction)
+    validationEnd = int(dataSize*(trainingFraction+validationFraction))
+    trainingData = [SimulationExample(res) for res in data[0:trainingEnd]]
+    validationData = [SimulationExample(res) for res in data[trainingEnd:validationEnd]]
+    testData = [SimulationExample(res) for res in data[validationEnd:dataSize]]
+    return trainingData, validationData, testData
 
 
 
 examples = []
-trainParametricNetwork(models.simple_model_1, models.simple_loss_1, examples)
+trainNetwork(models.computeNN1(), MinibatchSampler(examples))
