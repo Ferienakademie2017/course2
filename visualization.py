@@ -2,6 +2,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 
+from utils import get_parameter
+
 VERBOSE = False
 
 def plot_2d_velocities(filepath, verbose=VERBOSE):
@@ -14,14 +16,14 @@ def plot_2d_velocities(filepath, verbose=VERBOSE):
 
     # parse y-position of obstacle from data filename
     filename, _ = os.path.splitext(os.path.basename(filepath))
-    # TODO replace this by global constants...
-    downscaling_factor = 0.25
-    resolution = 32
-    obstacle_radius_factor = 0.0625
+
+    downscaling_factors = get_parameter("downscaling_factors")
     try:
-        y_position = downscaling_factor * float(filename)
-        x_position = downscaling_factor * 16
-        radius = resolution * obstacle_radius_factor * downscaling_factor
+        y_position = downscaling_factors[1] * float(filename)
+        x_position = downscaling_factors[0] * get_parameter("resolution") *\
+            get_parameter("relative_x_position") * 2
+        radius = get_parameter("resolution") *\
+            get_parameter("obstacle_radius_factor") * downscaling_factor
     except ValueError as e:
         # if the filename can't be converted to float, set circle parameters
         # to zero to not display it at all
