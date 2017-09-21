@@ -1,18 +1,19 @@
 import tensorflow as tf
 import numpy as np
 import scipy.misc
+import readTrainingData
 
 # script for first basic neural net where input layer
 # (y coordinate of obstacle) is directly forwarded to output layer with 256 flow values
 
-trainingEpochs = 20
+trainingEpochs = 5000
 batchSize = 1
 inSize = 1 # warning - hard coded to scalar values 1
 
 # set up the network
 
 x = tf.placeholder(tf.float32)
-y = tf.placeholder(tf.float32, shape=[None, 8, 16, 2])
+y = tf.placeholder(tf.float32)
 
 xIn = tf.reshape(x, shape=[-1, inSize])  # flatten
 fc_1w = tf.Variable(tf.random_normal([inSize, 256], stddev=0.01))
@@ -28,7 +29,7 @@ fc1 = tf.nn.tanh(fc1)
 # y_pred = tf.add(tf.matmul(fc1, fc_2w), fc_2b)
 # y_pred = tf.reshape(y_pred, shape=[-1, 64, 64, 1])
 y_pred = fc1
-y_pred = tf.reshape(y_pred, shape=[-1, 8, 16, 2])
+# y_pred = tf.reshape(y_pred, shape=[-1, 8, 16, 2])
 
 cost = tf.nn.l2_loss(y - y_pred)
 opt = tf.train.GradientDescentOptimizer(0.2).minimize(cost)
@@ -36,9 +37,11 @@ opt = tf.train.GradientDescentOptimizer(0.2).minimize(cost)
 # now we can start training...
 
 # read input  and training data
-position_y = 0.5
-training_data = np.linspace(-1, 4, 256, dtype=float)
-training_data = np.reshape(training_data, newshape = [-1, 8,16, 2])
+# position_y = 0.5
+# training_data = np.linspace(-1, 4, 256, dtype=float)
+# training_data = np.reshape(training_data, newshape = [-1, 8,16, 2])
+position_y, training_data = readTrainingData.loadData(r'C:\Users\Annika\Saved Games\Desktop\course2\trainingData\trainingKarman1.p')
+# training_data = np.reshape(training_data, newshape=[-1, 8, 16, 2])
 
 print("Starting training...")
 sess = tf.InteractiveSession()

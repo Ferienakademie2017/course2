@@ -22,24 +22,24 @@ def showImage(inputField):
     imgplot = plt.imshow(scaledImage)
     plt.show()
 
-    def loadData(path):
-        sourceFile = open(path, "rb")
-        yPositions = pickle.load(sourceFile)
-        trainingSize = yPositions.shape[0]
-        # fieldSize = (32, 64, 2)
-        outputSize = 256
+def loadData(path):
+    sourceFile = open(path, "rb")
+    yPositions = pickle.load(sourceFile)
+    trainingSize = yPositions.shape[0]
+    # fieldSize = (32, 64, 2)
+    outputSize = 256
 
-        trainingInput = yPositions
-        trainingOutput = np.zeros((trainingSize, outputSize), np.float32)
+    trainingInput = yPositions
+    trainingOutput = np.zeros((trainingSize, outputSize), np.float32)
 
-        for i in range(trainingSize):
-            currentOutput = pickle.load(sourceFile)
-            # showVectorField(currentOutput[0,:,:,:])
-            currentOutput = scaleImage(currentOutput, 2)
-            currentOutput = transformToLinear(currentOutput[0, :, :, 0:2])
-            trainingOutput[i, :] = currentOutput
+    for i in range(trainingSize):
+        currentOutput = pickle.load(sourceFile)
+        # showVectorField(currentOutput[0,:,:,:])
+        currentOutput = scaleImage(currentOutput, 2)
+        currentOutput = transformToLinear(currentOutput[0, :, :, 0:2])
+        trainingOutput[i, :] = currentOutput
 
-        return trainingInput,trainingOutput
+    return trainingInput,trainingOutput
 
 # def showVectorField(inputField):
 #     fig = plt.figure()
