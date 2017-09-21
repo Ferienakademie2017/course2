@@ -2,60 +2,64 @@ import tensorflow as tf
 import scipy.misc as misc
 import numpy as np
 
+
 def weight_variable(shape):
     initial = tf.truncated_normal(shape)
     return tf.Variable(initial)
+
 
 def bias_variable(shape):
     initial = tf.truncated_normal(shape)
     return tf.Variable(initial)
 
-def to_image(data):
+
+def to_image_form(data):
     d = np.reshape(data, (32, 64, 2))
     return np.append(d, np.zeros([32, 64, 1]), axis=2)
 
-if __name__ == "__main__":
-    x = tf.placeholder(tf.float32, [1, 1])
 
+def create_net(x):
     # output layer
     w_fc1 = weight_variable([1, 4096])
     b_fc1 = bias_variable([4096])
     output = tf.matmul(x, w_fc1) + b_fc1
+    return output
 
-    ground_truth = tf.placeholder(tf.float32, [1, 4096])
+
+def create_trainer(output, ground_truth):
     loss = tf.reduce_mean(tf.reduce_sum(tf.pow(ground_truth - output, 2), reduction_indices=[1]))
     train_step = tf.train.GradientDescentOptimizer(0.1).minimize(loss)
+    return train_step, loss
+
+def train_and_get_data():
+    x = tf.placeholder(tf.float32, [1, 1])
+    output = create_net(x)
+    ground_truth = tf.placeholder(tf.float32, [1, 4096])
+    train_step, loss = create_trainer(output, ground_truth)
 
     sess = tf.InteractiveSession()
     tf.global_variables_initializer().run()
 
-    path = "/home/mathias/PycharmProjects/Ferienakademie/test_data.npy"
-    data = np.load(path).flatten()
+    data = np.load("../res/test_data.npy").flatten()
 
-    # def get_accuracy():
-    #     correct_prediction = tf.equal(tf.argmax(y, 1), tf.argmax(y_, 1))
-    #     accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
-    #     return sess.run(accuracy, feed_dict={x: mnist.test.images, y_: mnist.test.labels})
-
+    #train
     for i in range(120):
         _, loss_val = sess.run([train_step, loss], feed_dict={x: np.expand_dims(np.array([0.5]), 1),
                                                               ground_truth: np.expand_dims(data, 1).transpose()})
-        print("Loss: {}".format(loss_val))
 
-    data = np.reshape(data, (32, 64, 2))
-    data = np.append(data, np.zeros([32, 64, 1]), axis=2)
-
+    # data = to_image_form(data)
     net_data = sess.run(output, feed_dict={x: np.expand_dims(np.array([0.5]), 1)})
-    net_data = net_data.transpose()
-    net_data = np.reshape(net_data, (32, 64, 2))
-    net_data = np.append(net_data, np.zeros([32, 64, 1]), axis=2)
+    return data, net_data
 
-    diff = data - net_data
-    diff[0, 0, 0] = 1
+if __name__ == "__main__":
+    data, net_data = train_and_get_data()
+    diff = data - net_data.flatten()
+    print("Number of errors: {}".format(len(np.where(diff > 1e-6)[0])))
+    print(diff)
 
-    misc.imsave("/home/mathias/PycharmProjects/Ferienakademie/original.png", data, "png")
-    misc.imsave("/home/mathias/PycharmProjects/Ferienakademie/net.png", net_data, "png")
-    misc.imsave("/home/mathias/PycharmProjects/Ferienakademie/diff.png", diff, "png")
+    # misc.imsave("/home/mathias/PycharmProjects/Ferienakademie/original.png", data, "png")
+    # misc.imsave("/home/mathias/PycharmProjects/Ferienakademie/net.png", net_data, "png")
+    # misc.imsave("/home/mathias/PycharmProjects/Ferienakademie/diff.png", diff, "png")
 
     # epochs = 30
     # mini_batch_size = 10
