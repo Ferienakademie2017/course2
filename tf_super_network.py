@@ -107,7 +107,7 @@ sess.run(init)
 #print(trainingInput)
 #print(trainingData)
 flat_training_data = twoDtoOneD(trainingData)
-trainingInput = trainingInput.reshape(26,1)
+trainingInput = trainingInput.reshape(-1, 1)
 print(flat_training_data.shape)
 print(trainingInput.shape)
 
