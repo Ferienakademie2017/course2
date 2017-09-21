@@ -29,5 +29,3 @@ for i in range(len(data)):
         data[i][j][2] = 0
 result = Sim1Result.Sim1Result(data, (0, 0, 0), obs)
 utils.sim1resToImage(result)
-# ax, plt = utils.arrToImage(data)
-# plt.show()
