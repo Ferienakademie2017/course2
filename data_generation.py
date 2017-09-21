@@ -104,9 +104,8 @@ for t in range(300):
 		gui.screenshot( 'karman_%04d.png' % int(t/inter) );
 
 # write velocity array to file		
-target = np.empty(shape=(3, res, 2*res))
+target = np.empty(shape=(res, 2*res, 3))
 copyGridToArrayVec3(vel, target)
-print(target)
 
 # save high res image
 np.save("fluidSamples6432/{:04d}".format(y_index), target)
