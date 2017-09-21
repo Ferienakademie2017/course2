@@ -4,10 +4,11 @@ import utils
 import Sim1Result
 import random
 import TrainingConfiguration
+import ObstacleContainer
 
 
 
-def generateTrainingExamples(trainingConfiguration,initialConditions):
+def generateTrainingExamples(trainingConfiguration,initialConditions,obstacleCreator = ObstacleContainer.simpleCylinder):
 
     zComp = numpy.zeros( (trainingConfiguration.resY, trainingConfiguration.resX,1), dtype='f')
     initialConditions = numpy.concatenate((initialConditions, zComp), axis=2)
@@ -21,7 +22,7 @@ def generateTrainingExamples(trainingConfiguration,initialConditions):
     s.timestep = 1.
 
     printSimulation = False
-    GUI = True
+    GUI = False
 
     #Zylinder_Position
     pos = [0.25,0.5,0.5]
@@ -53,22 +54,17 @@ def generateTrainingExamples(trainingConfiguration,initialConditions):
     inflow = initialConditions[:,0,:]
 
     for simNo in range(0,NumObsPosX*NumObsPosY):
-        #pos = [random.random(),random.random(),0.5]
-        #pos = [0.4, 0.8, 0.5]
-        #1. Komponente ist x-Komponente, 2. Komponente ist y-Komponente
-        pos = [(simNo % NumObsPosX)*1.0/NumObsPosX, (simNo//NumObsPosX)*1.0/NumObsPosY,0.5]
-
         #obstacle  = Sphere(   parent=s, center=gs*vec3(0.25,0.5,0.5), radius=res*0.2)
+        for obstacle in obstacleCreator(s,trainingConfiguration,simNo):
+            phiObs = obstacle.computeLevelset()
+            phiWalls.join(phiWalls)
 
-        obstacle  = Cylinder( parent=s, center= gs*vec3(0.21+0.79*pos[0],pos[1],pos[2]), radius=res*0.2, z=gs*vec3(0, 0, 1.0))
-        phiObs    = obstacle.computeLevelset()
 
         # slightly larger copy for density source
-        densInflow  = Cylinder( parent=s, center=gs*vec3(0.25,0.5,0.5), radius=res*0.21, z=gs*vec3(0, 0, 1.0))
+        #densInflow  = Cylinder( parent=s, center=gs*vec3(0.25,0.5,0.5), radius=res*0.21, z=gs*vec3(0, 0, 1.0))
 
-        phiObs.join(phiWalls)
-        updateFractions( flags=flags, phiObs=phiObs, fractions=fractions)
-        setObstacleFlags(flags=flags, phiObs=phiObs, fractions=fractions)
+        updateFractions( flags=flags, phiObs=phiWalls, fractions=fractions)
+        setObstacleFlags(flags=flags, phiObs=phiWalls, fractions=fractions)
         flags.fillGrid()
 
         velInflow = vec3(0.9, 0, 0)
@@ -101,20 +97,20 @@ def generateTrainingExamples(trainingConfiguration,initialConditions):
         #main loop
         for t in range(trainingConfiguration.NumSteps + 1):
 
-            densInflow.applyToGrid( grid=density, value=2. )
+            #densInflow.applyToGrid( grid=density, value=2. )
 
             advectSemiLagrange(flags=flags, vel=vel, grid=density, order=2, orderSpace=1)
             advectSemiLagrange(flags=flags, vel=vel, grid=vel    , order=2, strength=1.0)
 
             if(secOrderBc):
                 extrapolateMACSimple( flags=flags, vel=vel, distance=2 , intoObs=True);
-                setWallBcs(flags=flags, vel=vel, fractions=fractions, phiObs=phiObs)
+                setWallBcs(flags=flags, vel=vel, fractions=fractions, phiObs=phiWalls)
 
                 setInflowBcs(vel=vel,dir='xX',value=velInflow)
                 solvePressure( flags=flags, vel=vel, pressure=pressure, fractions=fractions, cgAccuracy=cgAcc, cgMaxIterFac=cgIter)
 
                 extrapolateMACSimple( flags=flags, vel=vel, distance=5 , intoObs=True);
-                setWallBcs(flags=flags, vel=vel, fractions=fractions, phiObs=phiObs)
+                setWallBcs(flags=flags, vel=vel, fractions=fractions, phiObs=phiWalls)
             else:
                 setWallBcs(flags=flags, vel=vel)
                 setInflowBcs(vel=vel,dir='xX',value=velInflow)
@@ -138,6 +134,8 @@ def generateTrainingExamples(trainingConfiguration,initialConditions):
                 #os.makedirs(framePath)
                 copyGridToArrayVec3(source = vel, target = npVel)
                 copyGridToArrayLevelset(source = phiObs, target = npObs)
+                npVel = np.transpose(npVel, (1, 0, 2))
+                npObs = np.transpose(npObs)
                 result = Sim1Result.Sim1Result(npVel, pos, npObs)
                 #utils.sim1resToImage(result)
                 utils.serialize(simPath+trainingConfiguration.getFileNameFor(simNo,t), result)
@@ -158,5 +156,5 @@ def applyBoundaryValues(initialConditions,npVel,vel):
 
 initialConditions = numpy.concatenate((numpy.ones((32,64,1), dtype='f'),numpy.zeros((32,64,1), dtype='f')),axis = 2)
 trainingConfiguration = TrainingConfiguration.TrainingConfiguration()
-generateTrainingExamples(trainingConfiguration,initialConditions)
+generateTrainingExamples(trainingConfiguration,initialConditions,obstacleCreator=ObstacleContainer.generateObstacleContainer)
 list = trainingConfiguration.loadGeneratedData()
