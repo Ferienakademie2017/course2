@@ -38,7 +38,7 @@ class MinibatchSampler:
         return self.numTotalSamples
 
 
-def trainNetwork(flagFieldNN, sampler, minibatchSize=4, numMinibatches=200):
+def trainNetwork(flagFieldNN, sampler, lossLogger, minibatchSize=4, numMinibatches=200):
     init = tf.global_variables_initializer()
     opt = tf.train.AdamOptimizer(0.001).minimize(flagFieldNN.loss)
     sess = tf.Session()
@@ -47,7 +47,7 @@ def trainNetwork(flagFieldNN, sampler, minibatchSize=4, numMinibatches=200):
     for i in range(numMinibatches):
         mb = sampler.nextMinibatch(minibatchSize)
         optResult, lossResult = sess.run([opt, flagFieldNN.loss], evaluation.getFeedDict(flagFieldNN, mb))
-        print("Loss: {}".format(lossResult))
+        lossLogger.logLoss(i, lossResult)
         # todo: evtl. hier eine ErrorReporter-Klasse rein
         # todo: oder gleich Klasse, die auch noch die Abbruchbedingung festlegt oder eine Änderung der Learning Rate
 

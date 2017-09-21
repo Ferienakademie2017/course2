@@ -24,6 +24,17 @@ class NeuralNetwork(object):
     def compute(self, x, sess):
         return sess.run(self.yPred, {self.x: x})
 
+    def save(self, sess, name):
+        saver = tf.train.Saver()
+        name = "training/{}.ckpt".format(name)
+        utils.ensureDir(name)
+        saver.save(sess, name)
+
+    def restore(self, sess, name):
+        saver = tf.train.Saver()
+        name = "training/{}.ckpt".format(name)
+        saver.restore(sess, name)
+
 class FlagFieldNN(NeuralNetwork):
     def __init__(self, x, y, yPred, loss, flagField):
         super(FlagFieldNN, self).__init__(x, y, yPred, loss)
@@ -37,4 +48,3 @@ def computeNN1():
     flagField = tf.placeholder(tf.float32, shape=[None, 16, 8])
     loss = simpleLoss1(yPred, y, flagField)
     return FlagFieldNN(x, y, yPred, loss, flagField)
-

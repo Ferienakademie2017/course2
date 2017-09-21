@@ -81,21 +81,22 @@ def sim1resToImage(result):
     # plt.pause(0.01)
     ax.clear()
 
-def nn1resToImage(result):
-    data = result.data
-    scipy.ndimage.zoom(data, [2.0, 2.0, 1.0], order=1)
-    ax, plt = arrToImage(data)
-    plt.show()
+class LossLogger:
+    def __init__(self, gui=False):
+        # plt.ion()
+        self.gui = gui
+        self.fig = plt.figure()
+        self.ax = self.fig.gca()
+        self.x = []
+        self.y = []
 
-def arrToImage(data):
-    imageHeight = len(data)
-    imageWidth = len(data[0])
-
-    fig, ax = plt.subplots()
-    x, y = np.mgrid[0:imageHeight, 0:imageWidth]
-    # Every 3rd arrow
-    skip = (slice(None, None, 3), slice(None, None, 3))
-    dx, dy = np.transpose(data, (2, 0, 1))
-    ax.quiver(x[skip], y[skip], dx[skip], dy[skip])
-    ax.set(aspect=1, title='Vector field')
-    return ax, plt
+    def logLoss(self, i, loss):
+        print("Loss: {}".format(loss))
+        self.x.append(i)
+        self.y.append(loss)
+        if self.gui:
+            self.ax.clear()
+            self.ax.plot(self.x, self.y)
+            self.ax.set_ylim([0, max(self.y)])
+            self.ax.set_xlim([0, max(1000, len(self.x))])
+            plt.pause(0.01)
