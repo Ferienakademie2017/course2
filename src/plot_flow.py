@@ -37,7 +37,7 @@ if __name__ == "__main__":
     diff_max = np.amax(diff_flow)
 
     ax3.set_title("Plot of velocity differences (real-net)")
-    ax3.quiver(X, Y, real_flow[::2, ::2, 0] - net_flow[::2, ::2, 0], real_flow[::2, ::2, 1] - net_flow[::2, ::2, 1],scale=real_max/diff_max,units='inches')
+    ax3.quiver(X, Y, real_flow[::2, ::2, 0] - net_flow[::2, ::2, 0], real_flow[::2, ::2, 1] - net_flow[::2, ::2, 1],scale=real_max,units='inches')
     
     plt.show()
     exit()
