@@ -17,7 +17,7 @@ s.timestep = 1.
 pos = [0.25,0.5,0.5]
 
 #Parameters for saving data
-simPath = 'test/'
+simPath = 'data/'
 framePath = ''
 savedata = True
 saveppm = False
@@ -25,6 +25,10 @@ interval = 100
 offset = 100
 npVel = numpy.zeros( (2*res, res, 3), dtype='f')
 npObs = numpy.zeros( (2*res, res, 1), dtype='f')
+
+#Number of generated Images
+NumObsPosX = 1
+NumObsPosY = 10
 
 flags     = s.create(FlagGrid)
 density   = s.create(RealGrid)
@@ -37,8 +41,9 @@ phiWalls  = s.create(LevelsetGrid)
 flags.initDomain(inflow="xX", phiWalls=phiWalls, boundaryWidth=0)
 
 for simNo in range(1,2):
-    pos = [random.random(),random.random(),0.5]
-    pos = [0.4, 0.8, 0.5]
+    #pos = [random.random(),random.random(),0.5]
+    #pos = [0.4, 0.8, 0.5]
+    pos = [(simNo % NumObsPosX)*1.0/NumObsPosX,(simNo//NumObsPosX)*1.0/NumObsPosY,0.5]
 
     #obstacle  = Sphere(   parent=s, center=gs*vec3(0.25,0.5,0.5), radius=res*0.2)
 
@@ -57,7 +62,7 @@ for simNo in range(1,2):
     vel.setConst(velInflow)
 
     # optionally randomize y component
-    if 1:
+    if 0:
         noise = s.create(NoiseField, loadFromFile=True)
         noise.posScale = vec3(75)
         noise.clamp    = True
