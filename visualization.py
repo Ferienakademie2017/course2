@@ -5,12 +5,23 @@ import os
 VERBOSE = False
 
 def plot_2d_velocities(filepath, verbose=VERBOSE):
-    """Visualize 2D velocity field. 
+    """Visualize 2D velocity field.
     filepath: absolute or relative path to binary NumPy file containing array of
         dimensions (x, y, 2).
     """
     if not os.path.isabs(filepath):
         filepath = os.path.join(os.getcwd(), filepath)
+
+    # parse y-position of obstacle from data filename
+    filename, _ = os.path.splitext(os.path.basename(filepath))
+    # TODO replace this by global constants...
+    downscaling_factor = 0.25
+    resolution = 32
+    obstacle_radius_factor = 0.0625
+    y_position = downscaling_factor * float(filename)
+    x_position = downscaling_factor * 16
+    radius = resolution * obstacle_radius_factor * downscaling_factor
+    obstacle = plt.Circle((x_position, y_position), radius)
 
     data = np.load(filepath)
     if verbose:
@@ -31,6 +42,8 @@ def plot_2d_velocities(filepath, verbose=VERBOSE):
 
     fig, ax = plt.subplots()
     q = ax.quiver(x_axis, y_axis, data_x, data_y)
+    ax.add_artist(obstacle)
+    ax.axis("equal")
 
     plt.show()
 
