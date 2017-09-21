@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 
 if __name__ == "__main__":
     
-    real_flow = np.load("../res/karman_data_norm/vel16.npy")
+    real_flow = np.load("../res/karman_data/vel16.npy")
     net_flow = np.load("../res/net_image.npy")
     
     # takes ONE real flow and ONE output from network and compares them
@@ -26,8 +26,8 @@ if __name__ == "__main__":
     ax2.quiver(X,Y, net_flow[::2,::2,0], net_flow[::2,::2,1])
     
     diff_flow = real_flow-net_flow[:,:,0:1]
-    sc = np.amax(diff_flow) / np.amax(real_flow);
-    print(sc)
+    print(np.amax(diff_flow))
+    print(np.amax(real_flow))
     
     ax3.set_title("Plot of velocity differences (real-net)")
     ax3.quiver(X,Y,diff_flow[::2,::2,0],diff_flow[::2,::2,1])
