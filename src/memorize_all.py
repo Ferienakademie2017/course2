@@ -1,5 +1,4 @@
 import tensorflow as tf
-import scipy.misc as misc
 import numpy as np
 
 
@@ -26,7 +25,7 @@ def create_net(x):
     b_fc1 = bias_variable([hidden_layer_size])
     h_fc1 = tf.nn.sigmoid(tf.matmul(x, w_fc1) + b_fc1)
 
-    #output layer
+    # output layer
     w_fc2 = weight_variable([hidden_layer_size, 4096])
     b_fc2 = bias_variable([4096])
     output = tf.tanh(tf.matmul(h_fc1, w_fc2) + b_fc2)
@@ -44,16 +43,18 @@ def load_data():
     training_val = []
     for i in range(31):
         if i == 15: continue
-        path = "../res/karman_data_norm/vel"+str(i+1)+".npy"
+        path = "../res/karman_data_norm/vel" + str(i + 1) + ".npy"
         training_image.append(np.load(path).flatten())
-        training_val.append((i+1)/32)
-    
+        training_val.append((i + 1) / 32)
+
     training_data = [np.reshape(training_val, (30, 1)), training_image]
     return training_data
+
 
 def get_scale_factor(y_pos):
     index = int(y_pos * 32 - 1)
     return np.load("../res/karman_data_norm/scale_factors.npy")[index]
+
 
 def train():
     x = tf.placeholder(tf.float32, [None, 1])
@@ -63,16 +64,16 @@ def train():
 
     sess = tf.InteractiveSession()
     tf.global_variables_initializer().run()
-    
-    training_data = load_data()
 
-    #train
+    training_data = load_data()
+    # train
     for i in range(2000):
         _, loss_val = sess.run([train_step, loss], feed_dict={x: training_data[0], ground_truth: training_data[1]})
         print("Epoch {}: Loss = {}".format(i, loss_val))
 
-    net_data = sess.run(output, feed_dict={x: np.reshape([0.5], (1, 1))})
-    net_data *= get_scale_factor(0.5)
+    test_input = 0.5
+    net_data = sess.run(output, feed_dict={x: np.reshape([test_input], (1, 1))})
+    net_data *= get_scale_factor(test_input)
     output_img = to_image_form(net_data)
     np.save("../res/net_image", output_img)
 
