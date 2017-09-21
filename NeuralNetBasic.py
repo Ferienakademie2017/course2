@@ -12,9 +12,10 @@ import flow
 # script for first basic neural net where input layer
 # (y coordinate of obstacle) is directly forwarded to output layer with 256 flow values
 
-path_to_data = r'C:\Users\Annika\Saved Games\Desktop\course2\trainingData\trainingKarman32.p'
+# path_to_data = r'C:\Users\Annika\Saved Games\Desktop\course2\trainingData\trainingKarman32.p'
+path_to_data = r'C:\Users\Nico\Documents\Ferienakademie\course2\trainingData\trainingKarman32.p'
 trainingEpochs = 1000
-batchSize = 1
+batchSize = 8
 inSize = 1 # warning - hard coded to scalar values 1
 
 # set up the network
@@ -38,7 +39,7 @@ fc1 = tf.nn.tanh(fc1)
 y_pred = fc1
 # y_pred = tf.reshape(y_pred, shape=[-1, 8, 16, 2])
 
-cost = tf.nn.l2_loss(y - y_pred)
+cost = tf.nn.l2_loss((y - y_pred)/batchSize)
 opt = tf.train.GradientDescentOptimizer(0.2).minimize(cost)
 
 # now we can start training...
@@ -68,12 +69,12 @@ for epoch in range(trainingEpochs):
     print("Epoch %d/%d: cost %f " % (epoch + 1, trainingEpochs, currentCost) )
 
     if epoch == trainingEpochs - 1:
-        [valiCost, vout] = sess.run([cost, y_pred], feed_dict={x: position_y[0], y: training_data[1,:]})
+        [valiCost, vout] = sess.run([cost, y_pred], feed_dict={x: position_y[0], y: training_data[6,:]})
         print(" Validation: cost %f " % (valiCost))
 
         if epoch == trainingEpochs - 1:
             # for i in range(len(training_data)):
-                valiData = readTrainingData.transformToImage(training_data[1,:], [8, 16, 2])
+                valiData = readTrainingData.transformToImage(training_data[6,:], [8, 16, 2])
                 vout_img = readTrainingData.transformToImage(vout, [8, 16, 2])
                 # scipy.misc.toimage(valiData[:,:,0], cmin=0.0, cmax=1.0).save("inx_%d.png" % i)
                 # scipy.misc.toimage(valiData[:, :, 1], cmin=0.0, cmax=1.0).save("iny_%d.png" % i)
