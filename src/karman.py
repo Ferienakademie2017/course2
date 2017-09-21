@@ -23,8 +23,8 @@ savedata = True
 saveppm = False
 interval = 100
 offset = 100
-npVel = numpy.zeros( (2*res, res, 3), dtype='f')
-npObs = numpy.zeros( (2*res, res, 1), dtype='f')
+npVel = numpy.zeros( (res, 2*res, 3), dtype='f')
+npObs = numpy.zeros( (res, 2*res, 1), dtype='f')
 
 flags     = s.create(FlagGrid)
 density   = s.create(RealGrid)
@@ -81,7 +81,7 @@ for simNo in range(1,2):
         #gui.pause()
 
     #main loop
-    for t in range(100):
+    for t in range(101):
         mantaMsg('\nFrame %i, simulation time %f' % (s.frame, s.timeTotal))
 
         densInflow.applyToGrid( grid=density, value=2. )
@@ -109,10 +109,6 @@ for simNo in range(1,2):
         timings.display()
         s.step()
 
-        copyGridToArrayVec3(source = vel, target = npVel)
-        copyGridToArrayLevelset(source = phiObs, target = npObs)
-        result = Sim1Result.Sim1Result(npVel, pos, npObs)
-        utils.sim1resToImage(result)
         # save data
         if savedata and t>=offset and (t-offset)%interval==0:
             tf = (t-offset)/interval
@@ -120,6 +116,8 @@ for simNo in range(1,2):
             #os.makedirs(framePath)
             copyGridToArrayVec3(source = vel, target = npVel)
             copyGridToArrayLevelset(source = phiObs, target = npObs)
+            npObs = numpy.transpose(npObs)
+            npVel = numpy.transpose(npVel, (1, 0, 2))
             result = Sim1Result.Sim1Result(npVel, pos, npObs)
             utils.sim1resToImage(result)
             utils.serialize('data/vel_{}_{}.p'.format(tf,simNo), result)

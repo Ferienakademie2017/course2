@@ -54,10 +54,11 @@ def sim1resToImage(result):
     obstacles = result.obstacles
     width = len(data)
     height = len(data[0])
-    assert(width == len(obstacles))
-    assert(height == len(obstacles[0]))
+    # assert(width == len(obstacles))
+    # assert(height == len(obstacles[0]))
     assert(width == len(data))
     assert(height == len(data[0]))
+    print("{}x{}".format(len(obstacles), len(obstacles[0])))
 
     x, y = np.mgrid[0:width, 0:height]
     # Every 3rd arrow
@@ -73,7 +74,7 @@ def sim1resToImage(result):
     # ax.imshow(obstacles, interpolation='none')
     # ax.quiver(x[skip], y[skip], dx[skip], dy[skip])
     ax.quiver(np.transpose(dx), np.transpose(dy))
-    # ax.quiver(dx, dy)
+    # ax.quiver(dy, dx)
 
     ax.invert_yaxis()
     # fig.canvas.draw()
