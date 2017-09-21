@@ -99,8 +99,8 @@ def simpleModel5(x):
     return layer
 
 def simpleLoss1(yPred, y, flagField):
-    # loss = tf.reduce_mean(tf.square(yPred - y))
-    loss = tf.reduce_mean(tf.abs(yPred - y))
+    loss = tf.reduce_mean(tf.square(yPred - y))
+    # loss = tf.reduce_mean(tf.abs(yPred - y))
     return loss
 
 def simpleLoss2(yPred, y, flagField):
