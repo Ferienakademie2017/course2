@@ -33,7 +33,7 @@ def generateTrainingExamples(trainingConfiguration,initialConditions,obstacleCre
     saveppm = trainingConfiguration.saveppm
     # savepng = trainingConfiguration.savepng  # todo
     interval = trainingConfiguration.saveInterval
-    offset = 0
+    offset = trainingConfiguration.timeOffset
     npVel = numpy.zeros( (trainingConfiguration.resY, trainingConfiguration.resX, 3), dtype='f')
     npObs = numpy.zeros( (trainingConfiguration.resY, trainingConfiguration.resX), dtype='f')
 
