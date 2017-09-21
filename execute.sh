@@ -1,0 +1,1 @@
+./manta ./src/main.py

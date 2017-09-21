@@ -46,7 +46,7 @@ def general_conv2d(inputconv, o_d=64, f_h=7, f_w=7, s_h=1, s_w=1, stddev=0.02, p
         return conv
 
 
-def general_transposedconv2d(inputconv, outshape, o_d=64, f_h=7, f_w=7, s_h=1, s_w=1, stddev=0.02, padding="VALID",
+def general_transposed_conv2d(inputconv, outshape, o_d=64, f_h=7, f_w=7, s_h=1, s_w=1, stddev=0.02, padding="VALID",
                      name="deconv2d", do_norm=True, do_relu=True, relufactor=0):
     with tf.variable_scope(name):
 

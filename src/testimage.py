@@ -14,15 +14,18 @@ for i in range(len(data)):
     for j in range(len(data[i])):
         rel = (i - mid[0], j - mid[1])
         dist = math.sqrt(rel[0] ** 2 + rel[1] ** 2)
-        angle = math.atan2(rel[0], rel[1])
+        angle = math.atan2(rel[1], rel[0])
         if rel[0] > 0:
             obs[i][j][0] = 1
+            data[i][j][0] = 1
+            data[i][j][1] = 0
         elif rel[1] > 0:
             obs[i][j][0] = 0.5
-        data[i][j][0] = dist * math.cos(-angle) / maxdist
-        data[i][j][1] = dist * math.sin(-angle) / maxdist
+            data[i][j][0] = 0
+            data[i][j][1] = 1
+        print("X: {}, Y: {}, Angle: {}".format(i, j, angle))
+        data[i][j][0] = dist * math.sin(-angle) / maxdist * 5
+        data[i][j][1] = dist * math.cos(angle) / maxdist * 5
         data[i][j][2] = 0
 result = Sim1Result.Sim1Result(data, (0, 0, 0), obs)
 utils.sim1resToImage(result)
-# ax, plt = utils.arrToImage(data)
-# plt.show()
