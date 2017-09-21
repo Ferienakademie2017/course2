@@ -4,7 +4,6 @@ import utils
 import Sim1Result
 import random
 
-
 secOrderBc = True
 dim        = 2
 res        = 32
@@ -25,6 +24,7 @@ saveppm = False
 interval = 100
 offset = 100
 npVel = numpy.zeros( (2*res, res, 3), dtype='f')
+npObs = numpy.zeros( (2*res, res, 1), dtype='f')
 
 flags     = s.create(FlagGrid)
 density   = s.create(RealGrid)
@@ -38,6 +38,7 @@ flags.initDomain(inflow="xX", phiWalls=phiWalls, boundaryWidth=0)
 
 for simNo in range(1,2):
     pos = [random.random(),random.random(),0.5]
+    pos = [0.4, 0.8, 0.5]
 
     #obstacle  = Sphere(   parent=s, center=gs*vec3(0.25,0.5,0.5), radius=res*0.2)
 
@@ -78,7 +79,7 @@ for simNo in range(1,2):
         gui = Gui()
         gui.show()
         #gui.pause()
-    
+
     #main loop
     for t in range(100):
         mantaMsg('\nFrame %i, simulation time %f' % (s.frame, s.timeTotal))
@@ -108,13 +109,19 @@ for simNo in range(1,2):
         timings.display()
         s.step()
 
+        copyGridToArrayVec3(source = vel, target = npVel)
+        copyGridToArrayLevelset(source = phiObs, target = npObs)
+        result = Sim1Result.Sim1Result(npVel, pos, npObs)
+        utils.sim1resToImage(result)
         # save data
         if savedata and t>=offset and (t-offset)%interval==0:
             tf = (t-offset)/interval
             #framePath = simPath + 'frame_%04d/' % tf
             #os.makedirs(framePath)
-            copyGridToArrayVec3(source = vel,target = npVel)
-            result = Sim1Result.Sim1Result(npVel, pos)
+            copyGridToArrayVec3(source = vel, target = npVel)
+            copyGridToArrayLevelset(source = phiObs, target = npObs)
+            result = Sim1Result.Sim1Result(npVel, pos, npObs)
+            utils.sim1resToImage(result)
             utils.serialize('data/vel_{}_{}.p'.format(tf,simNo), result)
             if(saveppm):
                 projectPpmFull( density, simPath + 'density_{}_{}.ppm'.format(simNo, tf), 0, 1.0 )
@@ -122,5 +129,3 @@ for simNo in range(1,2):
         inter = 10
         if 0 and (t % inter == 0):
             gui.screenshot( 'karman_{}.png'.format(int(t/inter)) );
-
-
