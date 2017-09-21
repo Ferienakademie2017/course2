@@ -12,3 +12,8 @@ class TestMemorize(TestCase):
         self.assertEqual(data, image)
         image.close()
         data.close()
+
+    def test_net(self):
+        data, net_data = mem.train_and_get_data()
+        diff = data - net_data.flatten()
+        self.assertEquals(len(np.where(diff > 1e-6)[0]), 0)
