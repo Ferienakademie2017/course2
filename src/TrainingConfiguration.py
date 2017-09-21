@@ -15,14 +15,14 @@ class TrainingConfiguration():
         self.saveInterval = saveInterval
         self.NumSteps = NumSteps
 
-    def getFileNameFor(self,simNo,stepNo)
+    def getFileNameFor(self,simNo,stepNo):
         return 'vel_SimNo{}_stepNo{}.p'.format(simNo,stepNo)
 
-    def loadGeneratedData(self)
+    def loadGeneratedData(self):
         result_List = []
-        for simNo = range(0,NumObsPosX*NumObsPosY):
-            for saveNo in range(0,self.NumSteps/self.saveInterval+1):
-                result_List.append(utils.deserialize(self.getFileNameFor(simNo,saveNo*self.saveInterval)))
+        for simNo in range(0,self.NumObsPosX*self.NumObsPosY):
+            for saveNo in range(0,(self.NumSteps//self.saveInterval)+1):
+                result_List.append(utils.deserialize(self.simPath + self.getFileNameFor(simNo,saveNo*self.saveInterval)))
         return result_List
 
 

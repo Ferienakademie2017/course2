@@ -5,6 +5,8 @@ import Sim1Result
 import random
 import TrainingConfiguration
 
+
+
 def generateTrainingExamples(trainingConfiguration):
 
     secOrderBc = True
@@ -135,3 +137,8 @@ def generateTrainingExamples(trainingConfiguration):
             inter = 10
             if 0 and (t % inter == 0):
                 gui.screenshot( 'karman_{}.png'.format(int(t/inter)) );
+
+
+trainingConfiguration = TrainingConfiguration.TrainingConfiguration()
+generateTrainingExamples(trainingConfiguration)
+list = trainingConfiguration.loadGeneratedData()
