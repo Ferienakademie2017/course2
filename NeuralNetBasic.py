@@ -5,7 +5,7 @@ import readTrainingData
 
 # script for first basic neural net where input layer
 # (y coordinate of obstacle) is directly forwarded to output layer with 256 flow values
-
+path_to_data = r'C:\Users\Annika\Saved Games\Desktop\course2\trainingData\trainingKarman1.p'
 trainingEpochs = 100
 batchSize = 1
 inSize = 1 # warning - hard coded to scalar values 1
@@ -37,7 +37,7 @@ opt = tf.train.GradientDescentOptimizer(0.2).minimize(cost)
 # now we can start training...
 
 # read input  and training data
-position_y, training_data = readTrainingData.loadData(r'C:\Users\Annika\Saved Games\Desktop\course2\trainingData\trainingKarman1.p')
+position_y, training_data = readTrainingData.loadData(path_to_data)
 # training_data = np.reshape(training_data, newshape=[-1, 8, 16, 2])
 scaling = np.ndarray.max(abs(training_data))
 training_data = training_data/scaling
