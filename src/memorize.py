@@ -46,6 +46,7 @@ def train_and_get_data():
     for i in range(120):
         _, loss_val = sess.run([train_step, loss], feed_dict={x: np.expand_dims(np.array([0.5]), 1),
                                                               ground_truth: np.expand_dims(data, 1).transpose()})
+        print(loss_val)
 
     # data = to_image_form(data)
     net_data = sess.run(output, feed_dict={x: np.expand_dims(np.array([0.5]), 1)})
