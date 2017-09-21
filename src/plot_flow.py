@@ -27,15 +27,14 @@ if __name__ == "__main__":
     
     diff_flow = real_flow-net_flow[:,:,0:1]
     sc = np.amax(diff_flow) / np.amax(real_flow);
-    
     print(sc)
     
     ax3.set_title("Plot of velocity differences (real-net)")
-    ax3.quiver(X,Y,real_flow[::2,::2,0]-net_flow[::2,::2,0],real_flow[::2,::2,1]-net_flow[::2,::2,1],scale=1/sc)
+    ax3.quiver(X,Y,diff_flow[::2,::2,0],diff_flow[::2,::2,1])
     
     # compute error 
-    diff_flow = diff_flow[:,:,0]**2 + diff_flow[:,:,1]**2
-    diff_norm = math.sqrt(np.sum(diff_flow))
+    diff_flow_sq = diff_flow[:,:,0]**2 + diff_flow[:,:,1]**2
+    diff_norm = math.sqrt(np.sum(diff_flow_sq))
     
     real_flow_sq = real_flow[:,:,0]**2 + real_flow[:,:,1]**2
     real_norm = math.sqrt(np.sum(real_flow_sq))
