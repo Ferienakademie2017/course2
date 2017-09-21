@@ -28,7 +28,7 @@ def create_net(x):
 
 def create_trainer(output, ground_truth):
     loss = tf.reduce_mean(tf.reduce_sum(tf.pow(ground_truth - output, 2), reduction_indices=[1]))
-    train_step = tf.train.GradientDescentOptimizer(0.1).minimize(loss)
+    train_step = tf.train.GradientDescentOptimizer(0.5).minimize(loss)
     return train_step, loss
 
 def load_data():
@@ -37,9 +37,9 @@ def load_data():
     for i in range(31):
         path = "../res/karman_data/vel"+str(i+1)+".npy"
         training_image.append(np.load(path).flatten())
-        training_val.append((i+1)/32.)
+        training_val.append((i+1)/32)
     
-    training_data = [training_val,training_image]
+    training_data = [np.reshape(training_val, (31, 1)),training_image]
     return training_data
 
 def train():
@@ -50,24 +50,14 @@ def train():
 
     sess = tf.InteractiveSession()
     tf.global_variables_initializer().run()
-
-    data = np.load("../res/test_data.npy").flatten()
-    print("data: ",data)
-    print(data.shape)
     
     training_data = load_data()
 
-    for val in training_data[0]:
-        print("val: ",val)
-
-    for image in training_data[1]:
-        print("image: ",image.shape)
-
     #train
     for i in range(120):
-        # TODO: feed correct data
-        _, loss_val = sess.run([train_step, loss], feed_dict={x: np.expand_dims(np.array([0.5]), 1),
-                                                              ground_truth: np.expand_dims(data, 1).transpose()})
+        #np.expand_dims(np.array([0.5]), 1
+        #np.expand_dims(data, 1).transpose()
+        _, loss_val = sess.run([train_step, loss], feed_dict={x: training_data[0], ground_truth: training_data[1]})
         print("Epoch {}: Loss = {}".format(i, loss_val))
 
     # data = to_image_form(data)
