@@ -18,9 +18,14 @@ def plot_2d_velocities(filepath, verbose=VERBOSE):
     downscaling_factor = 0.25
     resolution = 32
     obstacle_radius_factor = 0.0625
-    y_position = downscaling_factor * float(filename)
-    x_position = downscaling_factor * 16
-    radius = resolution * obstacle_radius_factor * downscaling_factor
+    try:
+        y_position = downscaling_factor * float(filename)
+        x_position = downscaling_factor * 16
+        radius = resolution * obstacle_radius_factor * downscaling_factor
+    except ValueError as e:
+        # if the filename can't be converted to float, set circle parameters
+        # to zero to not display it at all
+        y_position = x_position = radius = 0
     obstacle = plt.Circle((x_position, y_position), radius)
 
     data = np.load(filepath)
