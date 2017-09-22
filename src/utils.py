@@ -79,7 +79,7 @@ def sim1resToImage(result):
 
     ax.set(aspect=1, title='Vector field')
     ax.imshow(obstacles, interpolation='none')
-    ax.quiver(y[skipCoord], x[skipCoord], dx[skipData], dy[skipData])
+    ax.quiver(y[skipCoord], x[skipCoord], dx[skipData], dy[skipData], scale=0.25, scale_units='x')
 
     ax.invert_yaxis()
     # fig.canvas.draw()
@@ -117,6 +117,6 @@ class LossLogger:
         self.ax.clear()
         self.ax.plot(self.x, self.y)
         self.ax.set_ylim([0, max(self.y)])
-        self.ax.set_xlim([0, max(1000, len(self.x))])
+        self.ax.set_xlim([0, max(2000, len(self.x))])
         ensureDir("images/")
         self.fig.savefig("images/loss.png")

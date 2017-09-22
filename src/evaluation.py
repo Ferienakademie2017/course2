@@ -14,7 +14,7 @@ class ParametricSimulationExample(object):
         arr = scipy.ndimage.zoom(arr, [0.25, 0.25, 1])
         # print(arr.shape)
         self.y = arr
-        func = lambda x: 1.0 if x < 0.0 else 0.0
+        func = lambda x: 1.0 if x > 0.0 else 0.0
 
         obs = sim1Result.obstacles
         #if (obs.shape[0] < obs.shape[1]):
