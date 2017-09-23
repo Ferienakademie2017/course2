@@ -156,7 +156,7 @@ def applyBoundaryValues(initialConditions,npVel,vel):
     vel = copyArrayToGridVec3(source = npVel,target = vel)
 
 
-initialConditions = np.concatenate((np.ones((32,64,1), dtype='f'),np.zeros((32,64,1), dtype='f')),axis = 2)
-trainingConfiguration = TrainingConfiguration.TrainingConfiguration(GUI = True,maxObstacleNumber=5)
-generateTrainingExamples(trainingConfiguration,initialConditions,obstacleCreator=ObstacleContainer.generateObstacleContainer)
-list = trainingConfiguration.loadGeneratedData()
+#initialConditions = np.concatenate((np.ones((32,64,1), dtype='f'),np.zeros((32,64,1), dtype='f')),axis = 2)
+#trainingConfiguration = TrainingConfiguration.TrainingConfiguration()
+#generateTrainingExamples(trainingConfiguration,initialConditions,obstacleCreator=ObstacleContainer.generateObstacleContainer)
+#list = trainingConfiguration.loadGeneratedData()

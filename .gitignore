@@ -25,6 +25,7 @@ data/
 training/
 
 src/.idea/*
+.idea/*
 
 *.hi
 !references/*.pdf

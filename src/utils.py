@@ -62,8 +62,8 @@ def sim1resToImage(result):
     widthMax = max(len(data), len(obstacles))
     heightMax = max(len(data[0]), len(obstacles[0]))
     # Fix for now to make it comparable
-    widthMin = widthMax // 4
-    heightMin = heightMax // 4
+    # widthMin = widthMax // 4
+    # heightMin = heightMax // 4
 
     dx, dy = np.transpose(data, (2, 0, 1))
     # Draw obstacles in the background
@@ -78,7 +78,7 @@ def sim1resToImage(result):
 
     ax.set(aspect=1, title='Vector field')
     ax.imshow(obstacles, interpolation='none')
-    ax.quiver(y[skipCoord], x[skipCoord], dx[skipData], dy[skipData])
+    ax.quiver(y[skipCoord], x[skipCoord], dx[skipData], dy[skipData], scale=widthMin / widthMax, scale_units='x')
 
     ax.invert_yaxis()
     # fig.canvas.draw()
@@ -108,7 +108,7 @@ class LossLogger:
             self.ax.clear()
             self.ax.plot(self.x, self.y)
             self.ax.set_ylim([0, max(self.y)])
-            self.ax.set_xlim([0, max(500, max(self.x))])
+            self.ax.set_xlim([0, max(2000, max(self.x))])
             self.fig.canvas.draw()
             plt.pause(0.01)
 
@@ -116,6 +116,6 @@ class LossLogger:
         self.ax.clear()
         self.ax.plot(self.x, self.y)
         self.ax.set_ylim([0, max(self.y)])
-        self.ax.set_xlim([0, max(1000, len(self.x))])
+        self.ax.set_xlim([0, max(2000, len(self.x))])
         ensureDir("images/")
         self.fig.savefig("images/loss.png")
