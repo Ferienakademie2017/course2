@@ -37,17 +37,18 @@ def generateTrainingExamples(trainingConfiguration):
     NumObsPosX = trainingConfiguration.NumObsPosX
     NumObsPosY = trainingConfiguration.NumObsPosY
 
-    flags     = s.create(FlagGrid)
-    density   = s.create(RealGrid)
-    vel       = s.create(MACGrid)
-    density   = s.create(RealGrid)
-    pressure  = s.create(RealGrid)
-    fractions = s.create(MACGrid)
+    flags     = s.create(FlagGrid, name="flags")
+    density   = s.create(RealGrid, name="density")
+    vel       = s.create(MACGrid, name="vel")
+    density   = s.create(RealGrid, name="density")
+    pressure  = s.create(RealGrid, name="pressure")
+    fractions = s.create(MACGrid, name="fractions")
     phiWalls  = s.create(LevelsetGrid)
 
     flags.initDomain(inflow="xX", phiWalls=phiWalls, boundaryWidth=0)
 
     for simNo in range(0,NumObsPosX*NumObsPosY):
+        vel.setConst(vec3(0))
         #pos = [random.random(),random.random(),0.5]
         #pos = [0.4, 0.8, 0.5]
         #1. Komponente ist x-Komponente, 2. Komponente ist y-Komponente
@@ -91,7 +92,7 @@ def generateTrainingExamples(trainingConfiguration):
         if (GUI):
             gui = Gui()
             gui.show()
-            #gui.pause()
+            gui.pause()
 
         #main loop
         for t in range(trainingConfiguration.NumSteps + 1):
