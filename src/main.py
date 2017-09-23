@@ -7,16 +7,16 @@ import evaluation
 import models
 import random
 
-trainConfig = utils.deserialize("data/trainConfig.p")
+trainConfig = utils.deserialize("data/rand1/trainConfig.p")
 # data = []  # todo
 data = trainConfig.loadGeneratedData()
 random.shuffle(data)
 
-trainingData, validationData, testData = evaluation.generateParametricExamples(data, 0.6, 0.4, slice=[0, 1], scale=1)
-model = models.computeNN6()
-minibatchSize = 100
+trainingData, validationData, testData = evaluation.generateParametricExamples(data, 0.6, 0.4, exampleType=evaluation.FlagFieldSimulationExample, slice=[0, 1], scale=1)
+model = models.computeNN9()
+minibatchSize = 10
 lossLogger = utils.LossLogger()
-sess = training.trainNetwork(model, training.MinibatchSampler(trainingData), lossLogger, minibatchSize)
+sess = training.trainNetwork(model, training.MinibatchSampler(trainingData), lossLogger, minibatchSize, 400)
 
 # Save final variables
 model.save(sess, "final")

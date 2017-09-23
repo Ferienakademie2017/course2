@@ -39,8 +39,8 @@ class MinibatchSampler:
         return self.numTotalSamples
 
 
-def trainNetwork(flagFieldNN, sampler, lossLogger, minibatchSize=4, numMinibatches=200):
-    opt = [tf.train.AdamOptimizer(0.05 * math.pow(0.5, j)).minimize(flagFieldNN.loss) for j in range(1)]
+def trainNetwork(flagFieldNN, sampler, lossLogger, minibatchSize=4, numMinibatches=100):
+    opt = [tf.train.AdamOptimizer(0.02 * math.pow(0.5, j)).minimize(flagFieldNN.loss) for j in range(1)]
     # opt = tf.train.AdamOptimizer(0.05).minimize(flagFieldNN.loss)
     # opt = [tf.train.GradientDescentOptimizer(10 * math.pow(0.3, j)).minimize(flagFieldNN.loss) for j in range(4)]
     init = tf.global_variables_initializer()

@@ -1,7 +1,7 @@
 import numpy
 
 
-class Sim1Result():
+class Sim1Result(object):
     """Sim1Resluts is a class that holds the trainingdata for the first simple example
     npVel is a numpyarray(float) containing a velocity-field
     obstacle_pos is a list containing the position of an obstacle"""

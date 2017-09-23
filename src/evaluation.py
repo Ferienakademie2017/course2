@@ -22,6 +22,26 @@ class ParametricSimulationExample(object):
         obs = np.vectorize(func)(obs)
         self.flagField = scipy.ndimage.zoom(obs, [scale, scale])
 
+class FlagFieldSimulationExample(object):
+    def __init__(self, sim1Result, slice=[1], scale=0.25):
+        # print(sim1Result.npVel.shape)
+        arr = sim1Result.npVel
+        arr = np.delete(arr, 2, 2)
+        # if(arr.shape[0] < arr.shape[1]):
+        #    arr = np.transpose(arr, (1, 0, 2))
+        arr = scipy.ndimage.zoom(arr, [scale, scale, 1])
+        # print(arr.shape)
+        self.y = arr
+        func = lambda x: 1.0 if x > 0.0 else 0.0
+
+        obs = sim1Result.obstacles
+        # if (obs.shape[0] < obs.shape[1]):
+        #    obs = np.transpose(obs)
+        obs = np.vectorize(func)(obs)
+        self.flagField = scipy.ndimage.zoom(obs, [scale, scale])
+        # self.x = scipy.ndimage.zoom(obs, [scale, scale])
+        self.x = self.flagField
+
 def generateParametricExamples(data, trainingFraction=0.6, validationFraction=0.2, exampleType=ParametricSimulationExample, slice=[1], scale=0.25):
     data = [ex for ex in data if ex.npVel.shape[0] > ex.npVel.shape[1]]
     dataSize = len(data)
@@ -49,5 +69,7 @@ def getFeedDict(network, data):
 def validateModel(flagFieldNN, validationData, name="final"):
     sess = tf.Session()
     flagFieldNN.load(sess, name)
-    lossResult = sess.run(flagFieldNN.loss, getFeedDict(flagFieldNN, validationData))
+    yPred, lossResult = sess.run([flagFieldNN.yPred, flagFieldNN.loss], getFeedDict(flagFieldNN, validationData))
+    for i in range(len(yPred)):
+        print(sum(sum(sum(yPred[i]))))
     print("Validation loss: {}".format(lossResult))

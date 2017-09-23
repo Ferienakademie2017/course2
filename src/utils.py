@@ -55,7 +55,7 @@ def sim1resToImage(result):
     if data.shape[2] == 3:
         # Remove z coordinate
         data = np.delete(data, 2, 2)
-    data = np.transpose(result.npVel, (1, 0, 2))
+    data = np.transpose(data, (1, 0, 2))
     obstacles = np.transpose(result.obstacles)
     widthMin = min(len(data), len(obstacles))
     heightMin = min(len(data[0]), len(obstacles[0]))
@@ -64,6 +64,8 @@ def sim1resToImage(result):
     # Fix for now to make it comparable
     # widthMin = widthMax // 4
     # heightMin = heightMax // 4
+
+    # print(data.shape)
 
     dx, dy = np.transpose(data, (2, 0, 1))
     # Draw obstacles in the background
@@ -78,7 +80,7 @@ def sim1resToImage(result):
 
     ax.set(aspect=1, title='Vector field')
     ax.imshow(obstacles, interpolation='none')
-    ax.quiver(y[skipCoord], x[skipCoord], dx[skipData], dy[skipData], scale=widthMin / widthMax, scale_units='x')
+    ax.quiver(y[skipCoord], x[skipCoord], dx[skipData], dy[skipData], scale=0.25, scale_units='x') # scale = widthMin / widthMax
 
     ax.invert_yaxis()
     # fig.canvas.draw()

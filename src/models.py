@@ -100,14 +100,14 @@ def simpleModel5(x):
 
 def simpleModel6(x):
     layer = x
-    numFeatures = 1
+    numFeatures = 2
     convSize = 2
     scaleFactor = 1
     #layer = tf.contrib.layers.batch_norm(layer, decay=0.9, updates_collections=None, epsilon=1e-5, scale=True,
     #                                             scope="bn0")
-    layer = tf.layers.dense(layer, 8, activation=tf.nn.relu)
-    layer = tf.contrib.layers.batch_norm(layer, decay=0.9, updates_collections=None, epsilon=1e-5, scale=True,
-                                         scope="bn1")
+    #layer = tf.layers.dense(layer, 8, activation=tf.nn.relu)
+    #layer = tf.contrib.layers.batch_norm(layer, decay=0.9, updates_collections=None, epsilon=1e-5, scale=True,
+    #                                     scope="bn1")
     #layer = tf.layers.dense(layer, 32, activation=tf.nn.relu)
     #layer = tf.contrib.layers.batch_norm(layer, decay=0.9, updates_collections=None, epsilon=1e-5, scale=True,
     #                                             scope="bn2")
@@ -116,7 +116,7 @@ def simpleModel6(x):
     layer = tf.reshape(layer, [-1, 64 * scaleFactor, 32 * scaleFactor, numFeatures])
     layer = tf.contrib.layers.batch_norm(layer, decay=0.9, updates_collections=None, epsilon=1e-5, scale=True,
                                                  scope="bn3")
-    for i in range(5):
+    for i in range(1):
         oldLayer = layer
         layer = tf.contrib.layers.conv2d(layer, numFeatures, [convSize, convSize], [1, 1], "SAME", activation_fn=None,
                                          weights_initializer=tf.truncated_normal_initializer(stddev=0.02),
@@ -139,6 +139,135 @@ def simpleModel6(x):
 
     return layer
 
+def simpleModel7(x):
+    layer = x
+    layer = tf.layers.dense(layer, 8, activation=tf.tanh)
+    layer = tf.contrib.layers.batch_norm(layer, decay=0.9, updates_collections=None, epsilon=1e-5, scale=True,
+                                         scope="bn1")
+    #layer = tf.layers.dense(layer, 32, activation=tf.nn.relu)
+    #layer = tf.layers.dense(layer, 32, activation=tf.nn.relu)
+    #layer = tf.layers.dense(layer, 32, activation=tf.nn.relu)
+    layer = tf.layers.dense(layer, 32, activation=tf.tanh)
+    layer = tf.contrib.layers.batch_norm(layer, decay=0.9, updates_collections=None, epsilon=1e-5, scale=True,
+                                         scope="bn2")
+    #layer = tf.layers.dense(layer, 32, activation=tf.nn.relu)
+    #layer = tf.contrib.layers.batch_norm(layer, decay=0.9, updates_collections=None, epsilon=1e-5, scale=True,
+    #                                     scope="bn21")
+    #layer = tf.layers.dense(layer, 32, activation=tf.nn.relu)
+    #layer = tf.contrib.layers.batch_norm(layer, decay=0.9, updates_collections=None, epsilon=1e-5, scale=True,
+    #                                     scope="bn22")
+    #layer = tf.layers.dense(layer, 32, activation=tf.nn.relu)
+    #layer = tf.contrib.layers.batch_norm(layer, decay=0.9, updates_collections=None, epsilon=1e-5, scale=True,
+    #                                     scope="bn23")
+    layer = tf.layers.dense(layer, 256, activation=tf.tanh)
+    layer = tf.contrib.layers.batch_norm(layer, decay=0.9, updates_collections=None, epsilon=1e-5, scale=True,
+                                         scope="bn3")
+    #layer = tf.layers.dense(layer, 4096)
+    #layer = tf.contrib.layers.batch_norm(layer, decay=0.9, updates_collections=None, epsilon=1e-5, scale=True,
+    #                                     scope="bn4")
+    layer = tf.layers.dense(layer, 4096)
+    layer = tf.reshape(layer, [-1, 64, 32, 2])
+
+    return layer
+
+def simpleModel8(x):
+    layer = x
+    numFeatures = 2
+    convSize = 5
+    scaleFactor = 1
+    layer = tf.reshape(layer, [-1, 64, 32, 1])
+
+    layer = tf.contrib.layers.conv2d(layer, numFeatures, [convSize, convSize], [1, 1], "SAME", activation_fn=tf.nn.relu,
+                                     weights_initializer=tf.truncated_normal_initializer(stddev=0.02),
+                                     biases_initializer=tf.constant_initializer(0.0))
+
+    for i in range(10):
+        oldLayer = layer
+        layer = tf.contrib.layers.conv2d(layer, numFeatures, [convSize, convSize], [1, 1], "SAME", activation_fn=None,
+                                         weights_initializer=tf.truncated_normal_initializer(stddev=0.02),
+                                         biases_initializer=tf.constant_initializer(0.0))
+        layer = tf.contrib.layers.batch_norm(layer, decay=0.9, updates_collections=None, epsilon=1e-5, scale=True,
+                                     scope="batch_norm1_{}".format(i))
+        layer = tf.nn.relu(layer)
+        layer = tf.contrib.layers.conv2d(layer, numFeatures, [convSize, convSize], [1, 1], "SAME", activation_fn=None,
+                                         weights_initializer=tf.truncated_normal_initializer(stddev=0.02),
+                                         biases_initializer=tf.constant_initializer(0.0))
+        layer = tf.contrib.layers.batch_norm(layer, decay=0.9, updates_collections=None, epsilon=1e-5, scale=True,
+                                         scope="batch_norm2_{}".format(i))
+        # layer = tf.nn.relu(layer)
+        layer = layer + oldLayer
+        # layer = tf.nn.dropout(layer, 0.8)
+
+    layer = tf.contrib.layers.conv2d(layer, 2, [convSize, convSize], [scaleFactor, scaleFactor], "SAME", activation_fn=None,
+                                     weights_initializer=tf.truncated_normal_initializer(stddev=0.02),
+                                     biases_initializer=tf.constant_initializer(0.0))
+
+    return layer
+
+def simpleModel9(x):
+    layer = x
+    numFeatures = 10
+    convSize = 5
+    scaleFactor = 1
+    zoomSteps = 3
+    zoomLayers = []
+    # zoomLayers
+    layer = tf.reshape(layer, [-1, 64, 32, 1])
+
+
+    for i in range(zoomSteps):
+        zoomLayers.append(layer)
+        layer = tf.contrib.layers.conv2d(layer, numFeatures, [convSize, convSize], [2, 2], "SAME", activation_fn=tf.nn.relu,
+                                     weights_initializer=tf.truncated_normal_initializer(stddev=0.02),
+                                     biases_initializer=tf.constant_initializer(0.0))
+        layer = tf.contrib.layers.batch_norm(layer, decay=0.9, updates_collections=None, epsilon=1e-5, scale=True,
+                                             scope="batch_norm0_{}".format(i))
+
+    for i in range(10):
+        oldLayer = layer
+        layer = tf.contrib.layers.conv2d(layer, numFeatures, [convSize, convSize], [1, 1], "SAME", activation_fn=None,
+                                         weights_initializer=tf.truncated_normal_initializer(stddev=0.02),
+                                         biases_initializer=tf.constant_initializer(0.0))
+        layer = tf.contrib.layers.batch_norm(layer, decay=0.9, updates_collections=None, epsilon=1e-5, scale=True,
+                                     scope="batch_norm1_{}".format(i))
+        layer = tf.nn.relu(layer)
+        layer = tf.contrib.layers.conv2d(layer, numFeatures, [convSize, convSize], [1, 1], "SAME", activation_fn=None,
+                                         weights_initializer=tf.truncated_normal_initializer(stddev=0.02),
+                                         biases_initializer=tf.constant_initializer(0.0))
+        layer = tf.contrib.layers.batch_norm(layer, decay=0.9, updates_collections=None, epsilon=1e-5, scale=True,
+                                         scope="batch_norm2_{}".format(i))
+        # layer = tf.nn.relu(layer)
+        layer = layer + oldLayer
+        # layer = tf.nn.dropout(layer, 0.8)
+
+    for i in range(zoomSteps):
+        layer = tf.contrib.layers.conv2d_transpose(layer, numFeatures, [convSize, convSize], [2, 2], "SAME",
+                                         activation_fn=tf.nn.relu,
+                                         weights_initializer=tf.truncated_normal_initializer(stddev=0.02),
+                                         biases_initializer=tf.constant_initializer(0.0))
+        layer = tf.contrib.layers.batch_norm(layer, decay=0.9, updates_collections=None, epsilon=1e-5, scale=True,
+                                             scope="batch_norm3_{}".format(i))
+        layer = tf.concat([layer, zoomLayers[zoomSteps - 1 - i]], 3)
+
+        layer = tf.contrib.layers.conv2d(layer, numFeatures, [convSize, convSize], [1, 1], "SAME",
+                                         activation_fn=tf.nn.relu,
+                                         weights_initializer=tf.truncated_normal_initializer(stddev=0.02),
+                                         biases_initializer=tf.constant_initializer(0.0))
+        layer = tf.contrib.layers.batch_norm(layer, decay=0.9, updates_collections=None, epsilon=1e-5, scale=True,
+                                         scope="batch_norm4_{}".format(i))
+        layer = tf.contrib.layers.conv2d(layer, numFeatures, [convSize, convSize], [1, 1], "SAME",
+                                         activation_fn=tf.nn.relu,
+                                         weights_initializer=tf.truncated_normal_initializer(stddev=0.02),
+                                         biases_initializer=tf.constant_initializer(0.0))
+        layer = tf.contrib.layers.batch_norm(layer, decay=0.9, updates_collections=None, epsilon=1e-5, scale=True,
+                                         scope="batch_norm5_{}".format(i))
+
+    layer = tf.contrib.layers.conv2d(layer, 2, [convSize, convSize], [scaleFactor, scaleFactor], "SAME", activation_fn=None,
+                                     weights_initializer=tf.truncated_normal_initializer(stddev=0.02),
+                                     biases_initializer=tf.constant_initializer(0.0))
+
+    return layer
+
 def simpleLoss1(yPred, y, flagField):
     # loss = tf.reduce_mean(tf.square(yPred - y))
     loss = tf.reduce_mean(tf.abs(yPred - y))
@@ -146,6 +275,7 @@ def simpleLoss1(yPred, y, flagField):
 
 def simpleLoss2(yPred, y, flagField):
     loss = tf.reduce_mean(tf.abs(tf.expand_dims(flagField, -1) * (yPred - y)))
+    # loss = tf.reduce_mean(tf.square(tf.expand_dims(flagField, -1) * (yPred - y)))
     return loss
 
 class NeuralNetwork(object):
@@ -192,8 +322,25 @@ def computeNN5():
 def computeNN6():
     return computeSimpleNN(simpleModel6, simpleLoss2, inputDim=2, scale=1)
 
+def computeNN7():
+    return computeSimpleNN(simpleModel7, simpleLoss2, inputDim=2, scale=1)
+
+def computeNN8():
+    return computeConvNN(simpleModel8, simpleLoss2, scale=1)
+
+def computeNN9():
+    return computeConvNN(simpleModel9, simpleLoss2, scale=1)
+
 def computeSimpleNN(modelFunc, lossFunc, inputDim = 1, scale=0.25):
     x = tf.placeholder(tf.float32, shape=[None, inputDim])
+    y = tf.placeholder(tf.float32, shape=[None, int(64 * scale), int(32 * scale), 2])
+    yPred = modelFunc(x)
+    flagField = tf.placeholder(tf.float32, shape=[None, int(64 * scale), int(32 * scale)])
+    loss = lossFunc(yPred, y, flagField)
+    return FlagFieldNN(x, y, yPred, loss, flagField)
+
+def computeConvNN(modelFunc, lossFunc, scale=0.25):
+    x = tf.placeholder(tf.float32, shape=[None, int(64 * scale), int(32 * scale)])
     y = tf.placeholder(tf.float32, shape=[None, int(64 * scale), int(32 * scale), 2])
     yPred = modelFunc(x)
     flagField = tf.placeholder(tf.float32, shape=[None, int(64 * scale), int(32 * scale)])
