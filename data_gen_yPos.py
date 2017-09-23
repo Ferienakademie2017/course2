@@ -11,7 +11,7 @@ def runsim(pos):
 	res        = 64
 	gs         = vec3(2*res,res,res)
 
-	endTime= 150
+	endTime= 100
 	data_path="../sim_data/data_obstacle_pos/"
 	if (dim==2): gs.z = 1
 	s          = FluidSolver(name='main', gridSize = gs, dim=dim)
@@ -30,7 +30,7 @@ def runsim(pos):
 	flags.initDomain(inflow="xX", phiWalls=phiWalls, boundaryWidth=0)
 
 
-	obstacle  = Cylinder( parent=s, center=gs*vec3(0.25,pos/100.,0.5), radius=res*0.2, z=gs*vec3(0, 0, 1.0))
+	obstacle  = Cylinder( parent=s, center=gs*vec3(0.25,pos/32.0,0.5), radius=res*0.2, z=gs*vec3(0, 0, 1.0))
 	phiObs    = obstacle.computeLevelset()
 
 	#density source as a box
@@ -106,6 +106,6 @@ def runsim(pos):
 	print(npVel.shape)
 	np.save(data_path+'data'+str(pos),npVel, allow_pickle=false);
 
-for pos in range(101):
+for pos in range(32):
 	runsim(pos)
 
