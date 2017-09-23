@@ -2,7 +2,6 @@ import os
 import os.path
 import numpy as np
 import matplotlib.pyplot as plt
-import scipy.ndimage
 
 import pickle
 
@@ -56,7 +55,7 @@ def sim1resToImage(result):
     if data.shape[2] == 3:
         # Remove z coordinate
         data = np.delete(data, 2, 2)
-    data = np.transpose(data, (1, 0, 2))
+    data = np.transpose(result.npVel, (1, 0, 2))
     obstacles = np.transpose(result.obstacles)
     widthMin = min(len(data), len(obstacles))
     heightMin = min(len(data[0]), len(obstacles[0]))

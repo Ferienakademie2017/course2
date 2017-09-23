@@ -16,10 +16,13 @@ def generateObstacle(s,trainingConfiguration):
     pos = [random.random(), random.random(), 0.5]
 
     if ind == 0:
-        return Cylinder(parent=s, center=gs * vec3(maxSize + (1-maxSize) * pos[0], pos[1], pos[2]), radius=res * maxSize*random.random(),
+        sizeY = random.random()
+        return Cylinder(parent=s, center=gs * vec3(sizeY*maxSize + (1-2*maxSize*sizeY) * pos[0], pos[1], pos[2]), radius=res * maxSize*sizeY,
                  z=gs * vec3(0, 0, 1.0))
     if ind == 1:
-        return Box(parent=s, center=gs * vec3(maxSize + (1-maxSize) * pos[0], pos[1], pos[2]), size=res * maxSize*vec3(random.random(),random.random(),0.5))
+        sizeY = maxSize*random.random()
+        sizeX = maxSize*random.random()
+        return Box(parent=s, p0 = gs * vec3((1-2*sizeX)*pos[0], pos[1], 0), p1=gs *vec3((1-2*sizeX)*pos[0]+sizeX,pos[1]+sizeY,1))
 
 def simpleCylinder(s,trainingConfiguration,simNo):
     maxSize = trainingConfiguration.maxObstacleSize

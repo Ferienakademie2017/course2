@@ -1,10 +1,13 @@
 import karman
-# import karmanInitialCond
 import TrainingConfiguration
 import utils
+import ObstacleContainer
+import numpy as np
 
-trainConfig = TrainingConfiguration.TrainingConfiguration(NumObsPosX=3, NumObsPosY=3, simPath='data/guiTest/', GUI=True)
-karman.generateTrainingExamples(trainConfig)
-#karmanInitialCond.generateTrainingExamples(trainConfig, numpy.concatenate((numpy.ones((32,64,1), dtype='f'),numpy.zeros((32,64,1), dtype='f')),axis = 2))
+trainConfig = TrainingConfiguration.TrainingConfiguration(NumObsPosX=3, NumObsPosY=3, simPath='data/guiTest/', GUI=True,maxObstacleNumber = 5,maxObstacleSize = 0.2,resY = 64,NumSteps=200)
+initialCond = np.concatenate((np.concatenate((0.5*np.ones((1,64,1), dtype='f'),np.zeros((63,64,1), dtype='f')),axis = 0),np.zeros((64,64,1), dtype='f')),axis = 2)
+karman.generateTrainingExamples(trainConfig, initialCond,ObstacleContainer.simpleCylinder)
+karman.generateTrainingExamples(trainConfig, initialCond,ObstacleContainer.generateObstacleContainer)
+
 
 utils.serialize(trainConfig.simPath + "trainConfig.p", trainConfig)
