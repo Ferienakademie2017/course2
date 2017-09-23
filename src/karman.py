@@ -153,7 +153,7 @@ def generateTrainingExamples(trainingConfiguration,initialConditions,obstacleCre
                 npVelsave = np.transpose(npVel, (1, 0, 2))
                 npObssave = np.transpose(npObs)
                 result = Sim1Result.Sim1Result(npVelsave, pos, npObssave)
-                utils.sim1resToImage(result)
+                # utils.sim1resToImage(result)
                 utils.serialize(simPath+trainingConfiguration.getFileNameFor(simNo,t), result)
                 if(saveppm):
                     projectPpmFull( density, simPath + 'density_{}_{}.ppm'.format(simNo, tf), 0, 1.0 )
