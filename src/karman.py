@@ -42,12 +42,12 @@ def generateTrainingExamples(trainingConfiguration,initialConditions,obstacleCre
     NumObsPosX = trainingConfiguration.NumObsPosX
     NumObsPosY = trainingConfiguration.NumObsPosY
 
-    flags     = s.create(FlagGrid)
-    density   = s.create(RealGrid)
-    vel       = s.create(MACGrid)
-    density   = s.create(RealGrid)
-    pressure  = s.create(RealGrid)
-    fractions = s.create(MACGrid)
+    flags     = s.create(FlagGrid, name="flags")
+    density   = s.create(RealGrid, name="density")
+    vel       = s.create(MACGrid, name="vel")
+    density   = s.create(RealGrid, name="density")
+    pressure  = s.create(RealGrid, name="pressure")
+    fractions = s.create(MACGrid, name="fractions")
     phiWallsOrig  = s.create(LevelsetGrid)
     phiWalls = s.create(LevelsetGrid)
 
@@ -56,6 +56,11 @@ def generateTrainingExamples(trainingConfiguration,initialConditions,obstacleCre
     inflow = initialConditions[:,0,:]
 
     for simNo in range(0,NumObsPosX*NumObsPosY):
+        #pos = [random.random(),random.random(),0.5]
+        #pos = [0.4, 0.8, 0.5]
+        #1. Komponente ist x-Komponente, 2. Komponente ist y-Komponente
+        pos = [(simNo % NumObsPosX)*1.0/NumObsPosX, (simNo//NumObsPosX)*1.0/NumObsPosY,0.5]
+
         #obstacle  = Sphere(   parent=s, center=gs*vec3(0.25,0.5,0.5), radius=res*0.2)
         phiWalls.setConst(1000)
         phiWalls.join(phiWallsOrig)

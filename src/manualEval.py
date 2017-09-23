@@ -29,6 +29,6 @@ manualResults, loss = sess.run([model.yPred, model.loss], evaluation.getFeedDict
 
 outputTensor = Sim1Result.Sim1Result(manualResults[0], outputManta.obstacle_pos, outputManta.obstacles)
 
-utils.image_i = 100
+utils.image_i = 10000
 utils.sim1resToImage(outputManta)
 utils.sim1resToImage(outputTensor)
