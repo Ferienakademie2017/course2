@@ -4,11 +4,15 @@ import utils
 import Sim1Result
 import random
 import TrainingConfiguration
+import ObstacleContainer
+import copy
 
 
 
-def generateTrainingExamples(trainingConfiguration):
+def generateTrainingExamples(trainingConfiguration,initialConditions,obstacleCreator = ObstacleContainer.simpleCylinder):
 
+    zComp = np.zeros( (trainingConfiguration.resY, trainingConfiguration.resX,1), dtype='f')
+    initialConditions = np.concatenate((initialConditions, zComp), axis=2)
     secOrderBc = True
     dim        = 2
     res        = 32
@@ -18,6 +22,7 @@ def generateTrainingExamples(trainingConfiguration):
     s          = FluidSolver(name='main', gridSize = gs, dim=dim)
     s.timestep = 1.
 
+    printSimulation = False
     GUI = trainingConfiguration.GUI
 
     #Zylinder_Position
@@ -29,7 +34,7 @@ def generateTrainingExamples(trainingConfiguration):
     saveppm = trainingConfiguration.saveppm
     # savepng = trainingConfiguration.savepng  # todo
     interval = trainingConfiguration.saveInterval
-    offset = 0
+    offset = trainingConfiguration.timeOffset
     npVel = np.zeros( (trainingConfiguration.resY, trainingConfiguration.resX, 3), dtype='f')
     npObs = np.zeros( (trainingConfiguration.resY, trainingConfiguration.resX), dtype='f')
 
@@ -43,31 +48,32 @@ def generateTrainingExamples(trainingConfiguration):
     density   = s.create(RealGrid)
     pressure  = s.create(RealGrid)
     fractions = s.create(MACGrid)
-    phiWalls  = s.create(LevelsetGrid)
+    phiWallsOrig  = s.create(LevelsetGrid)
+    phiWalls = s.create(LevelsetGrid)
 
-    flags.initDomain(inflow="xX", phiWalls=phiWalls, boundaryWidth=0)
+    flags.initDomain(inflow="xX", phiWalls=phiWallsOrig, boundaryWidth=0)
+
+    inflow = initialConditions[:,0,:]
 
     for simNo in range(0,NumObsPosX*NumObsPosY):
-        #pos = [random.random(),random.random(),0.5]
-        #pos = [0.4, 0.8, 0.5]
-        #1. Komponente ist x-Komponente, 2. Komponente ist y-Komponente
-        pos = [(simNo % NumObsPosX)*1.0/NumObsPosX, (simNo//NumObsPosX)*1.0/NumObsPosY,0.5]
-
         #obstacle  = Sphere(   parent=s, center=gs*vec3(0.25,0.5,0.5), radius=res*0.2)
+        phiWalls.setConst(1000)
+        phiWalls.join(phiWallsOrig)
 
-        obstacle  = Cylinder( parent=s, center=gs*vec3(pos[0],pos[1],pos[2]), radius=res*0.2, z=gs*vec3(0, 0, 1.0))
-        phiObs    = obstacle.computeLevelset()
+        for obstacle in obstacleCreator(s,trainingConfiguration,simNo):
+            phiObs = obstacle.computeLevelset()
+            phiWalls.join(phiObs)
+
 
         # slightly larger copy for density source
-        densInflow  = Cylinder( parent=s, center=gs*vec3(0.25,0.5,0.5), radius=res*0.21, z=gs*vec3(0, 0, 1.0))
+        #densInflow  = Cylinder( parent=s, center=gs*vec3(0.25,0.5,0.5), radius=res*0.21, z=gs*vec3(0, 0, 1.0))
 
-        phiObs.join(phiWalls)
-        updateFractions( flags=flags, phiObs=phiObs, fractions=fractions)
-        setObstacleFlags(flags=flags, phiObs=phiObs, fractions=fractions)
+        updateFractions( flags=flags, phiObs=phiWalls, fractions=fractions)
+        setObstacleFlags(flags=flags, phiObs=phiWalls, fractions=fractions)
         flags.fillGrid()
 
         velInflow = vec3(0.9, 0, 0)
-        vel.setConst(velInflow)
+        copyArrayToGridVec3(target = vel,source = initialConditions)
 
         # optionally randomize y component
         if 0:
@@ -76,15 +82,15 @@ def generateTrainingExamples(trainingConfiguration):
             noise.clamp    = True
             noise.clampNeg = -1.
             noise.clampPos =  1.
-            testall = s.create(RealGrid); testall.setConst(-1.)
+            testall = s.create(RealGrid); testall.setConst(-1.);
             addNoise(flags=flags, density=density, noise=noise, sdf=testall, scale=0.1 )
+            setComponent(target=vel, source=density, component=1)
 
-        setComponent(target=vel, source=density, component=1)
         density.setConst(0.)
 
         # cg solver params
         cgAcc    = 1e-04
-        cgIter = 5
+        cgIter = 500
 
         timings = Timings()
 
@@ -95,31 +101,42 @@ def generateTrainingExamples(trainingConfiguration):
 
         #main loop
         for t in range(trainingConfiguration.NumSteps + 1):
-            mantaMsg('\nFrame %i, simulation time %f' % (s.frame, s.timeTotal))
 
-            densInflow.applyToGrid( grid=density, value=2. )
+            #densInflow.applyToGrid( grid=density, value=2. )
 
             advectSemiLagrange(flags=flags, vel=vel, grid=density, order=2, orderSpace=1)
             advectSemiLagrange(flags=flags, vel=vel, grid=vel    , order=2, strength=1.0)
 
             if(secOrderBc):
-                extrapolateMACSimple( flags=flags, vel=vel, distance=2 , intoObs=True)
-                setWallBcs(flags=flags, vel=vel, fractions=fractions, phiObs=phiObs)
+                extrapolateMACSimple( flags=flags, vel=vel, distance=2 , intoObs=True);
+                setWallBcs(flags=flags, vel=vel, fractions=fractions, phiObs=phiWalls)
 
                 setInflowBcs(vel=vel,dir='xX',value=velInflow)
+                copyGridToArrayVec3(source=vel, target=npVel)
+                copyGridToArrayLevelset(source=phiObs, target=npObs)
+                applyBoundaryValues(initialConditions, npObs, npVel, vel)
                 solvePressure( flags=flags, vel=vel, pressure=pressure, fractions=fractions, cgAccuracy=cgAcc, cgMaxIterFac=cgIter)
 
-                extrapolateMACSimple( flags=flags, vel=vel, distance=5 , intoObs=True)
-                setWallBcs(flags=flags, vel=vel, fractions=fractions, phiObs=phiObs)
+                extrapolateMACSimple( flags=flags, vel=vel, distance=5 , intoObs=True);
+                setWallBcs(flags=flags, vel=vel, fractions=fractions, phiObs=phiWalls)
             else:
                 setWallBcs(flags=flags, vel=vel)
                 setInflowBcs(vel=vel,dir='xX',value=velInflow)
+                copyGridToArrayVec3(source=vel, target=npVel)
+                copyGridToArrayLevelset(source=phiObs, target=npObs)
+                applyBoundaryValues(initialConditions, npObs, npVel, vel)
                 solvePressure( flags=flags, vel=vel, pressure=pressure, cgAccuracy=cgAcc, cgMaxIterFac=cgiter )
                 setWallBcs(flags=flags, vel=vel)
 
-            setInflowBcs(vel=vel,dir='xX',value=velInflow)
+            #setInflowBcs(vel=vel,dir='xX',value=velInflow)
+            copyGridToArrayVec3(source=vel, target=npVel)
+            copyGridToArrayLevelset(source=phiObs, target=npObs)
+            applyBoundaryValues(initialConditions, npObs, npVel, vel)
 
-            timings.display()
+            if printSimulation:
+                mantaMsg('\nFrame %i, simulation time %f' % (s.frame, s.timeTotal))
+                timings.display()
+
             s.step()
 
             # save data
@@ -127,11 +144,10 @@ def generateTrainingExamples(trainingConfiguration):
                 tf = (t-offset)//interval
                 #framePath = simPath + 'frame_%04d/' % tf
                 #os.makedirs(framePath)
-                copyGridToArrayVec3(source = vel, target = npVel)
-                copyGridToArrayLevelset(source = phiObs, target = npObs)
-                npVel = np.transpose(npVel, (1, 0, 2))
-                npObs = np.transpose(npObs)
-                result = Sim1Result.Sim1Result(npVel, pos, npObs)
+
+                npVelsave = np.transpose(npVel, (1, 0, 2))
+                npObssave = np.transpose(npObs)
+                result = Sim1Result.Sim1Result(npVelsave, pos, npObssave)
                 utils.sim1resToImage(result)
                 utils.serialize(simPath+trainingConfiguration.getFileNameFor(simNo,t), result)
                 if(saveppm):
@@ -139,9 +155,26 @@ def generateTrainingExamples(trainingConfiguration):
 
             inter = 10
             if 0 and (t % inter == 0):
-                gui.screenshot( 'karman_{}.png'.format(int(t/inter)) )
+                gui.screenshot( 'karman_{}.png'.format(int(t/inter)) );
+
+def applyBoundaryValues(initialConditions,npObs,npVel,vel):
+    #print(npVel[:,1:,:])
+    #print(initialConditions[:,0,:])
+    #npVel = np.concatenate((initialConditions[:,0,:],npVel[:,1:,:]), axis=0)
+    it = np.nditer(npObs, flags=['multi_index'])
+    while not it.finished:
+        if it[0] < 0:
+            ind = it.multi_index
+            for i in range(3):
+                tuple = (ind[0], ind[1], i)
+                npVel[ind[0], ind[1], i] = 0.0
+            # vel[ind] = np.zeros(3,dtype='f')
+        it.iternext()
+    npVel[:,0,:] = initialConditions[:,0,:]
+    copyArrayToGridVec3(source=npVel, target=vel)
 
 
+#initialConditions = np.concatenate((np.ones((32,64,1), dtype='f'),np.zeros((32,64,1), dtype='f')),axis = 2)
 #trainingConfiguration = TrainingConfiguration.TrainingConfiguration()
-#generateTrainingExamples(trainingConfiguration)
+#generateTrainingExamples(trainingConfiguration,initialConditions,obstacleCreator=ObstacleContainer.generateObstacleContainer)
 #list = trainingConfiguration.loadGeneratedData()
