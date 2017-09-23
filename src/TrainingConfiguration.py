@@ -15,6 +15,7 @@ class TrainingConfiguration(object):
         self.maxObstacleNumber = maxObstacleNumber
         self.maxObstacleSize = maxObstacleSize
         self.timeOffset = timeOffset
+        print("GUI: {}".format(self.GUI))
 
     def getFileNameFor(self,simNo,stepNo):
         return 'vel_SimNo{}_stepNo{}.p'.format(simNo,stepNo)

@@ -18,7 +18,7 @@ def generateTrainingExamples(trainingConfiguration):
     s          = FluidSolver(name='main', gridSize = gs, dim=dim)
     s.timestep = 1.
 
-    GUI = False
+    GUI = trainingConfiguration.GUI
 
     #Zylinder_Position
     pos = [0.25,0.5,0.5]
@@ -142,6 +142,6 @@ def generateTrainingExamples(trainingConfiguration):
                 gui.screenshot( 'karman_{}.png'.format(int(t/inter)) )
 
 
-trainingConfiguration = TrainingConfiguration.TrainingConfiguration()
-generateTrainingExamples(trainingConfiguration)
-list = trainingConfiguration.loadGeneratedData()
+#trainingConfiguration = TrainingConfiguration.TrainingConfiguration()
+#generateTrainingExamples(trainingConfiguration)
+#list = trainingConfiguration.loadGeneratedData()

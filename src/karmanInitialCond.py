@@ -1,5 +1,5 @@
 from manta import *
-import numpy
+import numpy as np
 import utils
 import Sim1Result
 import random
@@ -10,8 +10,8 @@ import ObstacleContainer
 
 def generateTrainingExamples(trainingConfiguration,initialConditions,obstacleCreator = ObstacleContainer.simpleCylinder):
 
-    zComp = numpy.zeros( (trainingConfiguration.resY, trainingConfiguration.resX,1), dtype='f')
-    initialConditions = numpy.concatenate((initialConditions, zComp), axis=2)
+    zComp = np.zeros( (trainingConfiguration.resY, trainingConfiguration.resX,1), dtype='f')
+    initialConditions = np.concatenate((initialConditions, zComp), axis=2)
     secOrderBc = True
     dim        = 2
     res        = 32
@@ -34,8 +34,8 @@ def generateTrainingExamples(trainingConfiguration,initialConditions,obstacleCre
     # savepng = trainingConfiguration.savepng  # todo
     interval = trainingConfiguration.saveInterval
     offset = trainingConfiguration.timeOffset
-    npVel = numpy.zeros( (trainingConfiguration.resY, trainingConfiguration.resX, 3), dtype='f')
-    npObs = numpy.zeros( (trainingConfiguration.resY, trainingConfiguration.resX), dtype='f')
+    npVel = np.zeros( (trainingConfiguration.resY, trainingConfiguration.resX, 3), dtype='f')
+    npObs = np.zeros( (trainingConfiguration.resY, trainingConfiguration.resX), dtype='f')
 
     #Number of generated Images
     NumObsPosX = trainingConfiguration.NumObsPosX
@@ -150,11 +150,11 @@ def applyBoundaryValues(initialConditions,npVel,vel):
     #print(npVel[:,1:,:])
     #print(initialConditions[:,0,:])
     npVel[:,0,:] = initialConditions[:,0,:]
-    #npVel = numpy.concatenate((initialConditions[:,0,:],npVel[:,1:,:]), axis=0)
+    #npVel = np.concatenate((initialConditions[:,0,:],npVel[:,1:,:]), axis=0)
     vel = copyArrayToGridVec3(source = npVel,target = vel)
 
 
-initialConditions = numpy.concatenate((numpy.ones((32,64,1), dtype='f'),numpy.zeros((32,64,1), dtype='f')),axis = 2)
-trainingConfiguration = TrainingConfiguration.TrainingConfiguration()
-generateTrainingExamples(trainingConfiguration,initialConditions,obstacleCreator=ObstacleContainer.generateObstacleContainer)
-list = trainingConfiguration.loadGeneratedData()
+#initialConditions = np.concatenate((np.ones((32,64,1), dtype='f'),np.zeros((32,64,1), dtype='f')),axis = 2)
+#trainingConfiguration = TrainingConfiguration.TrainingConfiguration()
+#generateTrainingExamples(trainingConfiguration,initialConditions,obstacleCreator=ObstacleContainer.generateObstacleContainer)
+#list = trainingConfiguration.loadGeneratedData()

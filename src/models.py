@@ -108,9 +108,9 @@ def simpleModel6(x):
     layer = tf.layers.dense(layer, 8, activation=tf.nn.relu)
     layer = tf.contrib.layers.batch_norm(layer, decay=0.9, updates_collections=None, epsilon=1e-5, scale=True,
                                          scope="bn1")
-    layer = tf.layers.dense(layer, 32, activation=tf.nn.relu)
-    layer = tf.contrib.layers.batch_norm(layer, decay=0.9, updates_collections=None, epsilon=1e-5, scale=True,
-                                                 scope="bn2")
+    #layer = tf.layers.dense(layer, 32, activation=tf.nn.relu)
+    #layer = tf.contrib.layers.batch_norm(layer, decay=0.9, updates_collections=None, epsilon=1e-5, scale=True,
+    #                                             scope="bn2")
     #layer = tf.nn.dropout(layer, 0.7)
     layer = tf.layers.dense(layer, 2048 * scaleFactor * scaleFactor * numFeatures, activation=tf.nn.relu)
     layer = tf.reshape(layer, [-1, 64 * scaleFactor, 32 * scaleFactor, numFeatures])
