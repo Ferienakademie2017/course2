@@ -118,7 +118,7 @@ def generateTrainingExamples(trainingConfiguration,initialConditions,obstacleCre
 
                 setInflowBcs(vel=vel,dir='xX',value=velInflow)
                 copyGridToArrayVec3(source=vel, target=npVel)
-                copyGridToArrayLevelset(source=phiObs, target=npObs)
+                copyGridToArrayLevelset(source=phiWalls, target=npObs)
                 applyBoundaryValues(initialConditions, npObs, npVel, vel)
                 solvePressure( flags=flags, vel=vel, pressure=pressure, fractions=fractions, cgAccuracy=cgAcc, cgMaxIterFac=cgIter)
 
@@ -128,14 +128,14 @@ def generateTrainingExamples(trainingConfiguration,initialConditions,obstacleCre
                 setWallBcs(flags=flags, vel=vel)
                 setInflowBcs(vel=vel,dir='xX',value=velInflow)
                 copyGridToArrayVec3(source=vel, target=npVel)
-                copyGridToArrayLevelset(source=phiObs, target=npObs)
+                copyGridToArrayLevelset(source=phiWalls, target=npObs)
                 applyBoundaryValues(initialConditions, npObs, npVel, vel)
                 solvePressure( flags=flags, vel=vel, pressure=pressure, cgAccuracy=cgAcc, cgMaxIterFac=cgiter )
                 setWallBcs(flags=flags, vel=vel)
 
             #setInflowBcs(vel=vel,dir='xX',value=velInflow)
             copyGridToArrayVec3(source=vel, target=npVel)
-            copyGridToArrayLevelset(source=phiObs, target=npObs)
+            copyGridToArrayLevelset(source=phiWalls, target=npObs)
             applyBoundaryValues(initialConditions, npObs, npVel, vel)
 
             if printSimulation:
