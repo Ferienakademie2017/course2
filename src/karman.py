@@ -65,9 +65,14 @@ def generateTrainingExamples(trainingConfiguration,initialConditions,obstacleCre
         phiWalls.setConst(1000)
         phiWalls.join(phiWallsOrig)
 
-        for obstacle in obstacleCreator(s,trainingConfiguration,simNo):
+        obstacleList = obstacleCreator(s,trainingConfiguration,simNo)
+
+        for obstacle in obstacleList:
             phiObs = obstacle.computeLevelset()
             phiWalls.join(phiObs)
+
+        posVec3 = obstacleList[0].getCenter()
+        pos = [posVec3.x,posVec3.y,posVec3.z]
 
 
         # slightly larger copy for density source
