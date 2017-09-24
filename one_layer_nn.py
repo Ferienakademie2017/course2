@@ -11,6 +11,8 @@ import matplotlib.pyplot as plt
 import tensorflow as tf
 import numpy as np
 import scipy.misc
+import plotfunction
+import plotscript_3D
 np.random.seed(13)
 tf.set_random_seed(13)
 
@@ -77,13 +79,16 @@ for epoch in range(trainingEpochs):
 			zeros = np.zeros((64,32,1))
 			vali = np.reshape(vali_vel[i], [64, 32,2])
 			out = np.reshape(vout[i]    , [64, 32,2])
+			
 			vali = np.concatenate((vali, zeros), axis = 2)
 			out = np.concatenate((out, zeros), axis = 2)
-
+			
 			scipy.misc.toimage( vali , cmin=0.0, cmax=1.0).save("in_%d.png" % i)
 			scipy.misc.toimage( out , cmin=0.0, cmax=1.0).save("out_%d.png" % i)
-
-
+			valiname="in_%d.pdf" % i
+			outname="out_%d.pdf" % i
+			plotscript_3D.plot(vali,valiname)
+			plotscript_3D.plot(out,outname)
 
 
 
