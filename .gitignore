@@ -5,5 +5,5 @@ fluidSamples1608/
 fluidSamplesMetadata/
 densitySamples1608/
 densitySamples6432/
-test_output.npy
+*.npy
 __pycache__/
