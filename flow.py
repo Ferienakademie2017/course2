@@ -22,7 +22,7 @@ def plot_flow_triple(real_flow, net_flow):
     ax2.set_title("Output of network")
     ax2.quiver(X,Y, net_flow[::1,::1,0], net_flow[::1,::1,1],M, scale=S)
 
-    ax3.set_title("Plot of velocity differences (real-net)")
+    ax3.set_title("Velocity differences (real-network)")
     N=np.hypot(real_flow[::1,::1,0]-net_flow[::1,::1,0], real_flow[::1,::1,1]-net_flow[::1,::1,1])
     ax3.quiver(X,Y,real_flow[::1,::1,0]-net_flow[::1,::1,0],real_flow[::1,::1,1]-net_flow[::1,::1,1],N, scale=S)
 
@@ -36,4 +36,3 @@ def plot_flow_triple(real_flow, net_flow):
 
     plt.show()
     exit()
-    
