@@ -109,6 +109,8 @@ def generateTrainingExamples(trainingConfiguration,initialConditions,obstacleCre
             gui.show()
             #gui.pause()
 
+        result = Sim1Result.Sim1Result()
+
         #main loop
         for t in range(trainingConfiguration.NumSteps + 1):
 
@@ -157,15 +159,16 @@ def generateTrainingExamples(trainingConfiguration,initialConditions,obstacleCre
 
                 npVelsave = np.transpose(npVel, (1, 0, 2))
                 npObssave = np.transpose(npObs)
-                result = Sim1Result.Sim1Result(npVelsave, pos, npObssave)
-                # utils.sim1resToImage(result)
-                utils.serialize(simPath+trainingConfiguration.getFileNameFor(simNo,t), result)
+                result.addValue(npVelsave, pos, npObssave,t)
+                utils.sim1resToImage(result)
                 if(saveppm):
                     projectPpmFull( density, simPath + 'density_{}_{}.ppm'.format(simNo, tf), 0, 1.0 )
 
             inter = 10
             if 0 and (t % inter == 0):
                 gui.screenshot( 'karman_{}.png'.format(int(t/inter)) );
+        utils.serialize(simPath + trainingConfiguration.getFileNameFor(TrainingConfiguration.counter + simNo), result)
+        TrainingConfiguration.counter += 1
 
 def applyBoundaryValues(initialConditions,npObs,npVel,vel):
     #print(npVel[:,1:,:])

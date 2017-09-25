@@ -17,16 +17,16 @@ class TrainingConfiguration(object):
         self.maxObstacleNumber = maxObstacleNumber
         self.maxObstacleSize = maxObstacleSize
         self.timeOffset = timeOffset
+        self.counter = 0
         print("GUI: {}".format(self.GUI))
 
-    def getFileNameFor(self,simNo,stepNo):
-        return 'vel_SimNo{}_stepNo{}.p'.format(simNo,stepNo)
+    def getFileNameFor(self,simNo):
+        return 'vel_SimNo{}.p'.format(simNo)
 
     def loadGeneratedData(self):
         result_List = []
-        for simNo in range(0,self.NumObsPosX*self.NumObsPosY):
-            for saveNo in range(0,(self.NumSteps//self.saveInterval)):
-                result_List.append(utils.deserialize(self.simPath + self.getFileNameFor(simNo,self.timeOffset+saveNo*self.saveInterval)))
+        for simNo in range(0,self.counter):
+            result_List.append(utils.deserialize(self.simPath + self.getFileNameFor(simNo)))
         return result_List
 
 
