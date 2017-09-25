@@ -128,4 +128,15 @@ velocity_target = scipy.ndimage.zoom(velocity_target, get_parameter("downscaling
 # save low res image
 np.save("fluidSamples1608/{:04d}".format(y_index), velocity_target)
 
+# SAVE DENSITY DATA
+density_target = np.empty(shape=(res, 2*res))
+copyGridToArrayReal(density, density_target)
+
+np.save("densitySamples6432/{:04d}".format(y_index), density_target)
+
+# density data is 2D scalar, hence downscaling is required in x and y
+density_target = scipy.ndimage.zoom(density_target,
+        get_parameter("downscaling_factors")[:2], order=1)
+np.save("densitySamples1608/{:04d}".format(y_index), density_target)
+
 print("Finished iteration " + str(y_index))

@@ -7,6 +7,8 @@ output_folder_6432 = "fluidSamples6432/"
 output_folder_6432_images = "fluidSamples6432Images/"
 output_folder_1608 = "fluidSamples1608/"
 output_folder_metadata = "fluidSamplesMetadata/"
+output_folder_density_6432 = "densitySamples6432/"
+output_folder_density_1608 = "densitySamples1608/"
 
 
 y_position_min = 2
@@ -31,10 +33,10 @@ def clear_output_folders(path):
 		except Exception as e:
 			print(e)
 
-clear_output_folders(output_folder_6432)
-clear_output_folders(output_folder_6432_images)
-clear_output_folders(output_folder_1608)
-clear_output_folders(output_folder_metadata)
+for folder in (output_folder_1608, output_folder_6432, output_folder_metadata,
+        output_folder_6432_images, output_folder_density_1608,
+        output_folder_density_6432):
+    clear_output_folders(folder)
 
 for iteration in range(iterations):
 	for y_index in range(possible_positions):
