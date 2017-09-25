@@ -13,12 +13,13 @@ def generateSequence(sess, model, folder, example, numSteps=50):
     folder = "images/" + folder
 
     initialCond = example.x
+    example.y = np.expand_dims(example.y, -1)
 
     for i in range(numSteps):
         result = Sim1Result.Sim1Result(example.x[:,:,0:2], [0], example.x[:,:,2], time=0)
         utils.sim1resToImage(result, folder=folder)
         newResult = sess.run(model.yPred, evaluation.getFeedDict(model, [example], isTraining=False))
-        example.x[:,:,0:2] = newResult[0]
+        example.x[:,:,0:2] = newResult[0][:,:,:,0]
         example.x[:,:,0:2] = example.x[:,:,0:2] * example.x[:,:,2:3]
         example.x[:,0,:] = initialCond[:,0,:]
 
@@ -44,7 +45,7 @@ trainingData = evaluation.generateTimeStepExamples(trainingData)
 validationData = evaluation.generateTimeStepExamples(validationData)
 testData = evaluation.generateTimeStepExamples(testData)
 
-model = models.computeTimeStepNN1()
+model = models.computeMultipleTimeStepNN1(1)
 init = tf.global_variables_initializer()
 sess = tf.Session()
 #sess.run(init)
@@ -65,5 +66,5 @@ def randomSample(list, numSamples):
 # if(len(testData) >= 1):
 #     generateImgs(sess, model, "test/", randomSample(testData, numImages))
 
-generateSequence(sess, model, "sequence03/", validationData[1])
-generateSequence(sess, model, "sequence04/", validationData[2])
+generateSequence(sess, model, "sequenceMulti01/", validationData[0])
+generateSequence(sess, model, "sequenceMulti02/", validationData[100])
