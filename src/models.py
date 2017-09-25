@@ -1,5 +1,6 @@
 import tensorflow as tf
 import utils
+import numpy as np
 
 def simpleModel1(x):
     fc1_w = tf.get_variable("fc1_w", initializer=tf.random_normal([1, 256], stddev=0.1))
@@ -333,6 +334,36 @@ def timeStepModel1(x, phase):
 
     return layer
 
+def timeStepModel2(x, phase):
+    layer = x
+    numFeatures = 3
+    convSize = 4
+    scaleFactor = 1
+
+    for i in range(5):
+        oldLayer = layer
+        layer = tf.contrib.layers.conv2d(layer, numFeatures, [convSize, convSize], [1, 1], "SAME", activation_fn=None,
+                                         weights_initializer=tf.truncated_normal_initializer(stddev=0.02),
+                                         biases_initializer=tf.constant_initializer(0.0),scope="resnet1_{}".format(i))
+        layer = tf.contrib.layers.batch_norm(layer, decay=0.9, is_training=phase, updates_collections=None, epsilon=1e-5, scale=True,
+                                             scope="batch_norm1_{}".format(i))
+        layer = tf.nn.relu(layer)
+        layer = tf.contrib.layers.conv2d(layer, numFeatures, [convSize, convSize], [1, 1], "SAME", activation_fn=None,
+                                         weights_initializer=tf.truncated_normal_initializer(stddev=0.02),
+                                         biases_initializer=tf.constant_initializer(0.0),scope="resnet2_{}".format(i))
+        layer = tf.contrib.layers.batch_norm(layer, decay=0.9, is_training=phase, updates_collections=None, epsilon=1e-5, scale=True,
+                                             scope="batch_norm2_{}".format(i))
+        # layer = tf.nn.relu(layer)
+        layer = layer + oldLayer
+        # layer = tf.nn.dropout(layer, 0.8)
+
+    layer = tf.contrib.layers.conv2d(layer, 2, [convSize, convSize], [scaleFactor, scaleFactor], "SAME",
+                                     activation_fn=None,
+                                     weights_initializer=tf.truncated_normal_initializer(stddev=0.02),
+                                     biases_initializer=tf.constant_initializer(0.0),scope="output")
+
+    return layer
+
 def simpleLoss1(yPred, y, flagField):
     # loss = tf.reduce_mean(tf.square(yPred - y))
     loss = tf.reduce_mean(tf.abs(yPred - y))
@@ -350,6 +381,11 @@ def simpleLoss3(yPred, y, flagField):
     #divField = yPred[:, 1:, :-1, 0] - yPred[:, :-1, :-1, 0] + yPred[:, :-1, 1:, 1] - yPred[:, :-1, :-1, 1]
     #loss += 0.01 * tf.nn.l2_loss(divField * flagField[:, :-1, :-1])
     # loss = tf.reduce_mean(tf.square(tf.expand_dims(flagField, -1) * (yPred - y)))
+    return loss
+
+def multiStepLoss(yPred, y, flagField):
+    obs = tf.expand_dims(flagField, -1)
+    loss = tf.reduce_mean(tf.abs((yPred - y)))
     return loss
 
 class NeuralNetwork(object):
@@ -409,6 +445,9 @@ def computeNN9():
 def computeTimeStepNN1():
     return computeTimeStepNN(timeStepModel1, simpleLoss3, scale=1)
 
+def computeMultipleTimeStepNN1(numTimeSteps):
+    return computeMultipleTimeStepNN(timeStepModel2, multiStepLoss, scale=1,numTimeSteps=numTimeSteps)
+
 def computeSimpleNN(modelFunc, lossFunc, inputDim = 1, scale=0.25):
     phase = tf.placeholder(tf.bool, name='phase')
     x = tf.placeholder(tf.float32, shape=[None, inputDim])
@@ -444,3 +483,23 @@ def computeSimpleNNWithReg(modelFunc, lossFunc, inputDim = 1):
     flagField = tf.placeholder(tf.float32, shape=[None, 16, 8])
     loss = regLoss + lossFunc(yPred, y, flagField)
     return FlagFieldNN(x, y, yPred, loss, phase, flagField)
+
+def computeMultipleTimeStepNN(modelFunc, lossFunc, scale=0.25,numTimeSteps = 1):
+    phase = tf.placeholder(tf.bool, name='phase')
+    x = tf.placeholder(tf.float32, shape=[None, int(64 * scale), int(32 * scale), 3])
+    y = tf.placeholder(tf.float32, shape=[None, int(64 * scale), int(32 * scale), 2,numTimeSteps])
+    network_List = []
+    #y_List = []
+    with tf.variable_scope("MultiStep") as scope:
+        network_List.append(modelFunc(x, phase))
+        #y_List.append(y)
+        for ind in range(numTimeSteps-1):
+            scope.reuse_variables()
+            network_List.append(modelFunc(tf.concat((network_List[ind],x[:,:,:,-1:]),-1),phase))
+            #y_List.append(tf.placeholder(tf.float32, shape=[None, int(64 * scale), int(32 * scale), 2]))
+
+        yPreds = tf.concat([tf.expand_dims(network,-1) for network in network_List],-1)
+
+        flagField = tf.placeholder(tf.float32, shape=[None, int(64 * scale), int(32 * scale)])
+        loss = lossFunc(yPreds, y, tf.expand_dims(flagField,-1))
+    return FlagFieldNN(x, y, yPreds, loss, phase, flagField)

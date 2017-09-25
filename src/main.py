@@ -15,14 +15,14 @@ utils.serialize(trainConfig.simPath + "dataPartition.p", dataPartition)
 
 #trainingData, validationData, testData = dataPartition.computeData(data, exampleType=evaluation.FlagFieldSimulationExample, slice=[0, 1], scale=1)
 
-trainingData, validationData, testData = dataPartition.computeData(data, exampleType=evaluation.TimeStepSimulationCollection, slice=[0, 1], scale=1)
-trainingData = evaluation.generateTimeStepExamples(trainingData)
-validationData = evaluation.generateTimeStepExamples(validationData)
+trainingData, validationData, testData = dataPartition.computeData(data, exampleType=evaluation.MultiStepSimulationCollection, slice=[0, 1], scale=1)
+trainingData = evaluation.generateMultiTimeStepExamples(trainingData,5)
+validationData = evaluation.generateMultiTimeStepExamples(validationData,5)
 testData = evaluation.generateTimeStepExamples(testData)
 
-model = models.computeTimeStepNN1()
+model = models.computeMultipleTimeStepNN1(5)
 minibatchSize = 10
-numMinibatches = 500
+numMinibatches = 200
 lossLogger = utils.LossLogger()
 sess = training.trainNetwork(model, training.MinibatchSampler(trainingData), lossLogger, minibatchSize, numMinibatches)
 
