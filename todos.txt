@@ -16,14 +16,6 @@ Vorschläge aus master:
 - add time dependency / dynamics
 - produce some cools animations 
 
-
-Aufteilung:
-- David:
-- Dennis:
-- Sebastian:
-- Michael: 
-
-
 Erledigt:
 - Mantaflow-Ausgabe entfernen
 - Geschwindigkeiten in Hindernisse
