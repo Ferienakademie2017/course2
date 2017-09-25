@@ -1,23 +1,4 @@
-import tensorflow as tf
-import numpy as np
-from subprocess import call
-import csv
-
-
-def weight_variable(shape):
-    initial = tf.truncated_normal(shape, stddev=1)
-    return tf.Variable(initial)
-
-
-def bias_variable(shape):
-    initial = tf.truncated_normal(shape, stddev=1)
-    return tf.Variable(initial)
-
-
-def to_image_form(data):
-    d = np.reshape(data, (32, 64, 2))
-    return np.append(d, np.zeros([32, 64, 1]), axis=2)
-
+from routines import *
 
 def create_net(x): #TODO: change net architecture
     hidden_layer_size = 20
@@ -33,32 +14,12 @@ def create_net(x): #TODO: change net architecture
     output = tf.tanh(tf.matmul(h_fc1, w_fc2) + b_fc2)
     return output
 
-
 def create_trainer(output, ground_truth):
     loss = tf.reduce_mean(tf.reduce_sum(tf.pow(ground_truth - output, 2), reduction_indices=[1]))
     global_step = tf.Variable(0, trainable=False)
     lr = tf.train.piecewise_constant(global_step, [20000, 25000], [0.1, 0.05, 0.01])
     train_step = tf.train.AdamOptimizer(lr).minimize(loss, global_step=global_step)
     return train_step, loss
-
-
-def load_data():
-    training_image = []
-    training_val = []
-    for i in range(1, 32):
-        if i == 16: continue
-        path = "../res/karman_data_norm/vel" + str(i) + ".npy"
-        training_image.append(np.load(path).flatten())
-        training_val.append(i / 32)
-
-    training_data = [np.reshape(training_val, (30, 1)), training_image]
-    return training_data
-
-
-def get_scale_factor(y_pos):
-    index = int(y_pos * 32 - 1)
-    return np.load("../res/karman_data_norm/scale_factors.npy")[index]
-
 
 def train():
     x = tf.placeholder(tf.float32, [None, 1])
@@ -97,14 +58,7 @@ def train():
     output_img = to_image_form(net_data)
     # np.save("../res/net_image", output_img)
 
-    call(["python", "plot_flow.py"])
-
-
-def save_csv(data, path):
-    with open(path, "w") as file:
-        writer = csv.writer(file)
-        for k,v in data.items():
-            writer.writerow([k, v])
+    plot()
 
 if __name__ == "__main__":
     train()
