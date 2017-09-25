@@ -1,9 +1,13 @@
 
 
+- nochmal Divergenz-Loss testen
 - Generierung der initialen Bedingungen (halb erledigt)
 - Zeitschritt?
 - Command Line Parser? (David: von customPlot.py übernehmen?)
-- Kommentierung, Benennung der Variablen in TensorFlow, bessere Behandlung von BatchNorm/Dropout zur Testzeit
+- Kommentierung
+- Benennung der Variablen in TensorFlow
+- bessere Behandlung von BatchNorm/Dropout zur Testzeit
+- GAN
 
 
 Vorschläge aus master:

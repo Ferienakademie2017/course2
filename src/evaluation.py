@@ -43,6 +43,27 @@ class FlagFieldSimulationExample(object):
         # self.x = scipy.ndimage.zoom(obs, [scale, scale])
         self.x = self.flagField
 
+class TimeStepSimulationExample(object):
+    def __init__(self, sim1Result, slice=[1], scale=0.25):
+        # print(sim1Result.npVel.shape)
+        arr = sim1Result.npVel
+        arr = np.delete(arr, 2, 2)
+        # if(arr.shape[0] < arr.shape[1]):
+        #    arr = np.transpose(arr, (1, 0, 2))
+        arr = scipy.ndimage.zoom(arr, [scale, scale, 1])
+        # print(arr.shape)
+        self.y = arr
+        func = lambda x: 1.0 if x > 0.0 else 0.0
+
+        obs = sim1Result.obstacles
+        # if (obs.shape[0] < obs.shape[1]):
+        #    obs = np.transpose(obs)
+        obs = np.vectorize(func)(obs)
+        self.flagField = scipy.ndimage.zoom(obs, [scale, scale])
+        # self.x = scipy.ndimage.zoom(obs, [scale, scale])
+
+        self.x = np.concatenate(self.flagField)
+
 class DataPartition(object):
     def __init__(self, dataSize, trainingFraction=0.6, validationFraction=0.2):
         self.dataSize = dataSize

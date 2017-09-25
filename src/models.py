@@ -212,7 +212,8 @@ def simpleModel9(x):
     zoomSteps = 3
     zoomLayers = []
     # zoomLayers
-    layer = tf.reshape(layer, [-1, 64, 32, 1])
+    #layer = tf.reshape(layer, [-1, 64, 32, 1])
+    layer = tf.expand_dims(layer, -1)
 
 
     for i in range(zoomSteps):
@@ -403,6 +404,9 @@ def computeNN8():
 def computeNN9():
     return computeConvNN(simpleModel9, simpleLoss3, scale=1)
 
+def computeTimeStepNN1():
+    return computeTimeStepNN(timeStepModel1, simpleLoss2, scale=1)
+
 def computeSimpleNN(modelFunc, lossFunc, inputDim = 1, scale=0.25):
     x = tf.placeholder(tf.float32, shape=[None, inputDim])
     y = tf.placeholder(tf.float32, shape=[None, int(64 * scale), int(32 * scale), 2])
@@ -413,6 +417,14 @@ def computeSimpleNN(modelFunc, lossFunc, inputDim = 1, scale=0.25):
 
 def computeConvNN(modelFunc, lossFunc, scale=0.25):
     x = tf.placeholder(tf.float32, shape=[None, int(64 * scale), int(32 * scale)])
+    y = tf.placeholder(tf.float32, shape=[None, int(64 * scale), int(32 * scale), 2])
+    yPred = modelFunc(x)
+    flagField = tf.placeholder(tf.float32, shape=[None, int(64 * scale), int(32 * scale)])
+    loss = lossFunc(yPred, y, flagField)
+    return FlagFieldNN(x, y, yPred, loss, flagField)
+
+def computeTimeStepNN(modelFunc, lossFunc, scale=0.25):
+    x = tf.placeholder(tf.float32, shape=[None, int(64 * scale), int(32 * scale), 3])
     y = tf.placeholder(tf.float32, shape=[None, int(64 * scale), int(32 * scale), 2])
     yPred = modelFunc(x)
     flagField = tf.placeholder(tf.float32, shape=[None, int(64 * scale), int(32 * scale)])
