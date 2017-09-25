@@ -20,7 +20,8 @@ def plot_2d_flow_data(filepath, verbose=VERBOSE):
 
     downscaling_factors = get_parameter("downscaling_factors")
     try:
-        y_position = float(filename)
+        # add offset (c.f. generate_fluid_data.py)
+        y_position = float(filename) + get_parameter("y_position_min")
         x_position = 2 * get_parameter("relative_x_position") *\
             get_parameter("resolution")
         radius = get_parameter("resolution") *\

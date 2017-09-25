@@ -3,6 +3,8 @@ import numpy as np
 import shutil
 import os
 
+from utils import get_parameter
+
 output_folder_6432 = "fluidSamples6432/"
 output_folder_6432_images = "fluidSamples6432Images/"
 output_folder_1608 = "fluidSamples1608/"
@@ -11,8 +13,8 @@ output_folder_density_6432 = "densitySamples6432/"
 output_folder_density_1608 = "densitySamples1608/"
 
 
-y_position_min = 2
-y_position_max = 30
+y_position_min = get_parameter("y_position_min")
+y_position_max = get_parameter("y_position_max")
 possible_positions = y_position_max - y_position_min
 step_size = 1
 
