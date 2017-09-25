@@ -12,6 +12,8 @@ def bias_variable(shape):
     initial = tf.truncated_normal(shape, stddev=1)
     return tf.Variable(initial)
 
+def leaky_relu(x, alpha):
+    return tf.maximum(x, alpha * x)
 
 def to_image_form(data):
     return np.reshape(data, (32, 64, 2))
@@ -38,9 +40,9 @@ def save_csv(data, path):
         for k,v in data.items():
             writer.writerow([k, v])
 
-def plot():
+def plot(img):
     real_flow = np.load("../res/karman_data/vel16.npy")
-    net_flow = np.load("../res/net_image.npy")
+    net_flow = img
 
     # takes ONE real flow and ONE output from network and compares them
     real_flow = real_flow.transpose((1, 0, 2))
