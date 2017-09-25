@@ -8,6 +8,9 @@ import random
 import tensorflow as tf
 import numpy as np
 import scipy.misc
+
+from networks import create_1_256_network
+
 np.random.seed(13)
 tf.set_random_seed(13)
 
@@ -71,16 +74,7 @@ trainingInput = np.hstack((
 print("Split into %d training and %d validation samples" % (len(trainingData), len(validationData)) )
 
 # set up network
-sess = tf.Session()
-input_layer = tf.placeholder(tf.float32, shape=(None, 1))
-output_size = 1
-for d in range(1, densities.ndim):
-    output_size *= densities.shape[d]
-
-W = tf.Variable(tf.random_normal([1, output_size], stddev=0.01))
-b = tf.Variable(tf.random_normal([output_size], stddev=0.01))
-
-output = input_layer * W + b
+input_layer, output = create_1_256_network(densities)
 
 y = tf.placeholder(tf.float32)
 squared_deltas = tf.square(output - y)
@@ -90,6 +84,7 @@ optimizer = tf.train.AdamOptimizer(0.0001)
 train = optimizer.minimize(loss)
 
 init = tf.global_variables_initializer()
+sess = tf.Session()
 sess.run(init)
 
 flat_training_data = trainingData #twoDtoOneD(trainingData)
@@ -99,8 +94,6 @@ print(trainingInput.shape)
 
 for i in range(trainingEpochs):
 	sess.run(train, feed_dict = {input_layer: trainingInput, y: flat_training_data})
-
-print(sess.run([W, b]))
 
 # test the trained network
 test_output = sess.run(output, {input_layer: validationInput[0].reshape(1,1)})
