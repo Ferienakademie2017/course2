@@ -56,6 +56,7 @@ def generateTrainingExamples(trainingConfiguration,initialConditions,obstacleCre
     inflow = initialConditions[:,0,:]
 
     for simNo in range(0,NumObsPosX*NumObsPosY):
+        result_List = []
         #pos = [random.random(),random.random(),0.5]
         #pos = [0.4, 0.8, 0.5]
         #1. Komponente ist x-Komponente, 2. Komponente ist y-Komponente
@@ -109,7 +110,6 @@ def generateTrainingExamples(trainingConfiguration,initialConditions,obstacleCre
             gui.show()
             #gui.pause()
 
-        result = Sim1Result.Sim1Result()
 
         #main loop
         for t in range(trainingConfiguration.NumSteps + 1):
@@ -159,16 +159,17 @@ def generateTrainingExamples(trainingConfiguration,initialConditions,obstacleCre
 
                 npVelsave = np.transpose(npVel, (1, 0, 2))
                 npObssave = np.transpose(npObs)
-                result.addValue(npVelsave, pos, npObssave,t)
+                result = Sim1Result.Sim1Result(npVelsave,pos, npObssave,t)
+                result_List.append(result)
                 utils.sim1resToImage(result)
                 if(saveppm):
                     projectPpmFull( density, simPath + 'density_{}_{}.ppm'.format(simNo, tf), 0, 1.0 )
 
             inter = 10
             if 0 and (t % inter == 0):
-                gui.screenshot( 'karman_{}.png'.format(int(t/inter)) );
-        utils.serialize(simPath + trainingConfiguration.getFileNameFor(TrainingConfiguration.counter + simNo), result)
-        TrainingConfiguration.counter += 1
+                gui.screenshot( 'karman_{}.png'.format(int(t/inter)) )
+        utils.serialize(simPath + trainingConfiguration.getFileNameFor(simNo), result_List)
+        trainingConfiguration.counter += 1
 
 def applyBoundaryValues(initialConditions,npObs,npVel,vel):
     #print(npVel[:,1:,:])
