@@ -8,9 +8,21 @@ import utils
 import evaluation
 import models
 
+def generateImgs(sess, model, folder, data):
+    examples = [evaluation.FlagFieldSimulationExample(outputManta, slice=[0, 1], scale=1) for outputManta in data]
+    results = sess.run(model.yPred, feed_dict=evaluation.getFeedDict(model, examples))
+    for d, r in zip(data, results):
+        outputTensor = Sim1Result.Sim1Result(r, d.obstacle_pos, d.obstacles)
+
+        utils.sim1resToImage(d)
+        utils.sim1resToImage(outputTensor)
+        utils.sim1resToImage(outputTensor, background='error', origRes=d)
+
+
 trainConfig = utils.deserialize("data/rand1/trainConfig.p")
-# data = []  # todo
-data = trainConfig.loadGeneratedData()[0:200]
+dataPartition = utils.deserialize(trainConfig.simPath + "dataPartition.p")
+data = trainConfig.loadGeneratedData()
+trainingData, validationData, testData = dataPartition.computeData(data, exampleType=evaluation.FlagFieldSimulationExample, slice=[0, 1], scale=1)
 
 model = models.computeNN9()
 init = tf.global_variables_initializer()
@@ -20,24 +32,6 @@ sess = tf.Session()
 # Load final variables
 model.load(sess, "final")
 
-# Sample some input data
-# outputManta = data[18]
-utils.image_i = 10000
-#examples = [evaluation.ParametricSimulationExample(outputManta, slice=[0, 1], scale=1) for outputManta in data]
-examples = [evaluation.FlagFieldSimulationExample(outputManta, slice=[0, 1], scale=1) for outputManta in data]
-results = sess.run(model.yPred, feed_dict=evaluation.getFeedDict(model, examples))
-
-
-for i in range(len(data)):
-    #outputManta = data[i]
-    #simEx = evaluation.ParametricSimulationExample(outputManta, slice=[0, 1], scale=0.25)
-    # outputManta.npVel = np.transpose(outputManta.npVel, (1, 0, 2))
-    # outputManta.obstacles = np.transpose(outputManta.obstacles)
-    #manualResults = sess.run(model.yPred, feed_dict=evaluation.getFeedDict(model, [simEx]))
-    #print(sum(sum(sum(manualResults[0]))))
-
-    outputTensor = Sim1Result.Sim1Result(results[i], data[i].obstacle_pos, data[i].obstacles)
-
-    utils.sim1resToImage(data[i])
-    utils.sim1resToImage(outputTensor)
-    utils.sim1resToImage(outputTensor, background='error', origRes=data[i])
+generateImgs(sess, model, "training", trainingData[:5])
+generateImgs(sess, model, "validation", validationData[:5])
+generateImgs(sess, model, "test", testData[:5])
