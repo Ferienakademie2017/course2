@@ -59,6 +59,8 @@ def plot_2d_flow_data(filepath, verbose=VERBOSE):
         fig, ax = plt.subplots()
         image = ax.imshow(data, origin="lower")
         fig.colorbar(image)
+    else:
+        print(data.ndim)
 
     ax.add_artist(obstacle)
     ax.axis("equal")
