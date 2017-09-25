@@ -9,13 +9,24 @@ import evaluation
 import models
 import random
 
+def generateMultiSequence(sess, model, folder, example, numSteps=50):
+    folder = "images/" + folder
 
+    initialCond = example.x
+    example.y = np.expand_dims(example.y, -1)
+
+    for i in range(numSteps):
+        result = Sim1Result.Sim1Result(example.x[:,:,0:2], [0], example.x[:,:,2], time=0)
+        utils.sim1resToImage(result, folder=folder)
+        newResult = sess.run(model.yPred, evaluation.getFeedDict(model, [example], isTraining=False))
+        example.x[:,:,0:2] = newResult[0][:,:,:,0]
+        example.x[:,:,0:2] = example.x[:,:,0:2] * example.x[:,:,2:3]
+        example.x[0,:,:] = initialCond[0,:,:]
 
 def generateSequence(sess, model, folder, example, numSteps=50):
     folder = "images/" + folder
 
     initialCond = example.x
-    #initialFlow = sum(initialCond[0,:,0])
 
     for i in range(numSteps):
         result = Sim1Result.Sim1Result(example.x[:,:,0:2], [0], example.x[:,:,2], time=0)
@@ -29,7 +40,7 @@ def generateSequence(sess, model, folder, example, numSteps=50):
 
 
 def generateImgs(sess, model, folder, examples):
-    folder = "images/test/" + folder
+    folder = "images/" + folder
     # examples = [evaluation.TimeStepSimulationExample(outputManta, slice=[0, 1], scale=1) for outputManta in data]
     results = sess.run(model.yPred, feed_dict=evaluation.getFeedDict(model, examples, isTraining=False))
     for e, r in zip(examples, results):
@@ -41,7 +52,7 @@ def generateImgs(sess, model, folder, examples):
         utils.sim1resToImage(outputTensor, background='error', origRes=outputManta, folder=folder)
 
 
-trainConfig = utils.deserialize("data/timeStep128x128/trainConfig.p")
+trainConfig = utils.deserialize("data/test_timeStep/trainConfig.p")
 dataPartition = utils.deserialize(trainConfig.simPath + "dataPartition.p")
 data = trainConfig.loadGeneratedData()
 trainingData, validationData, testData = dataPartition.computeData(data, exampleType=evaluation.TimeStepSimulationCollection, slice=[0, 1], scale=1)
@@ -49,7 +60,7 @@ trainingData = evaluation.generateTimeStepExamples(trainingData)
 validationData = evaluation.generateTimeStepExamples(validationData)
 testData = evaluation.generateTimeStepExamples(testData)
 
-model = models.computeTimeStepNN1()
+model = models.computeMultipleTimeStepNN1(1)
 init = tf.global_variables_initializer()
 sess = tf.Session()
 #sess.run(init)
@@ -70,5 +81,5 @@ def randomSample(list, numSamples):
 # if len(testData) >= 1:
 #     generateImgs(sess, model, "test/", randomSample(testData, numImages))
 
-for i in range(20):
-    generateSequence(sess, model, "sequences/128_{}/".format(i), validationData[i], 400)
+generateMultiSequence(sess, model, "sequenceMulti01/", validationData[0])
+generateMultiSequence(sess, model, "sequenceMulti02/", validationData[100])

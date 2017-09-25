@@ -7,7 +7,7 @@ import evaluation
 import models
 import random
 
-trainConfig = utils.deserialize("data/timeStep128x128/trainConfig.p")
+trainConfig = utils.deserialize("data/test_timeStep/trainConfig.p")
 # data = []  # todo
 data = trainConfig.loadGeneratedData()
 dataPartition = evaluation.DataPartition(len(data), 0.6, 0.4)
@@ -15,14 +15,14 @@ utils.serialize(trainConfig.simPath + "dataPartition.p", dataPartition)
 
 #trainingData, validationData, testData = dataPartition.computeData(data, exampleType=evaluation.FlagFieldSimulationExample, slice=[0, 1], scale=1)
 
-trainingData, validationData, testData = dataPartition.computeData(data, exampleType=evaluation.TimeStepSimulationCollection, slice=[0, 1], scale=1)
-trainingData = evaluation.generateTimeStepExamples(trainingData)
-validationData = evaluation.generateTimeStepExamples(validationData)
+trainingData, validationData, testData = dataPartition.computeData(data, exampleType=evaluation.MultiStepSimulationCollection, slice=[0, 1], scale=1)
+trainingData = evaluation.generateMultiTimeStepExamples(trainingData,5)
+validationData = evaluation.generateMultiTimeStepExamples(validationData,5)
 testData = evaluation.generateTimeStepExamples(testData)
 
-model = models.computeTimeStepNN1()
+model = models.computeMultipleTimeStepNN1(5)
 minibatchSize = 10
-numMinibatches = 400
+numMinibatches = 200
 lossLogger = utils.LossLogger()
 sess = training.trainNetwork(model, training.MinibatchSampler(trainingData), lossLogger, minibatchSize, numMinibatches)
 
