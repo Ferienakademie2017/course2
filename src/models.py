@@ -269,12 +269,12 @@ def simpleModel9(x):
 
     return layer
 
-def timeStepModel1(x):
+def timeStepModel1(x, phase):
     layer = x
-    numFeatures = 10
-    convSize = 5
+    numFeatures = 4
+    convSize = 4
     scaleFactor = 1
-    zoomSteps = 3
+    zoomSteps = 1
     zoomLayers = []
     # zoomLayers
 
@@ -284,21 +284,21 @@ def timeStepModel1(x):
                                          activation_fn=tf.nn.relu,
                                          weights_initializer=tf.truncated_normal_initializer(stddev=0.02),
                                          biases_initializer=tf.constant_initializer(0.0))
-        layer = tf.contrib.layers.batch_norm(layer, decay=0.9, updates_collections=None, epsilon=1e-5, scale=True,
+        layer = tf.contrib.layers.batch_norm(layer, decay=0.9, is_training=phase, updates_collections=None, epsilon=1e-5, scale=True,
                                              scope="batch_norm0_{}".format(i))
 
-    for i in range(10):
+    for i in range(5):
         oldLayer = layer
         layer = tf.contrib.layers.conv2d(layer, numFeatures, [convSize, convSize], [1, 1], "SAME", activation_fn=None,
                                          weights_initializer=tf.truncated_normal_initializer(stddev=0.02),
                                          biases_initializer=tf.constant_initializer(0.0))
-        layer = tf.contrib.layers.batch_norm(layer, decay=0.9, updates_collections=None, epsilon=1e-5, scale=True,
+        layer = tf.contrib.layers.batch_norm(layer, decay=0.9, is_training=phase, updates_collections=None, epsilon=1e-5, scale=True,
                                              scope="batch_norm1_{}".format(i))
         layer = tf.nn.relu(layer)
         layer = tf.contrib.layers.conv2d(layer, numFeatures, [convSize, convSize], [1, 1], "SAME", activation_fn=None,
                                          weights_initializer=tf.truncated_normal_initializer(stddev=0.02),
                                          biases_initializer=tf.constant_initializer(0.0))
-        layer = tf.contrib.layers.batch_norm(layer, decay=0.9, updates_collections=None, epsilon=1e-5, scale=True,
+        layer = tf.contrib.layers.batch_norm(layer, decay=0.9, is_training=phase, updates_collections=None, epsilon=1e-5, scale=True,
                                              scope="batch_norm2_{}".format(i))
         # layer = tf.nn.relu(layer)
         layer = layer + oldLayer
@@ -309,7 +309,7 @@ def timeStepModel1(x):
                                                    activation_fn=tf.nn.relu,
                                                    weights_initializer=tf.truncated_normal_initializer(stddev=0.02),
                                                    biases_initializer=tf.constant_initializer(0.0))
-        layer = tf.contrib.layers.batch_norm(layer, decay=0.9, updates_collections=None, epsilon=1e-5, scale=True,
+        layer = tf.contrib.layers.batch_norm(layer, decay=0.9, is_training=phase, updates_collections=None, epsilon=1e-5, scale=True,
                                              scope="batch_norm3_{}".format(i))
         layer = tf.concat([layer, zoomLayers[zoomSteps - 1 - i]], 3)
 
@@ -317,13 +317,13 @@ def timeStepModel1(x):
                                          activation_fn=tf.nn.relu,
                                          weights_initializer=tf.truncated_normal_initializer(stddev=0.02),
                                          biases_initializer=tf.constant_initializer(0.0))
-        layer = tf.contrib.layers.batch_norm(layer, decay=0.9, updates_collections=None, epsilon=1e-5, scale=True,
+        layer = tf.contrib.layers.batch_norm(layer, decay=0.9, is_training=phase, updates_collections=None, epsilon=1e-5, scale=True,
                                              scope="batch_norm4_{}".format(i))
         layer = tf.contrib.layers.conv2d(layer, numFeatures, [convSize, convSize], [1, 1], "SAME",
                                          activation_fn=tf.nn.relu,
                                          weights_initializer=tf.truncated_normal_initializer(stddev=0.02),
                                          biases_initializer=tf.constant_initializer(0.0))
-        layer = tf.contrib.layers.batch_norm(layer, decay=0.9, updates_collections=None, epsilon=1e-5, scale=True,
+        layer = tf.contrib.layers.batch_norm(layer, decay=0.9, is_training=phase, updates_collections=None, epsilon=1e-5, scale=True,
                                              scope="batch_norm5_{}".format(i))
 
     layer = tf.contrib.layers.conv2d(layer, 2, [convSize, convSize], [scaleFactor, scaleFactor], "SAME",
@@ -345,18 +345,20 @@ def simpleLoss2(yPred, y, flagField):
 
 def simpleLoss3(yPred, y, flagField):
     obs = tf.expand_dims(flagField, -1)
-    loss = tf.reduce_mean(tf.abs(obs * (yPred - y)))
+    loss = tf.reduce_mean(tf.abs((yPred - y)))
     #divField = yPred[:, 2:, 1:-1, 0] - yPred[:, :-2, 1:-1, 0] + yPred[:, 1:-1, 2:, 1] - yPred[:, 1:-1, :-2, 1]
-    #loss += 0.1 * tf.nn.l2_loss(divField * flagField[:, 1:-1, 1:-1])
+    #divField = yPred[:, 1:, :-1, 0] - yPred[:, :-1, :-1, 0] + yPred[:, :-1, 1:, 1] - yPred[:, :-1, :-1, 1]
+    #loss += 0.01 * tf.nn.l2_loss(divField * flagField[:, :-1, :-1])
     # loss = tf.reduce_mean(tf.square(tf.expand_dims(flagField, -1) * (yPred - y)))
     return loss
 
 class NeuralNetwork(object):
-    def __init__(self, x, y, yPred, loss):
+    def __init__(self, x, y, yPred, loss, phase):
         self.x = x
         self.y = y
         self.yPred = yPred
         self.loss = loss
+        self.phase = phase
         self.saver = tf.train.Saver()
 
     def compute(self, x, sess):
@@ -372,8 +374,8 @@ class NeuralNetwork(object):
         self.saver.restore(sess, name)
 
 class FlagFieldNN(NeuralNetwork):
-    def __init__(self, x, y, yPred, loss, flagField):
-        super(FlagFieldNN, self).__init__(x, y, yPred, loss)
+    def __init__(self, x, y, yPred, loss, phase, flagField):
+        super(FlagFieldNN, self).__init__(x, y, yPred, loss, phase)
         self.flagField = flagField
 
 
@@ -405,36 +407,40 @@ def computeNN9():
     return computeConvNN(simpleModel9, simpleLoss3, scale=1)
 
 def computeTimeStepNN1():
-    return computeTimeStepNN(timeStepModel1, simpleLoss2, scale=1)
+    return computeTimeStepNN(timeStepModel1, simpleLoss3, scale=1)
 
 def computeSimpleNN(modelFunc, lossFunc, inputDim = 1, scale=0.25):
+    phase = tf.placeholder(tf.bool, name='phase')
     x = tf.placeholder(tf.float32, shape=[None, inputDim])
     y = tf.placeholder(tf.float32, shape=[None, int(64 * scale), int(32 * scale), 2])
     yPred = modelFunc(x)
     flagField = tf.placeholder(tf.float32, shape=[None, int(64 * scale), int(32 * scale)])
     loss = lossFunc(yPred, y, flagField)
-    return FlagFieldNN(x, y, yPred, loss, flagField)
+    return FlagFieldNN(x, y, yPred, loss, phase, flagField)
 
 def computeConvNN(modelFunc, lossFunc, scale=0.25):
+    phase = tf.placeholder(tf.bool, name='phase')
     x = tf.placeholder(tf.float32, shape=[None, int(64 * scale), int(32 * scale)])
     y = tf.placeholder(tf.float32, shape=[None, int(64 * scale), int(32 * scale), 2])
     yPred = modelFunc(x)
     flagField = tf.placeholder(tf.float32, shape=[None, int(64 * scale), int(32 * scale)])
     loss = lossFunc(yPred, y, flagField)
-    return FlagFieldNN(x, y, yPred, loss, flagField)
+    return FlagFieldNN(x, y, yPred, loss, phase, flagField)
 
 def computeTimeStepNN(modelFunc, lossFunc, scale=0.25):
+    phase = tf.placeholder(tf.bool, name='phase')
     x = tf.placeholder(tf.float32, shape=[None, int(64 * scale), int(32 * scale), 3])
     y = tf.placeholder(tf.float32, shape=[None, int(64 * scale), int(32 * scale), 2])
-    yPred = modelFunc(x)
+    yPred = modelFunc(x, phase)
     flagField = tf.placeholder(tf.float32, shape=[None, int(64 * scale), int(32 * scale)])
     loss = lossFunc(yPred, y, flagField)
-    return FlagFieldNN(x, y, yPred, loss, flagField)
+    return FlagFieldNN(x, y, yPred, loss, phase, flagField)
 
 def computeSimpleNNWithReg(modelFunc, lossFunc, inputDim = 1):
+    phase = tf.placeholder(tf.bool, name='phase')
     x = tf.placeholder(tf.float32, shape=[None, inputDim])
     y = tf.placeholder(tf.float32, shape=[None, 16, 8, 2])
     yPred, regLoss = modelFunc(x)
     flagField = tf.placeholder(tf.float32, shape=[None, 16, 8])
     loss = regLoss + lossFunc(yPred, y, flagField)
-    return FlagFieldNN(x, y, yPred, loss, flagField)
+    return FlagFieldNN(x, y, yPred, loss, phase, flagField)

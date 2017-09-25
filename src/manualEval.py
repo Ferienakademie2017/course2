@@ -7,17 +7,32 @@ import scipy.ndimage
 import utils
 import evaluation
 import models
+import random
+
+def generateSequence(sess, model, folder, example, numSteps=50):
+    folder = "images/" + folder
+
+    initialCond = example.x
+
+    for i in range(numSteps):
+        result = Sim1Result.Sim1Result(example.x[:,:,0:2], [0], example.x[:,:,2], time=0)
+        utils.sim1resToImage(result, folder=folder)
+        newResult = sess.run(model.yPred, evaluation.getFeedDict(model, [example], isTraining=False))
+        example.x[:,:,0:2] = newResult[0]
+        example.x[:,:,0:2] = example.x[:,:,0:2] * example.x[:,:,2:3]
+        example.x[:,0,:] = initialCond[:,0,:]
+
 
 def generateImgs(sess, model, folder, examples):
     folder = "images/" + folder
     # examples = [evaluation.TimeStepSimulationExample(outputManta, slice=[0, 1], scale=1) for outputManta in data]
-    results = sess.run(model.yPred, feed_dict=evaluation.getFeedDict(model, examples))
+    results = sess.run(model.yPred, feed_dict=evaluation.getFeedDict(model, examples, isTraining=False))
     for e, r in zip(examples, results):
         outputTensor = Sim1Result.Sim1Result(r, [0], e.x[:,:,2], time=0)
         outputManta = Sim1Result.Sim1Result(e.y, [0], e.x[:,:,2], time=0)
 
         utils.sim1resToImage(outputManta, folder=folder)
-        utils.sim1resToImage(outputTensor, folder= folder)
+        utils.sim1resToImage(outputTensor, folder=folder)
         utils.sim1resToImage(outputTensor, background='error', origRes=outputManta, folder=folder)
 
 
@@ -37,10 +52,18 @@ sess = tf.Session()
 # Load final variables
 model.load(sess, "final")
 
-numImages = 20
-if(len(trainingData) >= numImages):
-    generateImgs(sess, model, "training/", trainingData[:numImages])
-if(len(validationData) >= numImages):
-    generateImgs(sess, model, "validation/", validationData[:numImages])
-if(len(testData) >= numImages):
-    generateImgs(sess, model, "test/", testData[:numImages])
+def randomSample(list, numSamples):
+    """with replacement"""
+    return [list[i] for i in sorted(random.sample(xrange(len(list)), numSamples))]
+
+
+# numImages = 20
+# if(len(trainingData) >= 1):
+#     generateImgs(sess, model, "training/", randomSample(trainingData, numImages))
+# if(len(validationData) >= 1):
+#     generateImgs(sess, model, "validation/", randomSample(validationData, numImages))
+# if(len(testData) >= 1):
+#     generateImgs(sess, model, "test/", randomSample(testData, numImages))
+
+generateSequence(sess, model, "sequence03/", validationData[1])
+generateSequence(sess, model, "sequence04/", validationData[2])

@@ -94,7 +94,7 @@ def sim1resToImage(result, background='obstacles', origRes=None, folder=None):
         orig = np.transpose(orig, (1, 0, 2))
         diff = orig - data
         # Remove diff at obstacles
-        func = lambda x: 1.0 if x > 0.0 else 0.0
+        func = lambda x: 1.0 if x > 0.0001 else 0.0 #todo
         flagField = np.vectorize(func)(obstacles)
         diffBackg = flagField * np.sum(np.abs(diff), -1)
 
@@ -128,7 +128,7 @@ class LossLogger:
 
     def plot(self):
         self.ax.clear()
-        self.ax.plot(self.x, self.y)
+        self.ax.semilogy(self.x, self.y)
         self.ax.set_ylim([0, max(self.y)])
         self.ax.set_xlim([0, max(2000, max(self.x))])
 

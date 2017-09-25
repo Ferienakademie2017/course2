@@ -22,7 +22,7 @@ testData = evaluation.generateTimeStepExamples(testData)
 
 model = models.computeTimeStepNN1()
 minibatchSize = 10
-numMinibatches = 200
+numMinibatches = 500
 lossLogger = utils.LossLogger()
 sess = training.trainNetwork(model, training.MinibatchSampler(trainingData), lossLogger, minibatchSize, numMinibatches)
 

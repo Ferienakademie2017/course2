@@ -8,6 +8,8 @@
 - Benennung der Variablen in TensorFlow
 - bessere Behandlung von BatchNorm/Dropout zur Testzeit
 - GAN
+- Netzwerk auf eigenen Outputs trainieren
+- Loss auf mehreren Zeitschritten
 
 
 Vorschläge aus master:

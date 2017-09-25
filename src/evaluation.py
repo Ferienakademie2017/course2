@@ -102,7 +102,7 @@ class DataPartition(object):
         return trainingData, validationData, testData
 
 
-def getFeedDict(network, data):
+def getFeedDict(network, data, isTraining):
     xValues = np.array([ex.x for ex in data])
     yValues = np.array([ex.y for ex in data])
     ffValues = np.array([ex.flagField for ex in data])
@@ -114,10 +114,10 @@ def getFeedDict(network, data):
     #    print(ex.y.shape)
     #    print(ex.flagField.shape)
     #    print("")
-    return {network.x: xValues, network.y: yValues, network.flagField: ffValues}
+    return {network.x: xValues, network.y: yValues, network.flagField: ffValues, network.phase: isTraining}
 
 def validateModel(flagFieldNN, validationData, name="final"):
     sess = tf.Session()
     flagFieldNN.load(sess, name)
-    yPred, lossResult = sess.run([flagFieldNN.yPred, flagFieldNN.loss], getFeedDict(flagFieldNN, validationData))
+    yPred, lossResult = sess.run([flagFieldNN.yPred, flagFieldNN.loss], getFeedDict(flagFieldNN, validationData, isTraining=False))
     print("Validation loss: {}".format(lossResult))
