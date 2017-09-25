@@ -36,23 +36,37 @@ densities = []
 y_positions = np.load(fluidMetadataPath + "y_position_array.npy")
 sample_count = y_positions.shape[0]
 
+density_shape = None
 # read data from fluid sampling
+# 2D data is flattened but the shape is remembered for test_output
 for index in range(sample_count):
-	density = np.load(fluidDataPath + "{:04d}.npy".format(index))
-	densities.append(density)
+    density = np.load(fluidDataPath + "{:04d}.npy".format(index))
+    if density_shape is None:
+        density_shape = density.shape
+    densities.append(density.flatten())
 densities = np.array(densities)
 
 print("Read fluid data samples")
 
 validationSize = int(sample_count * 0.1) # take 10% as validation samples
+validation_start_index = 14
+validation_end_index = validation_start_index + validationSize
+print("Validation data range {}:{}".format(
+    validation_start_index, validation_end_index))
 
 # desired output for validation and training
-validationData = densities[sample_count-validationSize:sample_count][:]
-trainingData = densities[0:sample_count-validationSize][:]
+validationData = densities[validation_start_index:validation_end_index][:]
+trainingData = np.vstack((
+    densities[0:validation_start_index][:],
+    densities[validation_end_index:][:]
+    ))
 
 # input for validation and training
-validationInput = y_positions[sample_count-validationSize:sample_count]
-trainingInput = y_positions[0:sample_count-validationSize]
+validationInput = y_positions[validation_start_index:validation_end_index]
+trainingInput = np.hstack((
+    y_positions[:validation_start_index][:],
+    y_positions[validation_end_index:][:]
+    ))
 
 print("Split into %d training and %d validation samples" % (len(trainingData), len(validationData)) )
 
@@ -78,7 +92,7 @@ train = optimizer.minimize(loss)
 init = tf.global_variables_initializer()
 sess.run(init)
 
-flat_training_data = twoDtoOneD(trainingData)
+flat_training_data = trainingData #twoDtoOneD(trainingData)
 trainingInput = trainingInput.reshape(-1, 1)
 print(flat_training_data.shape)
 print(trainingInput.shape)
@@ -90,5 +104,5 @@ print(sess.run([W, b]))
 
 # test the trained network
 test_output = sess.run(output, {input_layer: validationInput[0].reshape(1,1)})
-formatted_test_output = test_output.reshape(densities.shape[1:])
+formatted_test_output = test_output.reshape(density_shape)
 np.save("test_output", formatted_test_output)
