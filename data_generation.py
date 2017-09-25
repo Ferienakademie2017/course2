@@ -109,23 +109,23 @@ for t in range(get_parameter("nr_frames")):
 		gui.screenshot( 'karman_%04d.png' % int(t/inter) );
 
 # write velocity array to file		
-target = np.empty(shape=(res, 2*res, 3))
-copyGridToArrayVec3(vel, target)
+velocity_target = np.empty(shape=(res, 2*res, 3))
+copyGridToArrayVec3(vel, velocity_target)
 
 # create colorful image
-pil_image = scipy.misc.toimage(target)
+pil_image = scipy.misc.toimage(velocity_target)
 pil_image.save("fluidSamples6432Images/{:04d}.png".format(y_index))
 
 # throw away z axis
-target = target[:,:,:2]
-print(target.shape)
+velocity_target = velocity_target[:,:,:2]
+print(velocity_target.shape)
 
 # save high res image
-np.save("fluidSamples6432/{:04d}".format(y_index), target)
+np.save("fluidSamples6432/{:04d}".format(y_index), velocity_target)
 
 # scale down image
-target = scipy.ndimage.zoom(target, get_parameter("downscaling_factors"), order=1)
+velocity_target = scipy.ndimage.zoom(velocity_target, get_parameter("downscaling_factors"), order=1)
 # save low res image
-np.save("fluidSamples1608/{:04d}".format(y_index), target)
+np.save("fluidSamples1608/{:04d}".format(y_index), velocity_target)
 
 print("Finished iteration " + str(y_index))
