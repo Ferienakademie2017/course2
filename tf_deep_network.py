@@ -118,11 +118,12 @@ print("Split into %d training and %d validation samples" % (len(trainingData), l
 # set up network
 
 #NETWORK ARCHITECTURE:
-#   Input        Layer1         Layer2           Output-Layer
-#   1 (lin)  ->  256 (tanh) ->  1000 (tanh)  ->  256 (lin)
+#   Input        Layer1         Layer2          Layer3        Output-Layer
+#   1 (lin)  ->  256 (tanh) ->  512 (tanh)  ->  256 (tanh) ->  256 (lin)
 input_size = 1
 layer1_size = 256
-layer2_size = 1000
+layer2_size = 512
+layer3_size = 256
 output_size = 256
 
 
@@ -140,13 +141,16 @@ b2 = tf.Variable(tf.random_normal([layer2_size], stddev=0.01))
 layer2 = tf.matmul(layer1, W2) + b2
 layer2 = tf.tanh(layer2)
 
-W3 = tf.Variable(tf.random_normal([layer2_size, output_size], stddev=0.01))
-b3 = tf.Variable(tf.random_normal([output_size], stddev=0.01))
+W3 = tf.Variable(tf.random_normal([layer2_size, layer3_size], stddev=0.01))
+b3 = tf.Variable(tf.random_normal([layer3_size], stddev=0.01))
 layer3 = tf.matmul(layer2, W3) + b3
+layer3 = tf.tanh(layer3)
 
+W4 = tf.Variable(tf.random_normal([layer3_size, output_size], stddev=0.01))
+b4 = tf.Variable(tf.random_normal([output_size], stddev=0.01))
+layer4 = tf.matmul(layer3, W4) + b4
 
-
-output = layer3
+output = layer4
 
 
 y = tf.placeholder(tf.float32)
