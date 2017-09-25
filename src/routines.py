@@ -6,12 +6,12 @@ import matplotlib.pyplot as plt
 
 
 def weight_variable(shape):
-    initial = tf.truncated_normal(shape, stddev=1)
+    initial = tf.truncated_normal(shape, stddev=0.1)
     return tf.Variable(initial)
 
 
 def bias_variable(shape):
-    initial = tf.truncated_normal(shape, stddev=1)
+    initial = tf.truncated_normal(shape, stddev=0.1)
     return tf.Variable(initial)
 
 
@@ -36,9 +36,25 @@ def load_data():
     return training_data
 
 
+def load_time_data():
+    training_image = []
+    training_val = []
+    for i in range(100):
+        path = "../res/timestep_norm/vel{}_{}.npy".format(str(16), str(i))
+        training_image.append(np.load(path).flatten())
+        training_val.append((16/32, i))
+
+    training_data = [np.reshape(training_val, (100, 2)), training_image]
+    return training_data
+
+
 def get_scale_factor(y_pos):
     index = int(y_pos * 32 - 1)
     return np.load("../res/karman_data_norm/scale_factors.npy")[index]
+
+def get_time_scale_factor(x):
+    #index = int(x[] * 32 - 1)
+    return np.load("../res/timestep_norm/scale_factors.npy")[x[1]]
 
 
 def save_csv(data, path):
@@ -48,10 +64,7 @@ def save_csv(data, path):
             writer.writerow([k, v])
 
 
-def plot(img):
-    real_flow = np.load("../res/karman_data/vel16.npy")
-    net_flow = img
-
+def plot(real_flow, net_flow):
     # takes ONE real flow and ONE output from network and compares them
     real_flow = real_flow.transpose((1, 0, 2))
     net_flow = net_flow.transpose((1, 0, 2))

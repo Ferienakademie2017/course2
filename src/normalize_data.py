@@ -6,23 +6,23 @@ from routines import to_image_form
 # TODO: convolutional, time, vary x position, look at proposal .txt file
 
 if __name__ == "__main__":
-    files = ["vel{}.npy".format(i) for i in range(1, 32)]
+    files = ["vel16_{}.npy".format(i) for i in range(100)]
 
-    # calculate mean and stddev
-    data = np.array([np.load("../res/karman_data/{}".format(f)) for f in files])
+    # calculate mean
+    data = np.array([np.load("../res/timestep/{}".format(f)) for f in files])
     print(data.shape)
     mean = np.mean(data, axis=0)
-    np.save("../res/karman_data_norm/mean", mean)
+    np.save("../res/timestep_norm/mean", mean)
 
     scale_factors = []
     for file in files:
-        path = os.path.join("../res/karman_data", file)
+        path = os.path.join("../res/timestep", file)
         data = np.load(path)
         m = np.max(np.abs(data))
         data -= mean
         data /= m
-        np.save("../res/karman_data_norm/{}".format(file), data)
+        np.save("../res/timestep_norm/{}".format(file), data)
         scale_factors.append(m)
         print("File {} factor {}".format(file, m))
     print(scale_factors)
-    np.save("../res/karman_data_norm/scale_factors", scale_factors)
+    np.save("../res/timestep_norm/scale_factors", scale_factors)
