@@ -2,6 +2,7 @@ import subprocess
 import numpy as np
 import shutil
 import os
+import sys
 
 from utils import get_parameter
 
@@ -19,7 +20,7 @@ possible_positions = y_position_max - y_position_min
 step_size = 1
 
 # how many times to simulate through all possible positions
-iterations = 1
+iterations = int(sys.argv[1])
 y_position_array = np.empty(shape=(iterations*possible_positions))
 
 
