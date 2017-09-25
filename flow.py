@@ -5,7 +5,7 @@ import math
 import matplotlib.pyplot as plt
 
 def plot_flow_triple(real_flow, net_flow):
-    S = 20  # scaling parameter
+    S = 10  # scaling parameter
     # takes ONE real flow and ONE output from network and compares them
     real_flow = real_flow.transpose((1,0,2))
     net_flow  =  net_flow.transpose((1,0,2))

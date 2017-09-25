@@ -24,22 +24,31 @@ def showImage(inputField):
     imgplot = plt.imshow(scaledImage)
     plt.show()
 
-def loadData(path):
+def loadData(path, filterLimit = 5):
     sourceFile = open(path, "rb")
     yPositions = pickle.load(sourceFile)
     trainingSize = yPositions.shape[0]
     # fieldSize = (32, 64, 2)
     outputSize = 256
+    filterCounter = 0
 
-    trainingInput = yPositions
+    # trainingInput = yPositions
+    trainingInput = []
     trainingOutput = np.zeros((trainingSize, outputSize), np.float32)
 
     for i in range(trainingSize):
         currentOutput = pickle.load(sourceFile)
+        if np.max(np.abs(currentOutput)) > filterLimit:
+            filterCounter += 1
+            continue
         # showVectorField(currentOutput[0,:,:,:])
         currentOutput = scaleImage(currentOutput, 2)
         currentOutput = transformToLinear(currentOutput[0, :, :, 0:2])
-        trainingOutput[i, :] = currentOutput
+        trainingInput.append(yPositions[i])
+        trainingOutput[i-filterCounter, :] = currentOutput
+    print("droped ", filterCounter, ' of ',trainingOutput.shape[0], " samples from training set")
+    trainingOutput = trainingOutput[0:(trainingOutput.shape[0]-filterCounter),:]
+    trainingInput = np.array(trainingInput)
 
     return trainingInput,trainingOutput
 
