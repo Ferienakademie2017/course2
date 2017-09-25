@@ -1,4 +1,5 @@
 import tensorflow as tf
+import tensorflow.contrib.layers as layers
 import numpy as np
 import scipy.misc
 import readTrainingData
@@ -31,35 +32,14 @@ y = tf.placeholder(tf.float32)  # training data
 
 xIn = tf.reshape(x, shape=[-1, inSize])  # flatten
 size1 = 64
-fc_1w = tf.Variable(tf.random_normal([inSize, size1], stddev=0.01))
-fc_1b = tf.Variable(tf.random_normal([size1], stddev=0.01))
-
-fc_1 = tf.add(tf.matmul(xIn, fc_1w), fc_1b)
-# fc_1 = tf.nn.tanh(fc_1)
-fc_1 = tf.nn.relu(fc_1)
-# fc_1 = tf.nn.dropout(fc_1, 0.5)  # plenty of dropout...
-
 size2 = 128
-fc_2w = tf.Variable(tf.random_normal([size1, size2], stddev=0.01))  # back to input size
-fc_2b = tf.Variable(tf.random_normal([size2], stddev=0.01))
-
-fc_2 = tf.add(tf.matmul(fc_1, fc_2w), fc_2b)
-# fc_2 = tf.nn.tanh(fc_2)
-fc_2 = tf.nn.relu(fc_2)
-# fc_2 = tf.nn.dropout(fc_2, 0.5)  # plenty of dropout...
-
 size3 = 256
-fc_3w = tf.Variable(tf.random_normal([size2, size3], stddev=0.01))  # back to input size
-fc_3b = tf.Variable(tf.random_normal([size3], stddev=0.01))
 
-fc_3 = tf.add(tf.matmul(fc_2, fc_3w), fc_3b)
-fc_3 = tf.nn.tanh(fc_3)
-# fc_3 = tf.nn.dropout(fc_3, 0.5)  # plenty of dropout...
+fc_1 = layers.fully_connected(xIn,size1,activation_fn=tf.contrib.keras.layers.LeakyReLU(0.2))
+fc_2 = layers.fully_connected(fc_1,size2,activation_fn=tf.contrib.keras.layers.LeakyReLU(0.2))
+fc_3 = layers.fully_connected(fc_2,size3,activation_fn = tf.nn.tanh)
 
-# y_pred = tf.add(tf.matmul(fc1, fc_2w), fc_2b)
-# y_pred = tf.reshape(y_pred, shape=[-1, 64, 64, 1])
 y_pred = fc_3
-# y_pred = tf.reshape(y_pred, shape=[-1, 8, 16, 2])
 
 cost = tf.nn.l2_loss((y - y_pred)) / batchSize
 # opt = tf.train.GradientDescentOptimizer(learningRate).minimize(cost)
