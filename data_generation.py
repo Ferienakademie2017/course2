@@ -34,12 +34,12 @@ phiWalls  = s.create(LevelsetGrid)
 flags.initDomain(inflow="xX", phiWalls=phiWalls, boundaryWidth=0)
 
 #obstacle  = Sphere(   parent=s, center=gs*vec3(0.25,0.5,0.5), radius=res*0.2)
-obstacle  = Cylinder(parent=s, center=vec3(x_position, y_position, 1), 
+obstacle  = Cylinder(parent=s, center=vec3(x_position, y_position, 1),
         radius=res*obstacle_radius_factor, z=gs*vec3(0, 0, 1.0))
 phiObs    = obstacle.computeLevelset()
 
 # slightly larger copy for density source
-densInflow  = Cylinder(parent=s, center=vec3(x_position, y_position, 1), 
+densInflow  = Cylinder(parent=s, center=vec3(x_position, y_position, 1),
         radius=res*smoke_source_radius_factor, z=gs*vec3(0, 0, 1.0))
 
 phiObs.join(phiWalls)
@@ -81,7 +81,7 @@ for t in range(get_parameter("nr_frames")):
 
 	densInflow.applyToGrid( grid=density, value=2. )
 
-	advectSemiLagrange(flags=flags, vel=vel, grid=density, order=2, orderSpace=1)  
+	advectSemiLagrange(flags=flags, vel=vel, grid=density, order=2, orderSpace=1)
 	advectSemiLagrange(flags=flags, vel=vel, grid=vel    , order=2, strength=1.0)
 
 	if(secOrderBc):
@@ -96,7 +96,7 @@ for t in range(get_parameter("nr_frames")):
 	else:
 		setWallBcs(flags=flags, vel=vel)
 		setInflowBcs(vel=vel,dir='xX',value=velInflow)
-		solvePressure( flags=flags, vel=vel, pressure=pressure, cgAccuracy=cgAcc, cgMaxIterFac=cgiter ) 
+		solvePressure( flags=flags, vel=vel, pressure=pressure, cgAccuracy=cgAcc, cgMaxIterFac=cgiter )
 		setWallBcs(flags=flags, vel=vel)
 
 	setInflowBcs(vel=vel,dir='xX',value=velInflow)
@@ -108,7 +108,7 @@ for t in range(get_parameter("nr_frames")):
 	if 0 and (t % inter == 0):
 		gui.screenshot( 'karman_%04d.png' % int(t/inter) );
 
-# write velocity array to file		
+# write velocity array to file
 velocity_target = np.empty(shape=(res, 2*res, 3))
 copyGridToArrayVec3(vel, velocity_target)
 
