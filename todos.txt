@@ -6,8 +6,15 @@
 - Kommentierung, Benennung der Variablen in TensorFlow, bessere Behandlung von BatchNorm/Dropout zur Testzeit
 
 
-
-
+Vorschläge aus master:
+- complex neural networks (convolutions)
+- higher grid resolution for the Mantaflow simulation
+- complex obstacles (use bitmasks)
+- other scenarios: e.g., fixed number of inlets and outlets in a closed
+  2D 'room' (simulation air ventilation, vary positions / size of inlets and out
+  lets)
+- add time dependency / dynamics
+- produce some cools animations 
 
 
 Aufteilung:
