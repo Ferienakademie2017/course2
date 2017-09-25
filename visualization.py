@@ -23,7 +23,7 @@ def plot_2d_velocities(filepath, verbose=VERBOSE):
         x_position = downscaling_factors[0] * get_parameter("resolution") *\
             get_parameter("relative_x_position") * 2
         radius = get_parameter("resolution") *\
-            get_parameter("obstacle_radius_factor") * downscaling_factor
+            get_parameter("obstacle_radius_factor") * downscaling_factors[0]
     except ValueError as e:
         # if the filename can't be converted to float, set circle parameters
         # to zero to not display it at all
