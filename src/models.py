@@ -268,6 +268,70 @@ def simpleModel9(x):
 
     return layer
 
+def timeStepModel1(x):
+    layer = x
+    numFeatures = 10
+    convSize = 5
+    scaleFactor = 1
+    zoomSteps = 3
+    zoomLayers = []
+    # zoomLayers
+
+    for i in range(zoomSteps):
+        zoomLayers.append(layer)
+        layer = tf.contrib.layers.conv2d(layer, numFeatures, [convSize, convSize], [2, 2], "SAME",
+                                         activation_fn=tf.nn.relu,
+                                         weights_initializer=tf.truncated_normal_initializer(stddev=0.02),
+                                         biases_initializer=tf.constant_initializer(0.0))
+        layer = tf.contrib.layers.batch_norm(layer, decay=0.9, updates_collections=None, epsilon=1e-5, scale=True,
+                                             scope="batch_norm0_{}".format(i))
+
+    for i in range(10):
+        oldLayer = layer
+        layer = tf.contrib.layers.conv2d(layer, numFeatures, [convSize, convSize], [1, 1], "SAME", activation_fn=None,
+                                         weights_initializer=tf.truncated_normal_initializer(stddev=0.02),
+                                         biases_initializer=tf.constant_initializer(0.0))
+        layer = tf.contrib.layers.batch_norm(layer, decay=0.9, updates_collections=None, epsilon=1e-5, scale=True,
+                                             scope="batch_norm1_{}".format(i))
+        layer = tf.nn.relu(layer)
+        layer = tf.contrib.layers.conv2d(layer, numFeatures, [convSize, convSize], [1, 1], "SAME", activation_fn=None,
+                                         weights_initializer=tf.truncated_normal_initializer(stddev=0.02),
+                                         biases_initializer=tf.constant_initializer(0.0))
+        layer = tf.contrib.layers.batch_norm(layer, decay=0.9, updates_collections=None, epsilon=1e-5, scale=True,
+                                             scope="batch_norm2_{}".format(i))
+        # layer = tf.nn.relu(layer)
+        layer = layer + oldLayer
+        # layer = tf.nn.dropout(layer, 0.8)
+
+    for i in range(zoomSteps):
+        layer = tf.contrib.layers.conv2d_transpose(layer, numFeatures, [convSize, convSize], [2, 2], "SAME",
+                                                   activation_fn=tf.nn.relu,
+                                                   weights_initializer=tf.truncated_normal_initializer(stddev=0.02),
+                                                   biases_initializer=tf.constant_initializer(0.0))
+        layer = tf.contrib.layers.batch_norm(layer, decay=0.9, updates_collections=None, epsilon=1e-5, scale=True,
+                                             scope="batch_norm3_{}".format(i))
+        layer = tf.concat([layer, zoomLayers[zoomSteps - 1 - i]], 3)
+
+        layer = tf.contrib.layers.conv2d(layer, numFeatures, [convSize, convSize], [1, 1], "SAME",
+                                         activation_fn=tf.nn.relu,
+                                         weights_initializer=tf.truncated_normal_initializer(stddev=0.02),
+                                         biases_initializer=tf.constant_initializer(0.0))
+        layer = tf.contrib.layers.batch_norm(layer, decay=0.9, updates_collections=None, epsilon=1e-5, scale=True,
+                                             scope="batch_norm4_{}".format(i))
+        layer = tf.contrib.layers.conv2d(layer, numFeatures, [convSize, convSize], [1, 1], "SAME",
+                                         activation_fn=tf.nn.relu,
+                                         weights_initializer=tf.truncated_normal_initializer(stddev=0.02),
+                                         biases_initializer=tf.constant_initializer(0.0))
+        layer = tf.contrib.layers.batch_norm(layer, decay=0.9, updates_collections=None, epsilon=1e-5, scale=True,
+                                             scope="batch_norm5_{}".format(i))
+
+    layer = tf.contrib.layers.conv2d(layer, 2, [convSize, convSize], [scaleFactor, scaleFactor], "SAME",
+                                     activation_fn=None,
+                                     weights_initializer=tf.truncated_normal_initializer(stddev=0.02),
+                                     biases_initializer=tf.constant_initializer(0.0))
+
+    return layer
+
 def simpleLoss1(yPred, y, flagField):
     # loss = tf.reduce_mean(tf.square(yPred - y))
     loss = tf.reduce_mean(tf.abs(yPred - y))
