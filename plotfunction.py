@@ -63,13 +63,13 @@ def plot_error(data_vali, data_out, describtion):
   
     tick = np.arange(0, 6)
     tick = tick*np.amax(res) * 0.2
-    fig = plt.imshow(diff_x, cmap=plt.cm.hot, interpolation='nearest')
+    fig = plt.imshow(diff_x, origin='lower', cmap=plt.cm.hot, interpolation='nearest')
     plt.colorbar( ticks=tick, label ='sqared error')
     plt.title('Velocity field and squared Error')
 
-    plt.text(0,40,'white quivers: validation velocity field')
+    plt.text(0,-7,'white quivers: validation velocity field')
     string = 'average error: ' + '{:f}'.format(err)
-    plt.text(0,45,string)
-    plt.text(-5,-10,describtion)
+    plt.text(0,-10,string)
+    plt.text(-5,40,describtion)
  
     plt.savefig(describtion + '.pdf')
