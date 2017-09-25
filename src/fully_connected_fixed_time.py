@@ -6,7 +6,7 @@ def create_net(x):
     # hidden layer
     w_fc1 = weight_variable(sizes[:2])
     b_fc1 = bias_variable([sizes[1]])
-    h_fc1 = leaky_relu(tf.matmul(x, w_fc1) + b_fc1, 0.1)
+    h_fc1 = tf.nn.sigmoid(tf.matmul(x, w_fc1) + b_fc1)
 
     # # hidden layer #2
     # w_fc2 = weight_variable(sizes[1:3])
@@ -45,19 +45,19 @@ def train():
 
 
     # train
-    for i in range(2000):
+    for i in range(10000):
         summary, _, loss_val = sess.run([merged, train_step, loss], feed_dict={x: training_data[0], ground_truth: training_data[1]})
         train_writer.add_summary(summary, i)
         loss_data[i] = loss_val
         if i % 100 == 0:
             print("Epoch {}: Loss = {}".format(i, loss_val))
-
-        test_input = 0.5
-        net_data = sess.run(output, feed_dict={x: np.reshape([test_input], (1, 1))})
-        net_data *= get_scale_factor(test_input)
-        net_data += mean
-        output_img = to_image_form(net_data)
-        np.save("../res/visualization_data/{}".format(i), output_img)
+        #
+        # test_input = 0.5
+        # net_data = sess.run(output, feed_dict={x: np.reshape([test_input], (1, 1))})
+        # net_data *= get_scale_factor(test_input)
+        # net_data += mean
+        # output_img = to_image_form(net_data)
+        # np.save("../res/visualization_data/{}".format(i), output_img)
 
     #save_csv(loss_data, "../res/training_memorize_all.csv")
 
@@ -68,7 +68,7 @@ def train():
     output_img = to_image_form(net_data)
     # np.save("../res/net_image", output_img)
 
-    plot(output_img)
+    plot(np.load("../res/karman_data/vel16.npy"), output_img)
 
 if __name__ == "__main__":
     train()
