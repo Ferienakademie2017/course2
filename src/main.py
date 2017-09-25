@@ -7,7 +7,7 @@ import evaluation
 import models
 import random
 
-trainConfig = utils.deserialize("data/test_timeStep/trainConfig.p")
+trainConfig = utils.deserialize("data/timeStep128x128/trainConfig.p")
 # data = []  # todo
 data = trainConfig.loadGeneratedData()
 dataPartition = evaluation.DataPartition(len(data), 0.6, 0.4)
@@ -22,7 +22,7 @@ testData = evaluation.generateTimeStepExamples(testData)
 
 model = models.computeTimeStepNN1()
 minibatchSize = 10
-numMinibatches = 500
+numMinibatches = 400
 lossLogger = utils.LossLogger()
 sess = training.trainNetwork(model, training.MinibatchSampler(trainingData), lossLogger, minibatchSize, numMinibatches)
 

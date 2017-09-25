@@ -9,10 +9,13 @@ import evaluation
 import models
 import random
 
+
+
 def generateSequence(sess, model, folder, example, numSteps=50):
     folder = "images/" + folder
 
     initialCond = example.x
+    #initialFlow = sum(initialCond[0,:,0])
 
     for i in range(numSteps):
         result = Sim1Result.Sim1Result(example.x[:,:,0:2], [0], example.x[:,:,2], time=0)
@@ -20,11 +23,13 @@ def generateSequence(sess, model, folder, example, numSteps=50):
         newResult = sess.run(model.yPred, evaluation.getFeedDict(model, [example], isTraining=False))
         example.x[:,:,0:2] = newResult[0]
         example.x[:,:,0:2] = example.x[:,:,0:2] * example.x[:,:,2:3]
-        example.x[:,0,:] = initialCond[:,0,:]
+        example.x[0,:,:] = initialCond[0,:,:]
+        #for i in range(1, 64):
+        #    example.x[i,:,0] *= (initialFlow + 0.01) / (sum(example.x[i,:,0]) + 0.01)
 
 
 def generateImgs(sess, model, folder, examples):
-    folder = "images/" + folder
+    folder = "images/test/" + folder
     # examples = [evaluation.TimeStepSimulationExample(outputManta, slice=[0, 1], scale=1) for outputManta in data]
     results = sess.run(model.yPred, feed_dict=evaluation.getFeedDict(model, examples, isTraining=False))
     for e, r in zip(examples, results):
@@ -36,7 +41,7 @@ def generateImgs(sess, model, folder, examples):
         utils.sim1resToImage(outputTensor, background='error', origRes=outputManta, folder=folder)
 
 
-trainConfig = utils.deserialize("data/test_timeStep/trainConfig.p")
+trainConfig = utils.deserialize("data/timeStep128x128/trainConfig.p")
 dataPartition = utils.deserialize(trainConfig.simPath + "dataPartition.p")
 data = trainConfig.loadGeneratedData()
 trainingData, validationData, testData = dataPartition.computeData(data, exampleType=evaluation.TimeStepSimulationCollection, slice=[0, 1], scale=1)
@@ -58,12 +63,12 @@ def randomSample(list, numSamples):
 
 
 # numImages = 20
-# if(len(trainingData) >= 1):
+# if len(trainingData) >= 1:
 #     generateImgs(sess, model, "training/", randomSample(trainingData, numImages))
-# if(len(validationData) >= 1):
+# if len(validationData) >= 1:
 #     generateImgs(sess, model, "validation/", randomSample(validationData, numImages))
-# if(len(testData) >= 1):
+# if len(testData) >= 1:
 #     generateImgs(sess, model, "test/", randomSample(testData, numImages))
 
-generateSequence(sess, model, "sequence03/", validationData[1])
-generateSequence(sess, model, "sequence04/", validationData[2])
+for i in range(20):
+    generateSequence(sess, model, "sequences/128_{}/".format(i), validationData[i], 400)

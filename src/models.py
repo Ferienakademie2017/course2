@@ -1,5 +1,6 @@
 import tensorflow as tf
 import utils
+import layers
 
 def simpleModel1(x):
     fc1_w = tf.get_variable("fc1_w", initializer=tf.random_normal([1, 256], stddev=0.1))
@@ -275,26 +276,27 @@ def timeStepModel1(x, phase):
     convSize = 4
     scaleFactor = 1
     zoomSteps = 1
+    act = layers.lrelu # tf.nn.relu # tf.tanh
     zoomLayers = []
     # zoomLayers
 
     for i in range(zoomSteps):
         zoomLayers.append(layer)
         layer = tf.contrib.layers.conv2d(layer, numFeatures, [convSize, convSize], [2, 2], "SAME",
-                                         activation_fn=tf.nn.relu,
+                                         activation_fn=act,
                                          weights_initializer=tf.truncated_normal_initializer(stddev=0.02),
                                          biases_initializer=tf.constant_initializer(0.0))
         layer = tf.contrib.layers.batch_norm(layer, decay=0.9, is_training=phase, updates_collections=None, epsilon=1e-5, scale=True,
                                              scope="batch_norm0_{}".format(i))
 
-    for i in range(5):
+    for i in range(4):
         oldLayer = layer
         layer = tf.contrib.layers.conv2d(layer, numFeatures, [convSize, convSize], [1, 1], "SAME", activation_fn=None,
                                          weights_initializer=tf.truncated_normal_initializer(stddev=0.02),
                                          biases_initializer=tf.constant_initializer(0.0))
         layer = tf.contrib.layers.batch_norm(layer, decay=0.9, is_training=phase, updates_collections=None, epsilon=1e-5, scale=True,
                                              scope="batch_norm1_{}".format(i))
-        layer = tf.nn.relu(layer)
+        layer = act(layer)
         layer = tf.contrib.layers.conv2d(layer, numFeatures, [convSize, convSize], [1, 1], "SAME", activation_fn=None,
                                          weights_initializer=tf.truncated_normal_initializer(stddev=0.02),
                                          biases_initializer=tf.constant_initializer(0.0))
@@ -306,7 +308,7 @@ def timeStepModel1(x, phase):
 
     for i in range(zoomSteps):
         layer = tf.contrib.layers.conv2d_transpose(layer, numFeatures, [convSize, convSize], [2, 2], "SAME",
-                                                   activation_fn=tf.nn.relu,
+                                                   activation_fn=act,
                                                    weights_initializer=tf.truncated_normal_initializer(stddev=0.02),
                                                    biases_initializer=tf.constant_initializer(0.0))
         layer = tf.contrib.layers.batch_norm(layer, decay=0.9, is_training=phase, updates_collections=None, epsilon=1e-5, scale=True,
@@ -314,20 +316,20 @@ def timeStepModel1(x, phase):
         layer = tf.concat([layer, zoomLayers[zoomSteps - 1 - i]], 3)
 
         layer = tf.contrib.layers.conv2d(layer, numFeatures, [convSize, convSize], [1, 1], "SAME",
-                                         activation_fn=tf.nn.relu,
+                                         activation_fn=act,
                                          weights_initializer=tf.truncated_normal_initializer(stddev=0.02),
                                          biases_initializer=tf.constant_initializer(0.0))
         layer = tf.contrib.layers.batch_norm(layer, decay=0.9, is_training=phase, updates_collections=None, epsilon=1e-5, scale=True,
                                              scope="batch_norm4_{}".format(i))
         layer = tf.contrib.layers.conv2d(layer, numFeatures, [convSize, convSize], [1, 1], "SAME",
-                                         activation_fn=tf.nn.relu,
+                                         activation_fn=act,
                                          weights_initializer=tf.truncated_normal_initializer(stddev=0.02),
                                          biases_initializer=tf.constant_initializer(0.0))
         layer = tf.contrib.layers.batch_norm(layer, decay=0.9, is_training=phase, updates_collections=None, epsilon=1e-5, scale=True,
                                              scope="batch_norm5_{}".format(i))
 
     layer = tf.contrib.layers.conv2d(layer, 2, [convSize, convSize], [scaleFactor, scaleFactor], "SAME",
-                                     activation_fn=None,
+                                     activation_fn=act,
                                      weights_initializer=tf.truncated_normal_initializer(stddev=0.02),
                                      biases_initializer=tf.constant_initializer(0.0))
 
@@ -346,9 +348,9 @@ def simpleLoss2(yPred, y, flagField):
 def simpleLoss3(yPred, y, flagField):
     obs = tf.expand_dims(flagField, -1)
     loss = tf.reduce_mean(tf.abs((yPred - y)))
-    #divField = yPred[:, 2:, 1:-1, 0] - yPred[:, :-2, 1:-1, 0] + yPred[:, 1:-1, 2:, 1] - yPred[:, 1:-1, :-2, 1]
-    #divField = yPred[:, 1:, :-1, 0] - yPred[:, :-1, :-1, 0] + yPred[:, :-1, 1:, 1] - yPred[:, :-1, :-1, 1]
-    #loss += 0.01 * tf.nn.l2_loss(divField * flagField[:, :-1, :-1])
+    # divField = yPred[:, 2:, 1:-1, 0] - yPred[:, :-2, 1:-1, 0] + yPred[:, 1:-1, 2:, 1] - yPred[:, 1:-1, :-2, 1]
+    # divField = yPred[:, 1:, :-1, 0] - yPred[:, :-1, :-1, 0] + yPred[:, :-1, 1:, 1] - yPred[:, :-1, :-1, 1]
+    # loss += 0.01 * tf.nn.l2_loss(divField * flagField[:, :-1, :-1])
     # loss = tf.reduce_mean(tf.square(tf.expand_dims(flagField, -1) * (yPred - y)))
     return loss
 
@@ -407,7 +409,10 @@ def computeNN9():
     return computeConvNN(simpleModel9, simpleLoss3, scale=1)
 
 def computeTimeStepNN1():
-    return computeTimeStepNN(timeStepModel1, simpleLoss3, scale=1)
+    return computeTimeStepNN(timeStepModel1, simpleLoss3)
+
+def computeTimeStepNN2():
+    return computeTimeStepNN2(timeStepModel1, simpleLoss3)
 
 def computeSimpleNN(modelFunc, lossFunc, inputDim = 1, scale=0.25):
     phase = tf.placeholder(tf.bool, name='phase')
@@ -427,12 +432,12 @@ def computeConvNN(modelFunc, lossFunc, scale=0.25):
     loss = lossFunc(yPred, y, flagField)
     return FlagFieldNN(x, y, yPred, loss, phase, flagField)
 
-def computeTimeStepNN(modelFunc, lossFunc, scale=0.25):
+def computeTimeStepNN(modelFunc, lossFunc):
     phase = tf.placeholder(tf.bool, name='phase')
-    x = tf.placeholder(tf.float32, shape=[None, int(64 * scale), int(32 * scale), 3])
-    y = tf.placeholder(tf.float32, shape=[None, int(64 * scale), int(32 * scale), 2])
+    x = tf.placeholder(tf.float32, shape=[None, None, None, 3])
+    y = tf.placeholder(tf.float32, shape=[None, None, None, 2])
     yPred = modelFunc(x, phase)
-    flagField = tf.placeholder(tf.float32, shape=[None, int(64 * scale), int(32 * scale)])
+    flagField = tf.placeholder(tf.float32, shape=[None, None, None])
     loss = lossFunc(yPred, y, flagField)
     return FlagFieldNN(x, y, yPred, loss, phase, flagField)
 
