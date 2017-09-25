@@ -63,6 +63,7 @@ class TimeStepSimulationCollection(object):
         obs = sim1ResultList[0].obstacles
         obs = np.vectorize(func)(obs)
         self.flagField = scipy.ndimage.zoom(obs, [scale, scale])
+        self.obstacles = scipy.ndimage.zoom(sim1ResultList[0].obstacles, [scale, scale])
 
     def getExamples(self):
         examples = []
