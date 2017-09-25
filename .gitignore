@@ -23,6 +23,8 @@ manta
 images/
 data/
 training/
+logs/
+gan/
 
 src/.idea/*
 .idea/*
