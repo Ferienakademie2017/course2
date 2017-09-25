@@ -54,13 +54,16 @@ def train():
     
     training_data = load_data()
 
+    loss_data = {}
     for i in range(10000):
         shuffle_idx = np.random.permutation(30)
         height = np.asarray(training_data[0][:])
         image = np.asarray(training_data[1][:])
         _, loss_val = sess.run([train_step, loss], feed_dict={x: height[shuffle_idx], ground_truth: image[shuffle_idx]})
-        print("Epoch {}: Loss = {}".format(i, loss_val))
-    
+        if i%100 ==0: print("Epoch {}: Loss = {}".format(i, loss_val))
+        loss_data[i] = loss_val
+
+    save_csv(loss_data, "../res/training_memorize_all.csv")
     #write output
     test_input = np.reshape(0.5*np.ones(30),[30,1])
     net_output = sess.run(output, feed_dict={x: test_input})
