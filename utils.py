@@ -10,6 +10,8 @@ _PARAMETERS = {
         "relative_x_position": 0.25,
         "velocity_in": (0.9, 0, 0),
         "nr_frames": 300,
+        "y_position_min": 2,
+        "y_position_max": 30,
         # post-processing
         "downscaling_factors": (0.25, 0.25, 1.0),
         # manta-related

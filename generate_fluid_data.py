@@ -2,6 +2,9 @@ import subprocess
 import numpy as np
 import shutil
 import os
+import sys
+
+from utils import get_parameter
 
 output_folder_6432 = "fluidSamples6432/"
 output_folder_6432_images = "fluidSamples6432Images/"
@@ -11,13 +14,13 @@ output_folder_density_6432 = "densitySamples6432/"
 output_folder_density_1608 = "densitySamples1608/"
 
 
-y_position_min = 2
-y_position_max = 30
+y_position_min = get_parameter("y_position_min")
+y_position_max = get_parameter("y_position_max")
 possible_positions = y_position_max - y_position_min
 step_size = 1
 
 # how many times to simulate through all possible positions
-iterations = 1
+iterations = int(sys.argv[1])
 y_position_array = np.empty(shape=(iterations*possible_positions))
 
 
