@@ -9,9 +9,9 @@ output_folder_1608 = "fluidSamples1608/"
 output_folder_metadata = "fluidSamplesMetadata/"
 
 
-y_position_min = 15
+y_position_min = 2
 y_position_max = 30
-possible_positions = 1#y_position_max - y_position_min
+possible_positions = y_position_max - y_position_min
 step_size = 1
 
 # how many times to simulate through all possible positions

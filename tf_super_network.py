@@ -46,7 +46,7 @@ inSize      = inputHeight * inputWidth * 2 # warning - hard coded to scalar valu
 
 
 def twoDtoOneD(twoD):
-	return twoD.flatten()
+	return twoD[0].flatten()
 
 def oneDtoTwoD(oneD):
 	return oneD.reshape(8, 16, 2)
@@ -109,7 +109,7 @@ flat_training_data = twoDtoOneD(trainingData)
 print(flat_training_data)
 
 for i in range(1000):
-	sess.run(train, {input_layer: trainingInput, y: flat_training_data})
+	sess.run(train, {input_layer: trainingInput[0], y: flat_training_data[0]})
 
 print(sess.run([W, b]))
 
