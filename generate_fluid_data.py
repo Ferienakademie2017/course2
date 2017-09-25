@@ -18,7 +18,7 @@ possible_positions = y_position_max - y_position_min
 step_size = 1
 
 # how many times to simulate through all possible positions
-iterations = sys.argv[1]
+iterations = int(sys.argv[1])
 y_position_array = np.empty(shape=(iterations*possible_positions))
 
 
