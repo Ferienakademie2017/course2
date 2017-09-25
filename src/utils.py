@@ -42,7 +42,7 @@ def deserialize(filename):
     return result
 
 image_i = 0
-def sim1resToImage(result):
+def sim1resToImage(result, background='obstacles', origRes = None):
     global image_i, fig, ax
     try:
         fig
@@ -50,6 +50,7 @@ def sim1resToImage(result):
         # Initialize figures
         fig = plt.figure()
         ax = fig.gca()
+    cb = None
 
     data = result.npVel
     if data.shape[2] == 3:
@@ -79,8 +80,27 @@ def sim1resToImage(result):
     x, y = np.mgrid[0:widthMax, 0:heightMax]
 
     ax.set(aspect=1, title='Vector field')
-    ax.imshow(obstacles, interpolation='none')
-    ax.quiver(y[skipCoord], x[skipCoord], dx[skipData], dy[skipData], scale=0.25, scale_units='x') # scale = widthMin / widthMax
+
+    if background == 'obstacles':
+        ax.imshow(obstacles, interpolation='none')
+        ax.quiver(y[skipCoord], x[skipCoord], dx[skipData], dy[skipData], scale=widthMin / widthMax, scale_units='x') # scale = widthMin / widthMax
+    elif background == 'error':
+        orig = origRes.npVel
+        if orig.shape[2] == 3:
+            # Remove z coordinate
+            orig = np.delete(orig, 2, 2)
+        orig = np.transpose(orig, (1, 0, 2))
+        diff = orig - data
+        # Remove diff at obstacles
+        func = lambda x: 1.0 if x > 0.0 else 0.0
+        flagField = np.vectorize(func)(obstacles)
+        diffBackg = flagField * np.sum(np.abs(diff), -1)
+
+        diffAx = ax.imshow(diffBackg, interpolation='none')
+        cb = fig.colorbar(diffAx)
+
+        dx, dy = np.transpose(diff, (2, 0, 1))
+        ax.quiver(y[skipCoord], x[skipCoord], dx[skipData], dy[skipData], scale=widthMin / widthMax, scale_units='x') # scale = widthMin / widthMax
 
     ax.invert_yaxis()
     # fig.canvas.draw()
@@ -90,6 +110,8 @@ def sim1resToImage(result):
     image_i += 1
 
     # plt.pause(0.01)
+    if cb != None:
+        cb.remove()
     ax.clear()
 
 class LossLogger:
