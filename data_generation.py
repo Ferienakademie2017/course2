@@ -52,8 +52,9 @@ vel.setConst(velInflow)
 
 # optionally randomize y component
 if 0:
-	noise = s.create(NoiseField, loadFromFile=True)
-	noise.posScale = vec3(75)
+	noise = s.create(NoiseField, loadFromFile=True, fixedSeed=np.random.randint(-1, 300))
+	noise.posScale = vec3(np.random.randint(100))
+	noise.posOffset = Vec3(np.random.randint(100))
 	noise.clamp    = True
 	noise.clampNeg = -1.
 	noise.clampPos =  1.

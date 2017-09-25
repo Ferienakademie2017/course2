@@ -2,6 +2,7 @@ import subprocess
 import numpy as np
 import shutil
 import os
+import sys
 
 output_folder_6432 = "fluidSamples6432/"
 output_folder_6432_images = "fluidSamples6432Images/"
@@ -17,7 +18,7 @@ possible_positions = y_position_max - y_position_min
 step_size = 1
 
 # how many times to simulate through all possible positions
-iterations = 1
+iterations = sys.argv[1]
 y_position_array = np.empty(shape=(iterations*possible_positions))
 
 
