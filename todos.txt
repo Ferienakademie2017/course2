@@ -1,10 +1,10 @@
 
 
 - Netzwerk (Struktur, Hilfsfunktionen, Training, Test)
-- Loss (was bei Hindernissen)?
+
 - Struktur: Trainingsbeispiele generieren (MantaFlow)
 - Generierung der initialen Bedingungen
-- Visualisierungen des Flusses
+
 - Visualisierung des Trainings-/Validierungs-/Testfehlers (live? nachher? Konsole?)
 - Speichern der Trainingsbeispiele und der Netzwerkparameter
 - Konvertierung Mantaflow -> Tensorflow (vielleicht Flag-Grid mit Zelltypen mit konvertieren?)
@@ -12,7 +12,9 @@
 - Optimizer?
 - Command Line Parser? (David: von customPlot.py übernehmen?)
 - initiale Bedingungen exportieren? (und random samplen?)
-- Geschwindigkeiten in Hindernissen
+
+
+
 
 
 Aufteilung:
@@ -24,3 +26,7 @@ Aufteilung:
 
 Erledigt:
 - Mantaflow-Ausgabe entfernen
+- Geschwindigkeiten in Hindernisse
+- Visualisierungen des Flusses
+- Loss (was bei Hindernissen)?
+- Divergenz-Loss (L2) (nicht in obstacles!)
