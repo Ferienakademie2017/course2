@@ -22,7 +22,7 @@ def plot (data, name):
     
     X, Y = np.meshgrid(np.arange(0, xdim, 1), np.arange(0, ydim, 1))
 
-    plt.figure()
+    plt.figure(1)
     Q = plt.quiver(X, Y, x_part, y_part, units='width')
 
     # rename to save to an other location
@@ -58,7 +58,7 @@ def plot_error(data_vali, data_out, describtion):
 
     X, Y = np.meshgrid(np.arange(0, 64, 1), np.arange(0, 32, 1))
 
-    plt.figure()
+    plt.figure(2)
     Q = plt.quiver(X, Y, x_part_v, y_part_v, units='width', color= 'white', linewidth=0.01)
   
     tick = np.arange(0, 6)
@@ -73,3 +73,10 @@ def plot_error(data_vali, data_out, describtion):
     plt.text(-5,40,describtion)
  
     plt.savefig(describtion + '.pdf')
+
+def plot_cost(epoch, cost, name):
+    plt.figure(3)
+    plt.xlabel('epoch')
+    plt.ylabel('cost')
+    plt.plot(epoch,cost)
+    plt.savefig(name)
