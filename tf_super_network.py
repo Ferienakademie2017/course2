@@ -12,6 +12,16 @@
 #
 #******************************************************************************
 
+#################
+# CONFIGURATION #
+#################
+
+#for training just a single frame, set a number from 0 to Number of frames in "fluidSamples1608"
+#for deactivating single frame training, set to -1
+single_training_data = 10
+
+
+#Imports:
 import time
 import os
 import shutil
@@ -46,6 +56,7 @@ inSize      = inputHeight * inputWidth * 2 # warning - hard coded to scalar valu
 
 
 def twoDtoOneD(twoD):
+	print (twoD.shape)
 	n_data = twoD.shape[0]
 	return twoD.reshape([n_data, -1])
 
@@ -72,13 +83,23 @@ print("Read fluid data samples")
 validationSize = int(sample_count * 0.1) # take 10% as validation samples
 #print(str(velocities))
 
-# desired output for validation and training
-validationData = velocities[sample_count-validationSize:sample_count][:] 
-trainingData = velocities[0:sample_count-validationSize][:]
 
-# input for validation and training
-validationInput = y_positions[sample_count-validationSize:sample_count]
-trainingInput = y_positions[0:sample_count-validationSize]
+if single_training_data == -1:
+	# desired output for validation and training
+	validationData = velocities[sample_count-validationSize:sample_count][:] 
+	trainingData = velocities[0:sample_count-validationSize][:]
+	# input for validation and training
+	validationInput = y_positions[sample_count-validationSize:sample_count]
+	trainingInput = y_positions[0:sample_count-validationSize]
+else:
+	# desired output for validation and training
+	trainingData = velocities[single_training_data:single_training_data+1][:]
+	validationData = velocities[single_training_data:single_training_data+1][:]
+	# input for validation and training
+	validationInput = y_positions[single_training_data:single_training_data+1]
+	trainingInput = y_positions[single_training_data:single_training_data+1]
+
+
 
 print("Split into %d training and %d validation samples" % (len(trainingData), len(validationData)) )
 
