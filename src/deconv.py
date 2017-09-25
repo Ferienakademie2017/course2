@@ -1,6 +1,8 @@
 from routines import *
+import random
 
 def create_net(x):
+    tf.random_shuffle(x)
     batch_size = 30
 
     # fully connected layer
@@ -36,7 +38,8 @@ def create_net(x):
 def create_trainer(output, ground_truth):
     loss = tf.reduce_mean(tf.reduce_sum(tf.pow(ground_truth - output, 2), reduction_indices=[1]))
     global_step = tf.Variable(0, trainable=False)
-    lr = tf.train.piecewise_constant(global_step, [10000, 8000], [0.1, 0.05, 0.01])
+    lr = tf.train.exponential_decay(0.1,global_step,1000,0.96)
+    #lr = tf.train.piecewise_constant(global_step, [5000, 8000], [0.1, 0.05, 0.01])
     train_step = tf.train.AdamOptimizer(lr).minimize(loss, global_step=global_step)
     return train_step, loss
 
@@ -51,8 +54,11 @@ def train():
     
     training_data = load_data()
 
-    for i in range(1000):
-        _, loss_val = sess.run([train_step, loss], feed_dict={x: training_data[0], ground_truth: training_data[1]})
+    for i in range(10000):
+        shuffle_idx = np.random.permutation(30)
+        height = np.asarray(training_data[0][:])
+        image = np.asarray(training_data[1][:])
+        _, loss_val = sess.run([train_step, loss], feed_dict={x: height[shuffle_idx], ground_truth: image[shuffle_idx]})
         print("Epoch {}: Loss = {}".format(i, loss_val))
     
     #write output
