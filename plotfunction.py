@@ -16,8 +16,8 @@ def plot (data, name):
     x_part = split[0];
     y_part = split[1];
 
-    x_part = np.reshape(x_part, (xdim,ydim))
-    y_part = np.reshape(y_part, (xdim,ydim)) 
+    x_part = np.reshape(x_part, (ydim,xdim))
+    y_part = np.reshape(y_part, (ydim,xdim)) 
     
     
     X, Y = np.meshgrid(np.arange(0, xdim, 1), np.arange(0, ydim, 1))
@@ -61,9 +61,10 @@ def plot_error(data_vali, data_out, describtion):
     plt.figure()
     Q = plt.quiver(X, Y, x_part_v, y_part_v, units='width', color= 'white', linewidth=0.01)
   
-
+    tick = np.arange(0, 6)
+    tick = tick*np.amax(res) * 0.2
     fig = plt.imshow(diff_x, cmap=plt.cm.hot, interpolation='nearest')
-    plt.colorbar( ticks=[0,0.2,0.4, 0.6, 0.8], label ='sqared error')
+    plt.colorbar( ticks=tick, label ='sqared error')
     plt.title('Velocity field and squared Error')
 
     plt.text(0,40,'white quivers: validation velocity field')
