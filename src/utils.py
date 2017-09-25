@@ -42,7 +42,7 @@ def deserialize(filename):
     return result
 
 image_i = 0
-def sim1resToImage(result, background='obstacles', origRes = None):
+def sim1resToImage(result, background='obstacles', origRes=None, folder=None):
     global image_i, fig, ax
     try:
         fig
@@ -50,6 +50,8 @@ def sim1resToImage(result, background='obstacles', origRes = None):
         # Initialize figures
         fig = plt.figure()
         ax = fig.gca()
+    if folder == None:
+        folder = "images/"
     cb = None
 
     data = result.npVel
@@ -105,8 +107,8 @@ def sim1resToImage(result, background='obstacles', origRes = None):
     ax.invert_yaxis()
     # fig.canvas.draw()
     # plt.show()
-    ensureDir("images/")
-    fig.savefig("images/fig_{}.png".format(image_i))
+    ensureDir(folder)
+    fig.savefig("{}fig_{}.png".format(folder, image_i))
     image_i += 1
 
     # plt.pause(0.01)
@@ -124,22 +126,22 @@ class LossLogger:
         self.x = []
         self.y = []
 
+    def plot(self):
+        self.ax.clear()
+        self.ax.plot(self.x, self.y)
+        self.ax.set_ylim([0, max(self.y)])
+        self.ax.set_xlim([0, max(2000, max(self.x))])
+
     def logLoss(self, i, loss):
         print("Loss: {}".format(loss))
         self.x.append(i)
         self.y.append(loss)
         if self.gui:
-            self.ax.clear()
-            self.ax.plot(self.x, self.y)
-            self.ax.set_ylim([0, max(self.y)])
-            self.ax.set_xlim([0, max(2000, max(self.x))])
+            self.plot()
             self.fig.canvas.draw()
             plt.pause(0.01)
 
     def save(self):
-        self.ax.clear()
-        self.ax.plot(self.x, self.y)
-        self.ax.set_ylim([0, max(self.y)])
-        self.ax.set_xlim([0, max(2000, len(self.x))])
+        self.plot()
         ensureDir("images/")
         self.fig.savefig("images/loss.png")
