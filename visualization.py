@@ -20,11 +20,15 @@ def plot_2d_flow_data(filepath, verbose=VERBOSE):
 
     downscaling_factors = get_parameter("downscaling_factors")
     try:
-        y_position = downscaling_factors[1] * float(filename)
-        x_position = downscaling_factors[0] * get_parameter("resolution") *\
-            get_parameter("relative_x_position") * 2
+        y_position = float(filename)
+        x_position = 2 * get_parameter("relative_x_position") *\
+            get_parameter("resolution")
         radius = get_parameter("resolution") *\
-            get_parameter("obstacle_radius_factor") * downscaling_factors[0]
+            get_parameter("obstacle_radius_factor")
+        if "1608" in filepath:
+            y_position *= downscaling_factors[1]
+            x_position *= downscaling_factors[0]
+            radius *= downscaling_factors[0]
     except ValueError as e:
         # if the filename can't be converted to float, set circle parameters
         # to zero to not display it at all
