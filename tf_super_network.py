@@ -46,7 +46,8 @@ inSize      = inputHeight * inputWidth * 2 # warning - hard coded to scalar valu
 
 
 def twoDtoOneD(twoD):
-	return twoD[0].flatten()
+	n_data = twoD.shape[0]
+	return twoD.reshape([n_data, -1])
 
 def oneDtoTwoD(oneD):
 	return oneD.reshape(8, 16, 2)
@@ -83,7 +84,7 @@ print("Split into %d training and %d validation samples" % (len(trainingData), l
 
 # set up network
 sess = tf.Session()
-input_layer = tf.placeholder(tf.float32)
+input_layer = tf.placeholder(tf.float32, shape=(None, 1))
 output_size = 256
 
 W = tf.Variable(tf.random_normal([1, output_size], stddev=0.01))
@@ -93,7 +94,7 @@ layer1 = input_layer * W + b
 output = layer1
 
 
-y = tf.placeholder(tf.float32, shape=(256,))
+y = tf.placeholder(tf.float32)
 squared_deltas = tf.square(output - y)
 loss = tf.reduce_sum(squared_deltas)
 
@@ -106,16 +107,18 @@ sess.run(init)
 #print(trainingInput)
 #print(trainingData)
 flat_training_data = twoDtoOneD(trainingData)
-print(flat_training_data)
+trainingInput = trainingInput.reshape(-1, 1)
+print(flat_training_data.shape)
+print(trainingInput.shape)
 
 for i in range(1000):
-	sess.run(train, {input_layer: trainingInput[0], y: flat_training_data[0]})
+	sess.run(train, feed_dict = {input_layer: trainingInput, y: flat_training_data})
 
 print(sess.run([W, b]))
 
 # test the trained network
 
-test_output = sess.run(output, {input_layer: trainingInput})
+test_output = sess.run(output, {input_layer: trainingInput[0].reshape(1,1)})
 formatted_test_output = oneDtoTwoD(test_output)
 np.save("test_output", formatted_test_output)
 

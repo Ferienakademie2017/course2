@@ -4,20 +4,23 @@ import sys
 import scipy.ndimage
 import scipy.misc
 
+from utils import get_parameter
+
 # Variable Parameter
 y_position = float(sys.argv[1])
 y_index = int(sys.argv[2])
 
 # Parameters
-obstacle_radius_factor = 0.0625
-smoke_source_radius_factor = 0.0725
+obstacle_radius_factor = get_parameter("obstacle_radius_factor")
+smoke_source_radius_factor = get_parameter("smoke_source_radius_factor")
 
 secOrderBc = True
 dim        = 2
-res        = 32
-#res        = 124
+res        = get_parameter("resolution")
 gs         = vec3(2*res,res,res) # unten 2x mal so lang wie rechts
 if (dim==2): gs.z = 1
+x_position = gs.x * get_parameter("relative_x_position")
+
 s          = FluidSolver(name='main', gridSize = gs, dim=dim)
 s.timestep = 1.
 
@@ -31,18 +34,20 @@ phiWalls  = s.create(LevelsetGrid)
 flags.initDomain(inflow="xX", phiWalls=phiWalls, boundaryWidth=0)
 
 #obstacle  = Sphere(   parent=s, center=gs*vec3(0.25,0.5,0.5), radius=res*0.2)
-obstacle  = Cylinder( parent=s, center=vec3(16,y_position,1), radius=res*obstacle_radius_factor, z=gs*vec3(0, 0, 1.0))
+obstacle  = Cylinder(parent=s, center=vec3(x_position, y_position, 1), 
+        radius=res*obstacle_radius_factor, z=gs*vec3(0, 0, 1.0))
 phiObs    = obstacle.computeLevelset()
 
 # slightly larger copy for density source
-densInflow  = Cylinder( parent=s, center=vec3(16,y_position,1), radius=res*smoke_source_radius_factor, z=gs*vec3(0, 0, 1.0))
+densInflow  = Cylinder(parent=s, center=vec3(x_position, y_position, 1), 
+        radius=res*smoke_source_radius_factor, z=gs*vec3(0, 0, 1.0))
 
 phiObs.join(phiWalls)
 updateFractions( flags=flags, phiObs=phiObs, fractions=fractions)
 setObstacleFlags(flags=flags, phiObs=phiObs, fractions=fractions)
 flags.fillGrid()
 
-velInflow = vec3(0.9, 0, 0)
+velInflow = vec3(*get_parameter("velocity_in"))
 vel.setConst(velInflow)
 
 # optionally randomize y component
@@ -65,13 +70,13 @@ cgIter = 5
 timings = Timings()
 
 # GUI
-if (True):
+if get_parameter("show_gui"):
 	gui = Gui()
 	gui.show()
 	#gui.pause()
 
 #main loop
-for t in range(300):
+for t in range(get_parameter("nr_frames")):
 	#mantaMsg('\nFrame %i, simulation time %f' % (s.frame, s.timeTotal))
 
 	densInflow.applyToGrid( grid=density, value=2. )
@@ -104,24 +109,23 @@ for t in range(300):
 		gui.screenshot( 'karman_%04d.png' % int(t/inter) );
 
 # write velocity array to file		
-target = np.empty(shape=(res, 2*res, 3))
-copyGridToArrayVec3(vel, target)
+velocity_target = np.empty(shape=(res, 2*res, 3))
+copyGridToArrayVec3(vel, velocity_target)
 
 # create colorful image
-pil_image = scipy.misc.toimage(target)
+pil_image = scipy.misc.toimage(velocity_target)
 pil_image.save("fluidSamples6432Images/{:04d}.png".format(y_index))
 
 # throw away z axis
-target = target[:,:,:2]
-print(target)
-print(target.shape)
+velocity_target = velocity_target[:,:,:2]
+print(velocity_target.shape)
 
 # save high res image
-np.save("fluidSamples6432/{:04d}".format(y_index), target)
+np.save("fluidSamples6432/{:04d}".format(y_index), velocity_target)
 
 # scale down image
-target = scipy.ndimage.zoom(target, [0.25, 0.25, 1], order=1)
+velocity_target = scipy.ndimage.zoom(velocity_target, get_parameter("downscaling_factors"), order=1)
 # save low res image
-np.save("fluidSamples1608/{:04d}".format(y_index), target)
+np.save("fluidSamples1608/{:04d}".format(y_index), velocity_target)
 
 print("Finished iteration " + str(y_index))
