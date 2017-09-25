@@ -40,3 +40,4 @@ for i in range(len(data)):
 
     utils.sim1resToImage(data[i])
     utils.sim1resToImage(outputTensor)
+    utils.sim1resToImage(outputTensor, background='error', origRes=data[i])

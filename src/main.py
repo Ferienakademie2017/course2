@@ -10,9 +10,10 @@ import random
 trainConfig = utils.deserialize("data/rand1/trainConfig.p")
 # data = []  # todo
 data = trainConfig.loadGeneratedData()
-random.shuffle(data)
+dataPartition = evaluation.DataPartition(len(data), 0.6, 0.4)
+trainingData, validationData, testData = dataPartition.computeData(data, exampleType=evaluation.FlagFieldSimulationExample, slice=[0, 1], scale=1)
+utils.serialize(trainConfig.simPath + "dataPartition.p", dataPartition)
 
-trainingData, validationData, testData = evaluation.generateParametricExamples(data, 0.6, 0.4, exampleType=evaluation.FlagFieldSimulationExample, slice=[0, 1], scale=1)
 model = models.computeNN9()
 minibatchSize = 10
 lossLogger = utils.LossLogger()

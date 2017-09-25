@@ -2,12 +2,12 @@ import tensorflow as tf
 import utils
 
 def simpleModel1(x):
-    #fc1_w = tf.get_variable("fc1_w", initializer=tf.random_normal([1, 256], stddev=0.1))
-    #fc1_b = tf.get_variable("fc1_b", initializer=tf.constant(1.0, shape=[256]))
-    #fc1_a = tf.add(tf.matmul(x, fc1_w), fc1_b)
+    fc1_w = tf.get_variable("fc1_w", initializer=tf.random_normal([1, 256], stddev=0.1))
+    fc1_b = tf.get_variable("fc1_b", initializer=tf.constant(1.0, shape=[256]))
+    fc1_a = tf.add(tf.matmul(x, fc1_w), fc1_b)
     #fc1_a = tf.tanh(fc1_a)
-    # fc1_a = tf.dropout(fc1_a, 0.5)
-    fc1_a = tf.layers.dense(x, 256, kernel_initializer=tf.random_normal([1, 256], stddev=0.1))  # activation = tf.tanh
+    #fc1_a = tf.layers.dropout(fc1_a, 0.5)
+    #fc1_a = tf.layers.dense(x, 256, kernel_initializer=tf.random_normal([1, 256], stddev=0.1))  # activation = tf.tanh
     y_pred = tf.reshape(fc1_a, [-1, 16, 8, 2])
     return y_pred
 
@@ -342,6 +342,14 @@ def simpleLoss2(yPred, y, flagField):
     # loss = tf.reduce_mean(tf.square(tf.expand_dims(flagField, -1) * (yPred - y)))
     return loss
 
+def simpleLoss3(yPred, y, flagField):
+    obs = tf.expand_dims(flagField, -1)
+    loss = tf.reduce_mean(tf.abs(obs * (yPred - y)))
+    #divField = yPred[:, 2:, 1:-1, 0] - yPred[:, :-2, 1:-1, 0] + yPred[:, 1:-1, 2:, 1] - yPred[:, 1:-1, :-2, 1]
+    #loss += 0.1 * tf.nn.l2_loss(divField * flagField[:, 1:-1, 1:-1])
+    # loss = tf.reduce_mean(tf.square(tf.expand_dims(flagField, -1) * (yPred - y)))
+    return loss
+
 class NeuralNetwork(object):
     def __init__(self, x, y, yPred, loss):
         self.x = x
@@ -393,7 +401,7 @@ def computeNN8():
     return computeConvNN(simpleModel8, simpleLoss2, scale=1)
 
 def computeNN9():
-    return computeConvNN(simpleModel9, simpleLoss2, scale=1)
+    return computeConvNN(simpleModel9, simpleLoss3, scale=1)
 
 def computeSimpleNN(modelFunc, lossFunc, inputDim = 1, scale=0.25):
     x = tf.placeholder(tf.float32, shape=[None, inputDim])

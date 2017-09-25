@@ -2,6 +2,7 @@ import tensorflow as tf
 import numpy as np
 import scipy.ndimage
 import copy
+import random
 
 class ParametricSimulationExample(object):
     def __init__(self, sim1Result, slice=[1], scale=0.25):
@@ -42,15 +43,29 @@ class FlagFieldSimulationExample(object):
         # self.x = scipy.ndimage.zoom(obs, [scale, scale])
         self.x = self.flagField
 
-def generateParametricExamples(data, trainingFraction=0.6, validationFraction=0.2, exampleType=ParametricSimulationExample, slice=[1], scale=0.25):
-    data = [ex for ex in data if ex.npVel.shape[0] > ex.npVel.shape[1]]
-    dataSize = len(data)
-    trainingEnd = int(dataSize*trainingFraction)
-    validationEnd = int(dataSize*(trainingFraction+validationFraction))
-    trainingData = [exampleType(res, slice, scale) for res in data[0:trainingEnd]]
-    validationData = [exampleType(res, slice, scale) for res in data[trainingEnd:validationEnd]]
-    testData = [exampleType(res, slice, scale) for res in data[validationEnd:dataSize]]
-    return trainingData, validationData, testData
+class DataPartition(object):
+    def __init__(self, dataSize, trainingFraction=0.6, validationFraction=0.2):
+        self.dataSize = dataSize
+        self.trainingFraction = trainingFraction
+        self.validationFraction = validationFraction
+        indices = range(dataSize)
+        random.shuffle(indices)
+        trainingEnd = int(dataSize * trainingFraction)
+        validationEnd = int(dataSize * (trainingFraction + validationFraction))
+        self.trainingIndices = indices[0:trainingEnd]
+        self.validationIndices = indices[trainingEnd:validationEnd]
+        self.testIndices = indices[validationEnd:dataSize]
+
+    def computeData(self, data, exampleType=ParametricSimulationExample, slice=[1], scale=0.25):
+        if len(data) != self.dataSize:
+            raise ValueError("DataPartition.computeData(): incompatible data length")
+
+        trainingData = [exampleType(data[i], slice, scale) for i in self.trainingIndices]
+        validationData = [exampleType(data[i], slice, scale) for i in self.validationIndices]
+        testData = [exampleType(data[i], slice, scale) for i in self.testIndices]
+
+        return trainingData, validationData, testData
+
 
 def getFeedDict(network, data):
     xValues = np.array([ex.x for ex in data])
@@ -70,6 +85,4 @@ def validateModel(flagFieldNN, validationData, name="final"):
     sess = tf.Session()
     flagFieldNN.load(sess, name)
     yPred, lossResult = sess.run([flagFieldNN.yPred, flagFieldNN.loss], getFeedDict(flagFieldNN, validationData))
-    for i in range(len(yPred)):
-        print(sum(sum(sum(yPred[i]))))
     print("Validation loss: {}".format(lossResult))
