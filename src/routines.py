@@ -37,12 +37,13 @@ def load_data():
 def load_time_data():
     training_image = []
     training_val = []
-    for i in range(100):
-        path = "../res/timestep_norm/vel{}_{}.npy".format(str(16), str(i))
-        training_image.append(np.load(path).flatten())
-        training_val.append((16/32, i))
+    for i in range(1, 31):
+        for j in range(50):
+            path = "../res/timestep_norm/vel{}_{}.npy".format(str(i), str(j))
+            training_image.append(np.load(path).flatten())
+            training_val.append((i/32, j))
 
-    training_data = [np.reshape(training_val, (100, 2)), training_image]
+    training_data = [np.reshape(training_val, (50*30, 2)), np.array(training_image)]
     return training_data
 
 
@@ -51,8 +52,8 @@ def get_scale_factor(y_pos):
     return np.load("../res/karman_data_norm/scale_factors.npy")[index]
 
 def get_time_scale_factor(x):
-    #index = int(x[] * 32 - 1)
-    return np.load("../res/timestep_norm/scale_factors.npy")[x[1]]
+    index = int(x[0] * 32 - 1) * 50 + x[1]
+    return np.load("../res/timestep_norm/scale_factors.npy")[index]
 
 
 def save_csv(data, path):

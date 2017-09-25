@@ -25,12 +25,13 @@ def create_and_save_figure(path, name):
 
     ax.quiver(X, Y, net_flow[::skip, ::skip, 0], net_flow[::skip, ::skip, 1], units='inches')
 
-    plt.savefig("../res/visualization/{}.png".format(name))
-    ax.cla()
-    # plt.show()
+    # plt.savefig("../res/visualization/{}.png".format(name))
+    # ax.cla()
+    plt.show()
 
 
 if __name__ == "__main__":
-    for i in range(2000):
-        create_and_save_figure("../res/visualization_data/{}.npy".format(i), i)
-        if i % 100 == 0: print("Processed {}%".format(i * 10 / 2000))
+    create_and_save_figure("../res/timestep/vel1_7.npy", "0")
+    # for i in range(2000):
+    #     create_and_save_figure("../res/visualization_data/{}.npy".format(i), i)
+    #     if i % 100 == 0: print("Processed {}%".format(i * 10 / 2000))

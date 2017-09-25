@@ -11,7 +11,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-data = np.loadtxt("../res/training_memorize_all.csv", delimiter=",")
+data = np.loadtxt("../res/timestep.csv", delimiter=",")
 plt.figure(figsize=(10, 5))
 # plt.ylim((0,80))
 plt.plot(*zip(*data))

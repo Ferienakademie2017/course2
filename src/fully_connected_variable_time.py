@@ -17,54 +17,81 @@ def create_net(x):
     # output layer
     w_fc3 = weight_variable(sizes[1:3])
     b_fc3 = bias_variable([sizes[2]])
-    output = tf.tanh(tf.matmul(h_fc1, w_fc3) + b_fc3)
+    output = tf.tanh(tf.matmul(h_fc1, w_fc3) + b_fc3, name="output")
     return output
 
 
 def create_trainer(output, ground_truth):
-    loss = tf.reduce_mean(tf.reduce_sum(tf.pow(ground_truth - output, 2), reduction_indices=[1]))
-    tf.summary.scalar("loss", loss)
+    loss = tf.reduce_mean(tf.reduce_sum(tf.pow(ground_truth - output, 2), reduction_indices=[1]), name="loss")
     global_step = tf.Variable(0, trainable=False)
-    lr = tf.train.piecewise_constant(global_step, [6000, 8000], [0.1, 0.05, 0.01])
-    train_step = tf.train.AdamOptimizer(lr).minimize(loss, global_step=global_step)
+    lr = tf.train.piecewise_constant(global_step, [100, 3000], [0.05, 0.01, 0.005], name="lr") # TODO: learning rate weiter runter machen
+    train_step = tf.train.AdamOptimizer(lr, name="AdamOptimizer").minimize(loss, global_step=global_step, name="train_step")
     return train_step, loss
 
 
+def shuffle(data):
+    assert len(data[0]) == len(data[1])
+    perm = np.random.permutation(len(data[0]))
+    return data[0][perm], data[1][perm]
+
+
+def create_mini_batches(data, mbs):
+    x, y = shuffle(data)
+    x_mbs = []
+    y_mbs = []
+    index = 0
+    while index + mbs <= len(x):
+        x_mbs.append(x[index:index+mbs])
+        y_mbs.append(y[index:index+mbs])
+        index += mbs
+    return x_mbs, y_mbs
+
 def train():
-    x = tf.placeholder(tf.float32, [None, 2])
-    output = create_net(x)
-    ground_truth = tf.placeholder(tf.float32, [None, 4096])
-    train_step, loss = create_trainer(output, ground_truth)
-    merged = tf.summary.merge_all()
+    # x = tf.placeholder(tf.float32, [None, 2], name="x")
+    # output = create_net(x)
+    # ground_truth = tf.placeholder(tf.float32, [None, 4096], name="ground_truth")
+    # train_step, loss = create_trainer(output, ground_truth)
+    #
+    # sess = tf.InteractiveSession()
+    # tf.global_variables_initializer().run()
 
     sess = tf.InteractiveSession()
-    train_writer = tf.summary.FileWriter("../summaries", sess.graph)
-    tf.global_variables_initializer().run()
+    saver = tf.train.import_meta_graph("../models/new_model/model-57890.meta")
+    saver.restore(sess, tf.train.latest_checkpoint("../models/new_model")) # TODO: create a new saver that only saves the variables I want. Use that for the training etc.
+    graph = tf.get_default_graph()
+    output = graph.get_tensor_by_name("output:0")
+    x = graph.get_tensor_by_name("x:0")
+    ground_truth = graph.get_tensor_by_name("ground_truth:0")
+    train_step, loss = create_trainer(output, ground_truth)
 
     training_data = load_time_data()
 
     loss_data = {}
-    mean = np.load("../res/timestep_norm/mean.npy").flatten()
+    # mean = np.load("../res/timestep_norm/mean.npy").flatten()
+
+    save = False
+    counter = 0
 
     # train
-    for i in range(500):
-        summary, _, loss_val = sess.run([merged, train_step, loss],
-                                        feed_dict={x: training_data[0], ground_truth: training_data[1]})
-        train_writer.add_summary(summary, i)
-        loss_data[i] = loss_val
-        if i % 100 == 0:
-            print("Epoch {}: Loss = {}".format(i, loss_val))
+    for i in range(10000):
+        batch = create_mini_batches(training_data, 50)
+        for j in range(1, len(batch[0])):
+            _, loss_val = sess.run([train_step, loss],
+                                            feed_dict={x: batch[0][j], ground_truth: batch[1][j]})
+            counter += 1
+            if save and loss_val <= 5:
+                saver = tf.train.Saver()
+                saver.save(sess, '../models/new_model/model', global_step=counter)
+                print("Saved a model.")
+                save = False
+            if j == len(batch[0]) - 1:
+                print("Epoch {}: Loss = {}".format(i, loss_val))
+                loss_data[i] = loss_val
 
-    test_input = (0.5, 7)
-    net_data = sess.run(output, feed_dict={x: np.reshape([test_input], (1, 2))})
-    net_data *= get_time_scale_factor(test_input)
-    net_data += mean
-    output_img = to_image_form(net_data)
-    # np.save("../res/visualization_data/{}".format(i), output_img)
-
-    # save_csv(loss_data, "../res/training_memorize_all.csv")
-    plot(np.load("../res/timestep/vel16_7.npy"), output_img)
-
+    # save_csv(loss_data, "../res/timestep.csv")
+    saver = tf.train.Saver()
+    # saver.save(sess, '../models/new_model/lastmodel', global_step=counter)
+    print("Saved last model.")
 
 if __name__ == "__main__":
     train()

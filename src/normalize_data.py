@@ -3,10 +3,10 @@ import os
 from scipy import misc
 from routines import to_image_form
 
-# TODO: convolutional, time, vary x position, look at proposal .txt file
+# TODO: time, vary x position, look at proposal .txt file. Autoencoder and recurrent neural network?
 
 if __name__ == "__main__":
-    files = ["vel16_{}.npy".format(i) for i in range(100)]
+    files = ["vel{}_{}.npy".format(i, j) for i in range(1, 31) for j in range(100)]
 
     # calculate mean
     data = np.array([np.load("../res/timestep/{}".format(f)) for f in files])
