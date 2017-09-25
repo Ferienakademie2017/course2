@@ -14,10 +14,8 @@ def bias_variable(shape):
     initial = tf.truncated_normal(shape, stddev=0.1)
     return tf.Variable(initial)
 
-
 def leaky_relu(x, alpha):
     return tf.maximum(x, alpha * x)
-
 
 def to_image_form(data):
     return np.reshape(data, (32, 64, 2))
@@ -30,7 +28,7 @@ def load_data():
         if i == 16: continue
         path = "../res/karman_data_norm/vel" + str(i) + ".npy"
         training_image.append(np.load(path).flatten())
-        training_val.append(i / 32)
+        training_val.append(i / 32.0)
 
     training_data = [np.reshape(training_val, (30, 1)), training_image]
     return training_data
