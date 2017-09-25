@@ -18,10 +18,19 @@
 
 #for training just a single frame, set a number from 0 to Number of frames in "fluidSamples1608"
 #for deactivating single frame training, set to -1
-single_training_data = 10
+single_training_data = -1
 
 #set the frame which is written to the test_output.npy
-test_output_frame = 0
+test_output_frame = 4
+
+
+
+
+
+##
+#Prevent misconfiguration:
+if single_training_data != -1:
+	test_output_frame=0
 
 
 #Imports:
@@ -112,7 +121,7 @@ print("Split into %d training and %d validation samples" % (len(trainingData), l
 #   Input        Layer1          Output-Layer
 #   1 (lin)  ->  8 (tanh)   ->   256 (lin)
 input_size = 1
-layer1_size = 8
+layer1_size = 1000
 output_size = 256
 
 
@@ -149,7 +158,7 @@ trainingInput = trainingInput.reshape(-1, 1)
 print(flat_training_data.shape)
 print(trainingInput.shape)
 
-for i in range(1000):
+for i in range(3000):
 	sess.run(train, feed_dict = {input_layer: trainingInput, y: flat_training_data})
 
 print(sess.run([W1, b1]))
