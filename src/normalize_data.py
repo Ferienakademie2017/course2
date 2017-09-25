@@ -1,7 +1,7 @@
 import numpy as np
 import os
 from scipy import misc
-from src.memorize_all import to_image_form
+from routines import to_image_form
 
 # TODO: convolutional, time, vary x position, look at proposal .txt file
 
