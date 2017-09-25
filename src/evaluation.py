@@ -90,7 +90,7 @@ class DataPartition(object):
         self.dataSize = dataSize
         self.trainingFraction = trainingFraction
         self.validationFraction = validationFraction
-        indices = [i for i in range(dataSize)]
+        indices = list(range(dataSize))
         random.shuffle(indices)
         trainingEnd = int(dataSize * trainingFraction)
         validationEnd = int(dataSize * (trainingFraction + validationFraction))
