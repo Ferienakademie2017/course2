@@ -1,12 +1,44 @@
-import scipy.misc as misc
+import tensorflow as tf
 import numpy as np
-from numpy import linalg as LA
+import csv
 import math
-
 import matplotlib.pyplot as plt
 
-if __name__ == "__main__":
+def weight_variable(shape):
+    initial = tf.truncated_normal(shape, stddev=1)
+    return tf.Variable(initial)
 
+def bias_variable(shape):
+    initial = tf.truncated_normal(shape, stddev=1)
+    return tf.Variable(initial)
+
+
+def to_image_form(data):
+    return np.reshape(data, (32, 64, 2))
+
+def load_data():
+    training_image = []
+    training_val = []
+    for i in range(1, 32):
+        if i == 16: continue
+        path = "../res/karman_data_norm/vel" + str(i) + ".npy"
+        training_image.append(np.load(path).flatten())
+        training_val.append(i / 32)
+
+    training_data = [np.reshape(training_val, (30, 1)), training_image]
+    return training_data
+
+def get_scale_factor(y_pos):
+    index = int(y_pos * 32 - 1)
+    return np.load("../res/karman_data_norm/scale_factors.npy")[index]
+
+def save_csv(data, path):
+    with open(path, "w") as file:
+        writer = csv.writer(file)
+        for k,v in data.items():
+            writer.writerow([k, v])
+
+def plot():
     real_flow = np.load("../res/karman_data/vel16.npy")
     net_flow = np.load("../res/net_image.npy")
 
