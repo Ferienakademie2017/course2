@@ -69,7 +69,7 @@ velocities = np.array(velocities)
 
 print("Read fluid data samples")
 
-validationSize = int(sample_count * 0.1) # take 10% as validation samples
+validationSize = int(sample_count * 0) # take 10% as validation samples
 #print(str(velocities))
 
 # desired output for validation and training
@@ -144,14 +144,15 @@ def sample_Z(m, n):
     '''Uniform prior for G(Z)'''
     return np.random.uniform(-1., 1., size=[m, n])
 
-mb_size = 26
+#mb_size = 26
 Z_dim = 64
 sess = tf.Session()
 init = tf.global_variables_initializer()
 sess.run(init)
 
-for it in range(25001):
+for it in range(1001):
     X_mb = twoDtoOneD(trainingData)
+    mb_size = X_mb.shape[0]
 
     _, D_loss_curr = sess.run([D_solver, D_loss], feed_dict={X: X_mb, Z: sample_Z(mb_size, Z_dim)})
     _, G_loss_curr = sess.run([G_solver, G_loss], feed_dict={Z: sample_Z(mb_size, Z_dim)})
