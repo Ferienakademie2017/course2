@@ -46,3 +46,39 @@ def create_1_256_network(data):
     b = tf.Variable(tf.random_normal([output_size], stddev=0.01))
 
     return input_layer, input_layer * W + b
+
+def create_1_32_deconv_256_network(data, **kwargs):
+    """NETWORK ARCHITECTURE
+       Input        Layer1          Output-Layer
+       1 (lin)  ->  64 (tanh)   ->  X*Y (tanh(deconvolution))
+       X, Y are the data dimensions
+    """
+
+    batch_size = kwargs["batch_size"]
+    nr_output_channels = 1
+
+    input_layer = tf.placeholder(tf.float32, shape=(None, 1))
+
+    fcl_output_size = 64 #hardcoded for now
+    W = tf.Variable(tf.random_normal([1, fcl_output_size], stddev=0.01))
+    b = tf.Variable(tf.random_normal([fcl_output_size], stddev=0.01))
+
+    # fully connected layer, reshaped to 2D
+    nr_fcl_output_channels = 2 * nr_output_channels
+    fc_layer = tf.tanh(W * input_layer + b)
+    fc_layer = tf.reshape(fc_layer,
+            [batch_size, 8, 4, nr_fcl_output_channels])
+
+    # deconvolutional layer
+    output_shape = [batch_size, 16, 8, nr_output_channels]
+    strides = [1, 2, 2, 1]
+    filter_weights = tf.Variable(tf.random_normal(
+        [5, 5, nr_output_channels, nr_fcl_output_channels], stddev=0.01))
+    deconv_layer = tf.nn.conv2d_transpose(
+            fc_layer,
+            filter_weights,
+            output_shape,
+            strides)
+
+    return input_layer, tf.tanh(tf.reshape(deconv_layer,
+            [batch_size, output_shape[1]*output_shape[2]]))

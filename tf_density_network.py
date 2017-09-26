@@ -9,14 +9,15 @@ import tensorflow as tf
 import numpy as np
 import scipy.misc
 
-from networks import create_1_256_network, create_1_8_256_network
+from networks import create_1_256_network, create_1_8_256_network,\
+        create_1_32_deconv_256_network
 
 np.random.seed(13)
 tf.set_random_seed(13)
 
 # path to fluid sim data
-# fluidDataPath = "densitySamples1608/"
-fluidDataPath = "densitySamples6432/"
+fluidDataPath = "densitySamples1608/"
+# fluidDataPath = "densitySamples6432/"
 fluidMetadataPath = "fluidSamplesMetadata/"
 
 # path to trained models
@@ -64,12 +65,15 @@ trainingInput = np.hstack((
     y_positions[validation_end_index:][:]
     ))
 
+training_batch_size = len(trainingData)
 print("Split into %d training and %d validation samples" %
-        (len(trainingData), len(validationData)))
+        (training_batch_size, len(validationData)))
 
 # set up network
-input_layer, output = create_1_256_network(densities)
+# input_layer, output = create_1_256_network(densities)
 # input_layer, output = create_1_8_256_network(densities)
+input_layer, output = create_1_32_deconv_256_network(densities,
+        batch_size=training_batch_size)
 
 y = tf.placeholder(tf.float32)
 squared_deltas = tf.square(output - y)
@@ -88,9 +92,14 @@ print(flat_training_data.shape)
 print(trainingInput.shape)
 
 for i in range(trainingEpochs):
-	sess.run(train, feed_dict={input_layer: trainingInput, y: flat_training_data})
+    sess.run(train,
+            feed_dict={input_layer: trainingInput, y: flat_training_data})
 
 # test the trained network
-test_output = sess.run(output, {input_layer: validationInput[0].reshape(1,1)})
-formatted_test_output = test_output.reshape(density_shape)
-np.save("test_output", formatted_test_output)
+# kinda hacky because the batchsize is fixed inside the network architecture, so
+# for training we give the same input batchsize times...
+# TODO: equal-sized training and validation batches
+test_output = sess.run(output,
+        {input_layer: validationInput[0] * np.ones((training_batch_size, 1))})
+formatted_test_output = test_output.reshape((training_batch_size, ) + density_shape)
+np.save("test_output", formatted_test_output[0])
