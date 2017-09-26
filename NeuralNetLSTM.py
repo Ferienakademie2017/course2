@@ -18,11 +18,11 @@ import flow
 # path_to_data = r'C:\Users\Nico\Documents\Ferienakademie\course2\trainingData\trainingKarman32i100.p'
 # path_to_data = r'C:\Users\Nico\Documents\Ferienakademie\course2\trainingData\trainingKarman32.p'
 path_to_data = r'C:\Users\Nico\Documents\Ferienakademie\course2\trainingData\trainingKarman32_1000randu.p'
-trainingEpochs = 1000
+trainingEpochs = 5000
 batchSize = 128
 inSize = 1  # warning - hard coded to scalar values 1
 validationProportion = 0.05
-learningRate = 0.02
+learningRate = 0.5
 error = []
 
 # set up the network
@@ -32,45 +32,22 @@ y = tf.placeholder(tf.float32)  # training data
 
 xIn = tf.reshape(x, shape=[-1, inSize])  # flatten
 size1 = 64
+1stm_size = 64
 size2 = 128
 size3 = 256
 
 # fc_1 = layers.fully_connected(xIn,size1,activation_fn=tf.contrib.keras.layers.LeakyReLU(0.2))
-# fc_2 = layers.fully_connected(fc_1,size2,activation_fn=tf.contrib.keras.layers.LeakyReLU(0.2))
-fc_3 = layers.fully_connected(xIn,size3,activation_fn = tf.nn.tanh)
 
-convIn = tf.reshape(fc_3, shape=[-1, 8, 16, 2])
-# Convolutional Layer #1, 2nd overall layer
-conv1 = tf.layers.conv2d(
-    inputs=convIn,
-    filters=64,
-    kernel_size=5,
-    padding="same",
-    activation=tf.nn.relu)
+lstm = tf.contrib.rnn.BasicLSTMCell(lstm_size)
+# Initial state of the LSTM memory.
+hidden_state = tf.zeros([batchSize, lstm.state_size])
+current_state = tf.zeros([batchSize, lstm.state_size])
+state = hidden_state, current_state
 
-conv2 = tf.layers.conv2d(
-    inputs=conv1,
-    filters=128,
-    kernel_size=5,
-    padding="same",
-    activation=tf.nn.relu)
+fc_2 = layers.fully_connected(fc_1,size2,activation_fn=tf.contrib.keras.layers.LeakyReLU(0.2))
+fc_3 = layers.fully_connected(fc_2,size3,activation_fn = tf.nn.tanh)
 
-conv3 = tf.layers.conv2d(
-    inputs=conv2,
-    filters=64,
-    kernel_size=5,
-    padding="same",
-    activation=tf.nn.relu)
-
-convOut = tf.layers.conv2d(
-    inputs=conv3,
-    filters=2,
-    kernel_size=3,
-    padding="same",
-    activation=None)
-
-y_pred = tf.reshape(convOut,shape=[-1,256])
-# y_pred = fc_3
+y_pred = fc_3
 
 cost = tf.nn.l2_loss((y - y_pred)) / batchSize
 # opt = tf.train.GradientDescentOptimizer(learningRate).minimize(cost)
