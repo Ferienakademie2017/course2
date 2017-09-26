@@ -90,7 +90,7 @@ def xavier_init(size):
 	return tf.random_normal(shape=size, stddev=xavier_stddev)
 
 def get_random_batch(array, batch_size):
-	#np.random.shuffle(array)
+	np.random.shuffle(array)
 	return array[:batch_size]
 
 # set up gan network
@@ -133,8 +133,8 @@ def generator(z):
 
 
 def discriminator(x):
-    D_h1 = tf.nn.softplus(tf.matmul(x, D_W1) + D_b1)
-    D_h1_5 = tf.nn.softplus(tf.matmul(D_h1, D_W1_5) + D_b1_5)
+    D_h1 = tf.nn.relu(tf.matmul(x, D_W1) + D_b1)
+    D_h1_5 = tf.nn.relu(tf.matmul(D_h1, D_W1_5) + D_b1_5)
     D_logit = tf.matmul(D_h1_5, D_W2) + D_b2
     D_prob = tf.nn.sigmoid(D_logit)
 
@@ -149,7 +149,7 @@ D_loss = -tf.reduce_mean(tf.log(D_real) + tf.log(1. - D_fake))
 G_loss = -tf.reduce_mean(tf.log(D_fake))
 
 # Only update D(X)'s parameters, so var_list = theta_D
-D_solver = tf.train.AdamOptimizer(0.0001).minimize(D_loss, var_list=theta_D)
+D_solver = tf.train.AdamOptimizer(0.00008).minimize(D_loss, var_list=theta_D)
 # Only update G(X)'s parameters, so var_list = theta_G
 G_solver = tf.train.AdamOptimizer().minimize(G_loss, var_list=theta_G)
 
@@ -167,18 +167,19 @@ for it in range(10001):
     X_mb = twoDtoOneD(get_random_batch(trainingData, mb_size))
 
     _, D_loss_curr = sess.run([D_solver, D_loss], feed_dict={X: X_mb, Z: sample_Z(mb_size, Z_dim)})
-    #for i in range(5):
     _, G_loss_curr = sess.run([G_solver, G_loss], feed_dict={Z: sample_Z(mb_size, Z_dim)})
     if it % 100 == 0:
         print('Iter: {}'.format(it))
-        print('D loss: {:.4}'. format(D_loss_curr))
+        print('D_loss: {:.4}'. format(D_loss_curr))
         print('G_loss: {:.4}'.format(G_loss_curr))
         print()
 
-for it in range(2):
-	test_output = sess.run(G_sample, feed_dict={Z: sample_Z(1, Z_dim)})
-	formatted_test_output = oneDtoTwoD(test_output)
-	np.save("test_output{0}".format(it), formatted_test_output)
+    if it % 1000 == 0:
+        for it in range(2):
+            test_output = sess.run(G_sample, feed_dict={Z: sample_Z(1, Z_dim)})
+            formatted_test_output = oneDtoTwoD(test_output)
+            np.save("test_output{0}".format(it), formatted_test_output)
+        print("generated pictures")
 
 # set up the network
 #
