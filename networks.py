@@ -6,10 +6,11 @@ import tensorflow as tf
 
 
 def create_1_8_256_network(data):
-    #NETWORK ARCHITECTURE:
-    #   Input        Layer1          Output-Layer
-    #   1 (lin)  ->  8 (tanh)   ->   256 (lin)
-    input_size = 1
+    """NETWORK ARCHITECTURE:
+       Input        Layer1          Output-Layer
+       1 (lin)  ->  8 (tanh)   ->   X*Y (lin)
+       X, Y are the data dimensions
+    """
     layer1_size = 8
 
     # derive output size from size of single data sample
@@ -31,6 +32,11 @@ def create_1_8_256_network(data):
     return input_layer, layer2
 
 def create_1_256_network(data):
+    """NETWORK ARCHITECTURE:
+       Input        Output-Layer
+       1 (lin)  ->  X*Y (lin)
+       X, Y are the data dimensions
+    """
     input_layer = tf.placeholder(tf.float32, shape=(None, 1))
     output_size = 1
     for d in range(1, data.ndim):
