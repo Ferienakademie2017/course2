@@ -61,7 +61,8 @@ sample_count = y_positions.shape[0]
 
 # read data from fluid sampling
 for index in range(sample_count):
-	vel = np.load(fluidDataPath + "{:04d}.npy".format(index))
+	picture_number = int(index*100)
+	vel = np.load(fluidDataPath + "{:04d}.npy".format(picture_number))
 	velocities.append(vel)
 velocities = np.array(velocities)
 
@@ -69,24 +70,28 @@ velocities = np.array(velocities)
 
 print("Read fluid data samples")
 
-validationSize = int(sample_count * 0) # take 10% as validation samples
+#validationSize = int(sample_count * 0) # take 10% as validation samples
 #print(str(velocities))
 
 # desired output for validation and training
-validationData = velocities[sample_count-validationSize:sample_count][:] 
-trainingData = velocities[0:sample_count-validationSize][:]
+#validationData = velocities[sample_count-validationSize:sample_count][:]
+trainingData = velocities
 
 # input for validation and training
-validationInput = y_positions[sample_count-validationSize:sample_count]
-trainingInput = y_positions[0:sample_count-validationSize]
+#validationInput = y_positions[sample_count-validationSize:sample_count]
+trainingInput = y_positions
 
-print("Split into %d training and %d validation samples" % (len(trainingData), len(validationData)) )
+print("Read in %d training samples" % len(trainingData))
 
 # from https://gist.github.com/wiseodd/b2697c620e39cb5b134bc6173cfe0f56
 def xavier_init(size):
 	in_dim = size[0]
 	xavier_stddev = 1. / tf.sqrt(in_dim / 2.)
 	return tf.random_normal(shape=size, stddev=xavier_stddev)
+
+def get_random_batch(array, batch_size):
+	np.random.shuffle(array)
+	return array[:batch_size]
 
 # set up gan network
 # Discriminator Net
@@ -95,34 +100,42 @@ X = tf.placeholder(tf.float32, shape=[None, 256], name='X')
 D_W1 = tf.Variable(xavier_init([256, 128]), name='D_W1')
 D_b1 = tf.Variable(tf.zeros(shape=[128]), name='D_b1')
 
-D_W2 = tf.Variable(xavier_init([128, 1]), name='D_W2')
+D_W1_5 = tf.Variable(xavier_init([128, 512]), name='D_W1_5')
+D_b1_5 = tf.Variable(tf.zeros(shape=[512]), name='D_b1_5')
+
+D_W2 = tf.Variable(xavier_init([512, 1]), name='D_W2')
 D_b2 = tf.Variable(tf.zeros(shape=[1]), name='D_b2')
 
-theta_D = [D_W1, D_W2, D_b1, D_b2]
+theta_D = [D_W1, D_W1_5, D_W2, D_b1, D_b1_5, D_b2]
 
 # Generator Net
-Z = tf.placeholder(tf.float32, shape=[None, 64], name='Z')
+Z = tf.placeholder(tf.float32, shape=[None, 128], name='Z')
 
-G_W1 = tf.Variable(xavier_init([64, 128]), name='G_W1')
+G_W1 = tf.Variable(xavier_init([128, 128]), name='G_W1')
 G_b1 = tf.Variable(tf.zeros(shape=[128]), name='G_b1')
 
-G_W2 = tf.Variable(xavier_init([128, 256]), name='G_W2')
+G_W1_5 = tf.Variable(xavier_init([128, 256]), name='G_W1_5')
+G_b1_5 = tf.Variable(tf.zeros(shape=[256]), name='G_b1_5')
+
+G_W2 = tf.Variable(xavier_init([256, 256]), name='G_W2')
 G_b2 = tf.Variable(tf.zeros(shape=[256]), name='G_b2')
 
-theta_G = [G_W1, G_W2, G_b1, G_b2]
+theta_G = [G_W1, G_W1_5, G_W2, G_b1, G_b1_5, G_b2]
 
 
 def generator(z):
-    G_h1 = tf.nn.relu(tf.matmul(z, G_W1) + G_b1)
-    G_log_prob = tf.matmul(G_h1, G_W2) + G_b2
-    G_prob = tf.nn.sigmoid(G_log_prob)
+    G_h1 = tf.nn.softplus(tf.matmul(z, G_W1) + G_b1)
+    G_h1_5 = tf.nn.softplus(tf.matmul(G_h1, G_W1_5) + G_b1_5)
+    G_log_prob = tf.matmul(G_h1_5, G_W2) + G_b2
+    G_prob = G_log_prob * 0.25
 
     return G_prob
 
 
 def discriminator(x):
     D_h1 = tf.nn.relu(tf.matmul(x, D_W1) + D_b1)
-    D_logit = tf.matmul(D_h1, D_W2) + D_b2
+    D_h1_5 = tf.nn.relu(tf.matmul(D_h1, D_W1_5) + D_b1_5)
+    D_logit = tf.matmul(D_h1_5, D_W2) + D_b2
     D_prob = tf.nn.sigmoid(D_logit)
 
     return D_prob, D_logit
@@ -136,7 +149,7 @@ D_loss = -tf.reduce_mean(tf.log(D_real) + tf.log(1. - D_fake))
 G_loss = -tf.reduce_mean(tf.log(D_fake))
 
 # Only update D(X)'s parameters, so var_list = theta_D
-D_solver = tf.train.AdamOptimizer().minimize(D_loss, var_list=theta_D)
+D_solver = tf.train.AdamOptimizer(0.00008).minimize(D_loss, var_list=theta_D)
 # Only update G(X)'s parameters, so var_list = theta_G
 G_solver = tf.train.AdamOptimizer().minimize(G_loss, var_list=theta_G)
 
@@ -144,28 +157,29 @@ def sample_Z(m, n):
     '''Uniform prior for G(Z)'''
     return np.random.uniform(-1., 1., size=[m, n])
 
-#mb_size = 26
-Z_dim = 64
+mb_size = 50
+Z_dim = 128
 sess = tf.Session()
 init = tf.global_variables_initializer()
 sess.run(init)
 
-for it in range(1001):
-    X_mb = twoDtoOneD(trainingData)
-    mb_size = X_mb.shape[0]
+for it in range(10001):
+    X_mb = twoDtoOneD(get_random_batch(trainingData, mb_size))
 
     _, D_loss_curr = sess.run([D_solver, D_loss], feed_dict={X: X_mb, Z: sample_Z(mb_size, Z_dim)})
     _, G_loss_curr = sess.run([G_solver, G_loss], feed_dict={Z: sample_Z(mb_size, Z_dim)})
     if it % 100 == 0:
         print('Iter: {}'.format(it))
-        print('D loss: {:.4}'. format(D_loss_curr))
+        print('D_loss: {:.4}'. format(D_loss_curr))
         print('G_loss: {:.4}'.format(G_loss_curr))
         print()
 
-for it in range(10):
-	test_output = sess.run(G_sample, feed_dict={Z: sample_Z(1, Z_dim)})
-	formatted_test_output = oneDtoTwoD(test_output)
-	np.save("test_output{0}".format(it), formatted_test_output)
+    if it % 1000 == 0:
+        for it in range(2):
+            test_output = sess.run(G_sample, feed_dict={Z: sample_Z(1, Z_dim)})
+            formatted_test_output = oneDtoTwoD(test_output)
+            np.save("test_output{0}".format(it), formatted_test_output)
+        print("generated pictures")
 
 # set up the network
 #
