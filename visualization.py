@@ -15,13 +15,17 @@ def plot_2d_flow_data(filepath, verbose=VERBOSE):
     if not os.path.isabs(filepath):
         filepath = os.path.join(os.getcwd(), filepath)
 
-    # parse y-position of obstacle from data filename
+    y_positions = np.load(os.path.join(os.getcwd(), 'fluidSamplesMetadata',
+        'y_position_array.npy'))
+
+    # parse y-index of obstacle from data filename
     filename, _ = os.path.splitext(os.path.basename(filepath))
 
     downscaling_factors = get_parameter("downscaling_factors")
     try:
-        # add offset (c.f. generate_fluid_data.py)
-        y_position = float(filename) + get_parameter("y_position_min")
+        # look up y_position corresponding to y_index
+        y_index = int(filename)
+        y_position = y_positions[y_index]
         x_position = 2 * get_parameter("relative_x_position") *\
             get_parameter("resolution")
         radius = get_parameter("resolution") *\
@@ -31,7 +35,7 @@ def plot_2d_flow_data(filepath, verbose=VERBOSE):
             x_position *= downscaling_factors[0]
             radius *= downscaling_factors[0]
     except ValueError as e:
-        # if the filename can't be converted to float, set circle parameters
+        # if the filename can't be converted to int, set circle parameters
         # to zero to not display it at all
         y_position = x_position = radius = 0
     obstacle = plt.Circle((x_position, y_position), radius)
