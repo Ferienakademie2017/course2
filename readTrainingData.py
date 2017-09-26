@@ -52,6 +52,49 @@ def loadData(path, filterLimit = 5):
 
     return trainingInput,trainingOutput
 
+def loadDataTimeSequence(path, filterLimit = 5, loadPrefiltered = False, savePrefiltered = False):
+    savePath = path + 'f'
+    if loadPrefiltered:
+        sourceFile = open(savePath, "rb")
+        trainingInput = pickle.load(sourceFile)
+        trainingOutput = pickle.load(sourceFile)
+        return trainingInput, trainingOutput
+
+    sourceFile = open(path, "rb")
+    yPositions = pickle.load(sourceFile)
+    trainingSize = yPositions.shape[0]
+    # fieldSize = (32, 64, 2)
+    height = 8
+    width = 16
+    timesteps = 50
+    outputSize = 256
+    filterCounter = 0
+
+    # trainingInput = yPositions
+    trainingInput = []
+    trainingOutput = np.zeros((trainingSize, height, width, 2*timesteps), np.float32)
+
+    for i in range(trainingSize):
+        currentOutput = pickle.load(sourceFile)
+        if np.max(np.abs(currentOutput)) > filterLimit:
+            filterCounter += 1
+            continue
+        # showVectorField(currentOutput[0,:,:,:])
+        trainingInput.append(yPositions[i])
+        for k in range(len(currentOutput)):
+            currentOutput[k] = scaleImage(currentOutput[k], 2)
+            trainingOutput[i-filterCounter, :,:,2*k:2*(k+1)] = currentOutput[k][0,:,:,0:2]
+    print("droped ", filterCounter, ' of ',trainingOutput.shape[0], " samples from training set")
+    trainingOutput = trainingOutput[0:(trainingOutput.shape[0]-filterCounter),:,:,:]
+    trainingInput = np.array(trainingInput)
+
+    if savePrefiltered:
+        targetFile = open(savePath, "wb")
+        pickle.dump(trainingInput,targetFile)
+        pickle.dump(trainingOutput,targetFile)
+
+    return trainingInput,trainingOutput
+
 # def showVectorField(inputField):
 #     fig = plt.figure()
 #     M = np.hypot(inputField[:,:,0], inputField[:,:,1])

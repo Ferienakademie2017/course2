@@ -18,13 +18,20 @@ import flow
 # path_to_data = r'C:\Users\Nico\Documents\Ferienakademie\course2\trainingData\trainingKarman32i100.p'
 # path_to_data = r'C:\Users\Nico\Documents\Ferienakademie\course2\trainingData\trainingKarman32.p'
 # path_to_data = r'C:\Users\Nico\Documents\Ferienakademie\course2\trainingData\trainingKarman32_1000randu.p'
-path_to_data = r'C:\Users\Nico\Documents\Ferienakademie\course2\trainingData\trainingKarman_time.p'
+# path_to_data = r'C:\Users\Nico\Documents\Ferienakademie\course2\trainingData\trainingKarman_time_1000randu.p'
+path_to_data = r'C:\Users\Nico\Documents\Ferienakademie\course2\trainingData\trainingKarman_time_5000randu.p'
 trainingEpochs = 1000
-batchSize = 128
+batchSize = 64
 inSize = 1  # warning - hard coded to scalar values 1
 validationProportion = 0.05
-learningRate = 0.02
+learningRate = 0.001
 error = []
+
+height = 8
+width = 16
+timesteps = 50
+writeTrainingData = False
+readOldTrainingData = True
 
 # set up the network
 
@@ -38,7 +45,7 @@ size3 = 256
 
 # fc_1 = layers.fully_connected(xIn,size1,activation_fn=tf.contrib.keras.layers.LeakyReLU(0.2))
 # fc_2 = layers.fully_connected(fc_1,size2,activation_fn=tf.contrib.keras.layers.LeakyReLU(0.2))
-fc_3 = layers.fully_connected(xIn,size3,activation_fn = tf.nn.tanh)
+fc_3 = layers.fully_connected(xIn, size3, activation_fn=tf.nn.tanh)
 
 convIn = tf.reshape(fc_3, shape=[-1, 8, 16, 2])
 # Convolutional Layer #1, 2nd overall layer
@@ -51,36 +58,38 @@ conv1 = tf.layers.conv2d(
 
 conv2 = tf.layers.conv2d(
     inputs=conv1,
-    filters=128,
+    filters=256,
     kernel_size=5,
     padding="same",
     activation=tf.nn.relu)
 
 conv3 = tf.layers.conv2d(
     inputs=conv2,
-    filters=64,
+    filters=128,
     kernel_size=5,
     padding="same",
     activation=tf.nn.relu)
 
 convOut = tf.layers.conv2d(
     inputs=conv3,
-    filters=2,
+    filters=100,
     kernel_size=3,
     padding="same",
     activation=None)
 
-y_pred = tf.reshape(convOut,shape=[-1,256])
+y_pred = tf.reshape(convOut, shape=[-1, height, width, 2 * timesteps])
 # y_pred = fc_3
 
 cost = tf.nn.l2_loss((y - y_pred)) / batchSize
 # opt = tf.train.GradientDescentOptimizer(learningRate).minimize(cost)
-opt = tf.train.AdagradOptimizer(learningRate,0.5).minimize(cost)
+# opt = tf.train.AdagradOptimizer(learningRate,0.5).minimize(cost)
+opt = tf.train.AdamOptimizer(learningRate).minimize(cost)
 
 # now we can start training...
 
 # read input  and training data
-position_y, training_data = readTrainingData.loadData(path_to_data)
+position_y, training_data = readTrainingData.loadDataTimeSequence(path_to_data, loadPrefiltered=readOldTrainingData,
+                                                                  savePrefiltered=writeTrainingData)
 # training_data = np.reshape(training_data, newshape=[-1, 8, 16, 2])
 scaling = np.ndarray.max(abs(training_data))
 training_data = training_data / scaling
@@ -127,13 +136,15 @@ for epoch in range(trainingEpochs):
         print(" Validation: cost %f " % (valiCost))
 
         # for i in range(validationNum):
-        valiData = readTrainingData.transformToImage(validationData[0, :], [8, 16, 2])
-        vout_img = readTrainingData.transformToImage(vout[0, :], [8, 16, 2])
+        # valiData = readTrainingData.transformToImage(validationData[0, :], [8, 16, 2])
+        # vout_img = readTrainingData.transformToImage(vout[0, :], [8, 16, 2])
+        valiData = validationData[0, :, :, :]
+        vout_img = vout[0, :, :, :]
         # scipy.misc.toimage(valiData[:,:,0], cmin=0.0, cmax=1.0).save("inx_%d.png" % i)
         # scipy.misc.toimage(valiData[:, :, 1], cmin=0.0, cmax=1.0).save("iny_%d.png" % i)
         # scipy.misc.toimage(vout_img[:, :, 0], cmin=0.0, cmax=1.0).save("outx_%d.png" % i)
         # scipy.misc.toimage(vout_img[:, :, 1], cmin=0.0, cmax=1.0).save("outy_%d.png" % i)
         print("Y position:", validationInput[0])
-        flow.plot_flow_triple(valiData, vout_img)
+        flow.plot_flow_triple_sequence(valiData, vout_img)
 
 print("Done")

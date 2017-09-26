@@ -3,6 +3,7 @@ import numpy as np
 import scipy.misc
 import readTrainingData
 import random
+import matplotlib.pyplot as plt
 
 np.random.seed(13)
 tf.set_random_seed(13)
@@ -13,11 +14,16 @@ import flow
 # (y coordinate of obstacle) is directly forwarded to output layer with 256 flow values
 
 # path_to_data = r'C:\Users\Annika\Saved Games\Desktop\course2\trainingData\trainingKarman32.p'
-path_to_data = r'C:\Users\Nico\Documents\Ferienakademie\course2\trainingData\trainingKarman32.p'
-trainingEpochs = 1000
-batchSize = 8
+# path_to_data = r'C:\Users\Nico\Documents\Ferienakademie\course2\trainingData\trainingKarman32i100.p'
+# path_to_data = r'C:\Users\Nico\Documents\Ferienakademie\course2\trainingData\trainingKarman32.p'
+path_to_data = r'C:\Users\Nico\Documents\Ferienakademie\course2\trainingData\trainingKarman32_1000randu.p'
+trainingEpochs = 5000
+batchSize = 128
 inSize = 1  # warning - hard coded to scalar values 1
-validationProportion = 0.2
+validationProportion = 0.05
+learningRate = 0.5
+error = []
+avgError = []
 
 # set up the network
 
@@ -25,23 +31,36 @@ x = tf.placeholder(tf.float32)
 y = tf.placeholder(tf.float32)  # training data
 
 xIn = tf.reshape(x, shape=[-1, inSize])  # flatten
-fc_1w = tf.Variable(tf.random_normal([inSize, 256], stddev=0.01))
-fc_1b = tf.Variable(tf.random_normal([256], stddev=0.01))
+size1 = 64
+fc_1w = tf.Variable(tf.random_normal([inSize, size1], stddev=0.01))
+fc_1b = tf.Variable(tf.random_normal([size1], stddev=0.01))
 
-fc1 = tf.add(tf.matmul(xIn, fc_1w), fc_1b)
-fc1 = tf.nn.tanh(fc1)
+fc_1 = tf.add(tf.matmul(xIn, fc_1w), fc_1b)
+fc_1 = tf.nn.tanh(fc_1)
 # fc1 = tf.nn.dropout(fc1, 0.5)  # plenty of dropout...
 
-# fc_2w = tf.Variable(tf.random_normal([50, inSize], stddev=0.01))  # back to input size
-# fc_2b = tf.Variable(tf.random_normal([inSize], stddev=0.01))
+size2 = 128
+fc_2w = tf.Variable(tf.random_normal([size1, size2], stddev=0.01))  # back to input size
+fc_2b = tf.Variable(tf.random_normal([size2], stddev=0.01))
+
+fc_2 = tf.add(tf.matmul(fc_1, fc_2w), fc_2b)
+fc_2 = tf.nn.tanh(fc_2)
+
+size3 = 256
+fc_3w = tf.Variable(tf.random_normal([size2, size3], stddev=0.01))  # back to input size
+fc_3b = tf.Variable(tf.random_normal([size3], stddev=0.01))
+
+fc_3 = tf.add(tf.matmul(fc_2, fc_3w), fc_3b)
+fc_3 = tf.nn.tanh(fc_3)
 
 # y_pred = tf.add(tf.matmul(fc1, fc_2w), fc_2b)
 # y_pred = tf.reshape(y_pred, shape=[-1, 64, 64, 1])
-y_pred = fc1
+y_pred = fc_3
 # y_pred = tf.reshape(y_pred, shape=[-1, 8, 16, 2])
 
 cost = tf.nn.l2_loss((y - y_pred)) / batchSize
-opt = tf.train.GradientDescentOptimizer(0.2).minimize(cost)
+# opt = tf.train.GradientDescentOptimizer(learningRate).minimize(cost)
+opt = tf.train.AdagradOptimizer(learningRate,0.5).minimize(cost)
 
 # now we can start training...
 
@@ -76,19 +95,30 @@ for epoch in range(trainingEpochs):
 
     _, currentCost = sess.run([opt, cost], feed_dict={x: batch_training_in, y: batch_training_out})
     print("Epoch %d/%d: cost %f " % (epoch + 1, trainingEpochs, currentCost))
+    error.append(currentCost)
+
+    # #test convergence
+    # if epoch % 3000 == 0 and epoch != 0:
+
 
     if epoch == trainingEpochs - 1:
+        plt.figure()
+        plt.plot(error)
+        plt.title("training error")
+        plt.xlabel('itteration')
+        plt.show()
         [valiCost, vout] = sess.run([cost, y_pred], feed_dict={x: validationInput, y: validationData})
         valiCost = valiCost * batchSize / validationNum
         print(" Validation: cost %f " % (valiCost))
 
-        for i in range(validationNum):
-            valiData = readTrainingData.transformToImage(validationData[i, :], [8, 16, 2])
-            vout_img = readTrainingData.transformToImage(vout[i, :], [8, 16, 2])
-            # scipy.misc.toimage(valiData[:,:,0], cmin=0.0, cmax=1.0).save("inx_%d.png" % i)
-            # scipy.misc.toimage(valiData[:, :, 1], cmin=0.0, cmax=1.0).save("iny_%d.png" % i)
-            # scipy.misc.toimage(vout_img[:, :, 0], cmin=0.0, cmax=1.0).save("outx_%d.png" % i)
-            # scipy.misc.toimage(vout_img[:, :, 1], cmin=0.0, cmax=1.0).save("outy_%d.png" % i)
-            flow.plot_flow_triple(valiData, vout_img)
+        # for i in range(validationNum):
+        valiData = readTrainingData.transformToImage(validationData[0, :], [8, 16, 2])
+        vout_img = readTrainingData.transformToImage(vout[0, :], [8, 16, 2])
+        # scipy.misc.toimage(valiData[:,:,0], cmin=0.0, cmax=1.0).save("inx_%d.png" % i)
+        # scipy.misc.toimage(valiData[:, :, 1], cmin=0.0, cmax=1.0).save("iny_%d.png" % i)
+        # scipy.misc.toimage(vout_img[:, :, 0], cmin=0.0, cmax=1.0).save("outx_%d.png" % i)
+        # scipy.misc.toimage(vout_img[:, :, 1], cmin=0.0, cmax=1.0).save("outy_%d.png" % i)
+        print("Y position:", validationInput[0])
+        flow.plot_flow_triple(valiData, vout_img)
 
 print("Done")

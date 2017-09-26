@@ -10,7 +10,7 @@ t_ref = 50
 # yPositions = np.linspace(0,1,14)
 # yPositions = np.linspace(1/16,15/16,14)
 # yPositions = np.repeat(yPositions,100)
-yPositions = np.random.uniform(0,1,10)
+yPositions = np.random.uniform(0,1,5000)
 # yPositions = 0.5
 # print("y positions:", yPositions)
 # yPositions = np.ones([32])*0.75
@@ -19,7 +19,8 @@ yPositions = np.random.uniform(0,1,10)
 # targetFileDir = r'\trainingData\trainingKarman1.p'
 # abs_file_path = os.path.join(script_dir, targetFileDir)
 # targetFile = open( r'C:\Users\Nico\Documents\Ferienakademie\course2\trainingData\trainingKarman32.p', "wb" )
-targetFile = open( r'C:\Users\Annika\Saved Games\Desktop\course2\trainingData\trainingKarman_time.p', "wb" )
+# targetFile = open( r'C:\Users\Annika\Saved Games\Desktop\course2\trainingData\trainingKarman_time.p', "wb" )
+targetFile = open( r'C:\Users\Nico\Documents\Ferienakademie\course2\trainingData\trainingKarman_time_5000randu.p', "wb" )
 #write params to pickle
 pickle.dump(yPositions, targetFile)
 
@@ -122,9 +123,9 @@ for p in yPositions :
 
         timings.display()
         s.step()
-        inter = 10
+        # inter = 10
         copyGridToArrayVec3(target=npArray, source=vel)
-        positionslist.append(npArray)
+        positionslist.append(npArray.copy())
         if t == t_ref - 1:
             pickle.dump(positionslist, targetFile)
             # np.save(r'C:\Users\Nico\Documents\Ferienakademie\course2\trainingData\trainingKarman1.npy',npArray)
