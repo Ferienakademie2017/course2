@@ -339,10 +339,10 @@ def timeStepModel1(x, phase):
 def timeStepModel2(x, phase):
     layer = x
     numFeatures = 3
-    convSize = 4
+    convSize = 5
     scaleFactor = 1
 
-    for i in range(5):
+    for i in range(4):
         oldLayer = layer
         layer = tf.contrib.layers.conv2d(layer, numFeatures, [convSize, convSize], [1, 1], "SAME", activation_fn=None,
                                          weights_initializer=tf.truncated_normal_initializer(stddev=0.02),
@@ -447,8 +447,8 @@ def computeNN9():
 def computeTimeStepNN1():
     return computeTimeStepNN(timeStepModel1, simpleLoss3, scale=1)
 
-def computeMultipleTimeStepNN1(numTimeSteps):
-    return computeMultipleTimeStepNN(timeStepModel2, multiStepLoss, scale=1,numTimeSteps=numTimeSteps)
+def computeMultipleTimeStepNN1(numTimeSteps, reuse=False):
+    return computeMultipleTimeStepNN(timeStepModel2, multiStepLoss, scale=1,numTimeSteps=numTimeSteps, reuse=reuse)
 
 def computeSimpleNN(modelFunc, lossFunc, inputDim = 1, scale=0.25):
     phase = tf.placeholder(tf.bool, name='phase')
@@ -486,13 +486,13 @@ def computeSimpleNNWithReg(modelFunc, lossFunc, inputDim = 1):
     loss = regLoss + lossFunc(yPred, y, flagField)
     return FlagFieldNN(x, y, yPred, loss, phase, flagField)
 
-def computeMultipleTimeStepNN(modelFunc, lossFunc, scale=0.25,numTimeSteps = 1):
+def computeMultipleTimeStepNN(modelFunc, lossFunc, scale=0.25,numTimeSteps = 1, reuse=False):
     phase = tf.placeholder(tf.bool, name='phase')
     x = tf.placeholder(tf.float32, shape=[None, int(64 * scale), int(32 * scale), 3])
     y = tf.placeholder(tf.float32, shape=[None, int(64 * scale), int(32 * scale), 2,numTimeSteps])
     network_List = []
     #y_List = []
-    with tf.variable_scope("MultiStep") as scope:
+    with tf.variable_scope("MultiStep", reuse=reuse) as scope:
         network_List.append(modelFunc(x, phase))
         #y_List.append(y)
         for ind in range(numTimeSteps-1):

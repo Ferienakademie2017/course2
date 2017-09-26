@@ -38,14 +38,23 @@ class MinibatchSampler:
     def getNumTotalSamples(self):
         return self.numTotalSamples
 
+def adam_variables_initializer(adam_opt, var_list):
+    adam_vars = [adam_opt.get_slot(var, name)
+                 for name in adam_opt.get_slot_names()
+                 for var in var_list if var is not None]
+    adam_vars.extend(list(adam_opt._get_beta_accumulators()))
+    return tf.variables_initializer(adam_vars)
 
-def trainNetwork(flagFieldNN, sampler, lossLogger, minibatchSize=4, numMinibatches=100):
-    opt = [tf.train.AdamOptimizer(0.02 * math.pow(0.5, j)).minimize(flagFieldNN.loss) for j in range(1)]
-    # opt = tf.train.AdamOptimizer(0.05).minimize(flagFieldNN.loss)
-    # opt = [tf.train.GradientDescentOptimizer(10 * math.pow(0.3, j)).minimize(flagFieldNN.loss) for j in range(4)]
-    init = tf.global_variables_initializer()
-    sess = tf.Session()
-    sess.run(init)
+def trainNetwork(flagFieldNN, sampler, lossLogger, minibatchSize=4, numMinibatches=100, sess=tf.Session()):
+    with tf.variable_scope("Adam") as scope:
+        #opt = [tf.train.AdamOptimizer(0.02 * math.pow(0.5, j)).minimize(flagFieldNN.loss) for j in range(1)]
+        # opt = tf.train.AdamOptimizer(0.05).minimize(flagFieldNN.loss)
+        opt = [tf.train.GradientDescentOptimizer(0.001 * math.pow(0.3, j)).minimize(flagFieldNN.loss) for j in range(2)]
+        #scope.reuse_variables()
+        #sess.run(tf.initialize_variables(
+        #    list(tf.get_variable(name) for name in sess.run(tf.report_uninitialized_variables(tf.global_variables())))))
+        #for myopt in opt:
+        #    sess.run(adam_variables_initializer(myopt, None))
 
     for j in range(len(opt)):
         for i in range(numMinibatches):
