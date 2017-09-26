@@ -47,22 +47,22 @@ def create_mini_batches(data, mbs):
     return x_mbs, y_mbs
 
 def train():
-    # x = tf.placeholder(tf.float32, [None, 2], name="x")
-    # output = create_net(x)
-    # ground_truth = tf.placeholder(tf.float32, [None, 4096], name="ground_truth")
-    # train_step, loss = create_trainer(output, ground_truth)
-    #
-    # sess = tf.InteractiveSession()
-    # tf.global_variables_initializer().run()
+    x = tf.placeholder(tf.float32, [None, 2], name="x")
+    output = create_net(x)
+    ground_truth = tf.placeholder(tf.float32, [None, 4096], name="ground_truth")
+    train_step, loss = create_trainer(output, ground_truth)
 
     sess = tf.InteractiveSession()
-    saver = tf.train.import_meta_graph("../models/new_model/model-57890.meta")
+    tf.global_variables_initializer().run()
+    saver = tf.train.Saver(var_list=[output])
+    # saver = tf.train.import_meta_graph("../models/new_model/model-57890.meta")
     saver.restore(sess, tf.train.latest_checkpoint("../models/new_model")) # TODO: create a new saver that only saves the variables I want. Use that for the training etc.
-    graph = tf.get_default_graph()
-    output = graph.get_tensor_by_name("output:0")
-    x = graph.get_tensor_by_name("x:0")
-    ground_truth = graph.get_tensor_by_name("ground_truth:0")
-    train_step, loss = create_trainer(output, ground_truth)
+
+    # graph = tf.get_default_graph()
+    # output = graph.get_tensor_by_name("output:0")
+    # x = graph.get_tensor_by_name("x:0")
+    # ground_truth = graph.get_tensor_by_name("ground_truth:0")
+    # train_step, loss = create_trainer(output, ground_truth)
 
     training_data = load_time_data()
 
