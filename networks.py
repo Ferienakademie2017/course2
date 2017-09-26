@@ -2,6 +2,7 @@
 Input: single scalar. Output: flat array, dimensions derived from 'data'
 argument."""
 
+from __future__ import division
 import tensorflow as tf
 
 
@@ -47,19 +48,22 @@ def create_1_256_network(data):
 
     return input_layer, input_layer * W + b
 
-def create_1_32_deconv_256_network(data, **kwargs):
+def create_1_32_deconv_256_network(data_shape=None, batch_size=None):
     """NETWORK ARCHITECTURE
        Input        Layer1          Output-Layer
        1 (lin)  ->  64 (tanh)   ->  X*Y (tanh(deconvolution))
        X, Y are the data dimensions
+
+    :param data_shape: 2- or 3-tuple indicating the output data shape (i.e.
+        either 2D velocity or 1D density)
     """
 
-    batch_size = kwargs["batch_size"]
-    nr_output_channels = 1
+    nr_output_channels = 1 if len(data_shape) == 2 else 2
 
     input_layer = tf.placeholder(tf.float32, shape=(None, 1))
 
-    fcl_output_size = 64 #hardcoded for now
+    # 64 for 16x8 data, 1024 for 64*32 data
+    fcl_output_size = data_shape[0] * data_shape[1] // 2
     W = tf.Variable(tf.random_normal([1, fcl_output_size], stddev=0.01))
     b = tf.Variable(tf.random_normal([fcl_output_size], stddev=0.01))
 
@@ -67,10 +71,11 @@ def create_1_32_deconv_256_network(data, **kwargs):
     nr_fcl_output_channels = 2 * nr_output_channels
     fc_layer = tf.tanh(W * input_layer + b)
     fc_layer = tf.reshape(fc_layer,
-            [batch_size, 8, 4, nr_fcl_output_channels])
+            [batch_size, data_shape[0] // 2, data_shape[1] // 2, 
+                nr_fcl_output_channels])
 
     # deconvolutional layer
-    output_shape = [batch_size, 16, 8, nr_output_channels]
+    output_shape = [batch_size, data_shape[0], data_shape[1], nr_output_channels]
     strides = [1, 2, 2, 1]
     filter_weights = tf.Variable(tf.random_normal(
         [5, 5, nr_output_channels, nr_fcl_output_channels], stddev=0.01))

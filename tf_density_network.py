@@ -1,3 +1,4 @@
+from __future__ import division
 import time
 import os
 import shutil
@@ -16,8 +17,8 @@ np.random.seed(13)
 tf.set_random_seed(13)
 
 # path to fluid sim data
-fluidDataPath = "densitySamples1608/"
-# fluidDataPath = "densitySamples6432/"
+# fluidDataPath = "densitySamples1608/"
+fluidDataPath = "densitySamples6432/"
 fluidMetadataPath = "fluidSamplesMetadata/"
 
 # path to trained models
@@ -72,8 +73,8 @@ print("Split into %d training and %d validation samples" %
 # set up network
 # input_layer, output = create_1_256_network(densities)
 # input_layer, output = create_1_8_256_network(densities)
-input_layer, output = create_1_32_deconv_256_network(densities,
-        batch_size=training_batch_size)
+input_layer, output = create_1_32_deconv_256_network(
+        data_shape=density_shape, batch_size=training_batch_size)
 
 y = tf.placeholder(tf.float32)
 squared_deltas = tf.square(output - y)
@@ -92,6 +93,8 @@ print(flat_training_data.shape)
 print(trainingInput.shape)
 
 for i in range(trainingEpochs):
+    if i % 100 == 99:
+        print("Training epoch {}...".format(i))
     sess.run(train,
             feed_dict={input_layer: trainingInput, y: flat_training_data})
 
