@@ -1,14 +1,7 @@
 from __future__ import division
-import time
-import os
-import shutil
-import sys
-import math
-import random
 
 import tensorflow as tf
 import numpy as np
-import scipy.misc
 
 from networks import create_1_256_network, create_1_8_256_network,\
         create_1_32_deconv_256_network
