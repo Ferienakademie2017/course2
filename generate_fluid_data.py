@@ -16,7 +16,7 @@ output_folder_density_1608 = "densitySamples1608/"
 
 y_position_min = get_parameter("y_position_min")
 y_position_max = get_parameter("y_position_max")
-possible_positions = y_position_max - y_position_min
+possible_positions = 1#y_position_max - y_position_min
 step_size = 1
 
 # how many times to simulate through all possible positions
