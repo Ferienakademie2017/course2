@@ -10,6 +10,7 @@
 - Netzwerk auf eigenen Outputs trainieren
 - Loss auf mehreren Zeitschritten
 - Flow-Loss?
+- Autoencoder und Zeitschritte auf Latent Space
 
 
 Vorschläge aus master:

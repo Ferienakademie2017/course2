@@ -56,14 +56,13 @@ class TimeStepSimulationCollection(object):
         for res in sim1ResultList:
             arr = res.npVel
             arr = np.delete(arr, 2, 2)
-            arr = scipy.ndimage.zoom(arr, [scale, scale, 1])
             self.velFields.append(arr)
 
         func = lambda x: 1.0 if x > 0.0 else 0.0
         obs = sim1ResultList[0].obstacles
         obs = np.vectorize(func)(obs)
-        self.flagField = scipy.ndimage.zoom(obs, [scale, scale])
-        self.obstacles = scipy.ndimage.zoom(sim1ResultList[0].obstacles, [scale, scale])
+        self.flagField = obs
+        self.obstacles = sim1ResultList[0].obstacles,
 
     def getExamples(self):
         examples = []
@@ -86,14 +85,13 @@ class MultiStepSimulationCollection(object):
         for res in sim1ResultList:
             arr = res.npVel
             arr = np.delete(arr, 2, 2)
-            arr = scipy.ndimage.zoom(arr, [scale, scale, 1])
             self.velFields.append(arr)
 
         func = lambda x: 1.0 if x > 0.0 else 0.0
         obs = sim1ResultList[0].obstacles
         obs = np.vectorize(func)(obs)
-        self.flagField = scipy.ndimage.zoom(obs, [scale, scale])
-        self.obstacles = scipy.ndimage.zoom(sim1ResultList[0].obstacles, [scale, scale])
+        self.flagField = obs
+        self.obstacles = sim1ResultList[0].obstacles
 
     def getExamples(self,numTimeSteps):
         examples = []
@@ -132,7 +130,6 @@ class DataPartition(object):
         testData = [exampleType(data[i], slice, scale) for i in self.testIndices]
 
         return trainingData, validationData, testData
-
 
 def getFeedDict(network, data, isTraining):
     xValues = np.array([ex.x for ex in data])
