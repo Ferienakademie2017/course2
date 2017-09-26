@@ -388,6 +388,21 @@ def multiStepLoss(yPred, y, flagField):
     loss = tf.reduce_mean(tf.abs((yPred - y)))
     return loss
 
+def multiStepLoss2(yPred, y, flagField):
+    #Exponential Decay
+    a = 1.0
+    shape_yPred = yPred.get_shape().as_list()
+    a_List = []
+    for ind in range(shape_yPred[-1]):
+        a_List.append(pow(a,ind))
+    yPredDecay = tf.tensordot((yPred - y),tf.convert_to_tensor(a_List),[[4],[0]])
+    obs = tf.expand_dims(flagField, -1)
+    loss = tf.reduce_mean(tf.abs(yPredDecay))
+    divy = obs*yPred
+    divField = divy[:, 1:, :-1, 0,:] - divy[:, :-1, :-1, 0,:] + divy[:, :-1, 1:, 1,:] - divy[:, :-1, :-1, 1,:]
+    loss += 0.0003 * tf.nn.l2_loss(divField)
+    return loss
+
 class NeuralNetwork(object):
     def __init__(self, x, y, yPred, loss, phase):
         self.x = x
@@ -447,6 +462,9 @@ def computeTimeStepNN1():
 
 def computeMultipleTimeStepNN1(numTimeSteps):
     return computeMultipleTimeStepNN(timeStepModel2, multiStepLoss, scale=1,numTimeSteps=numTimeSteps)
+
+def computeMultipleTimeStepNN2(numTimeSteps):
+    return computeMultipleTimeStepNN(timeStepModel2, multiStepLoss2, scale=1,numTimeSteps=numTimeSteps)
 
 def computeSimpleNN(modelFunc, lossFunc, inputDim = 1, scale=0.25):
     phase = tf.placeholder(tf.bool, name='phase')

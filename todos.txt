@@ -10,6 +10,7 @@
 - GAN
 - Netzwerk auf eigenen Outputs trainieren
 - Loss auf mehreren Zeitschritten
+- Exponential decay für den Loss im Mehrschritttraining
 
 
 Vorschläge aus master:

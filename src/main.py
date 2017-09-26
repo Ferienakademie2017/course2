@@ -20,7 +20,7 @@ trainingData = evaluation.generateMultiTimeStepExamples(trainingData,5)
 validationData = evaluation.generateMultiTimeStepExamples(validationData,5)
 testData = evaluation.generateTimeStepExamples(testData)
 
-model = models.computeMultipleTimeStepNN1(5)
+model = models.computeMultipleTimeStepNN2(5)
 minibatchSize = 10
 numMinibatches = 200
 lossLogger = utils.LossLogger()
