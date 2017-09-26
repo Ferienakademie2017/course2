@@ -9,7 +9,7 @@ import evaluation
 import models
 import random
 
-def generateSequence(sess, model, folder, example, numSteps=50):
+def generateMultiSequence(sess, model, folder, example, numSteps=50):
     folder = "images/" + folder
 
     initialCond = example.x
@@ -21,7 +21,22 @@ def generateSequence(sess, model, folder, example, numSteps=50):
         newResult = sess.run(model.yPred, evaluation.getFeedDict(model, [example], isTraining=False))
         example.x[:,:,0:2] = newResult[0][:,:,:,0]
         example.x[:,:,0:2] = example.x[:,:,0:2] * example.x[:,:,2:3]
-        example.x[:,0,:] = initialCond[:,0,:]
+        example.x[0,:,:] = initialCond[0,:,:]
+
+def generateSequence(sess, model, folder, example, numSteps=50):
+    folder = "images/" + folder
+
+    initialCond = example.x
+
+    for i in range(numSteps):
+        result = Sim1Result.Sim1Result(example.x[:,:,0:2], [0], example.x[:,:,2], time=0)
+        utils.sim1resToImage(result, folder=folder)
+        newResult = sess.run(model.yPred, evaluation.getFeedDict(model, [example], isTraining=False))
+        example.x[:,:,0:2] = newResult[0]
+        example.x[:,:,0:2] = example.x[:,:,0:2] * example.x[:,:,2:3]
+        example.x[0,:,:] = initialCond[0,:,:]
+        #for i in range(1, 64):
+        #    example.x[i,:,0] *= (initialFlow + 0.01) / (sum(example.x[i,:,0]) + 0.01)
 
 
 def generateImgs(sess, model, folder, examples):
@@ -59,12 +74,12 @@ def randomSample(list, numSamples):
 
 
 # numImages = 20
-# if(len(trainingData) >= 1):
+# if len(trainingData) >= 1:
 #     generateImgs(sess, model, "training/", randomSample(trainingData, numImages))
-# if(len(validationData) >= 1):
+# if len(validationData) >= 1:
 #     generateImgs(sess, model, "validation/", randomSample(validationData, numImages))
-# if(len(testData) >= 1):
+# if len(testData) >= 1:
 #     generateImgs(sess, model, "test/", randomSample(testData, numImages))
 
-generateSequence(sess, model, "sequenceMulti01/", validationData[0])
-generateSequence(sess, model, "sequenceMulti02/", validationData[100])
+generateMultiSequence(sess, model, "sequenceMulti01/", validationData[0])
+generateMultiSequence(sess, model, "sequenceMulti02/", validationData[100])

@@ -168,7 +168,7 @@ def generateTrainingExamples(trainingConfiguration,initialConditions,obstacleCre
             inter = 10
             if 0 and (t % inter == 0):
                 gui.screenshot( 'karman_{}.png'.format(int(t/inter)) )
-        utils.serialize(simPath + trainingConfiguration.getFileNameFor(simNo), result_List)
+        utils.serialize(simPath + trainingConfiguration.getFileNameFor(trainingConfiguration.counter), result_List)
         trainingConfiguration.counter += 1
 
 def applyBoundaryValues(initialConditions,npObs,npVel,vel):

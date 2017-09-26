@@ -1,15 +1,15 @@
 
 
-- nochmal Divergenz-Loss testen
-- Generierung der initialen Bedingungen (halb erledigt)
+- Generierung der initialen Bedingungen (theoretisch noch erweiterbar)
 - Zeitschritt?
 - Command Line Parser? (David: von customPlot.py übernehmen?)
 - Kommentierung
 - Benennung der Variablen in TensorFlow
-- bessere Behandlung von BatchNorm/Dropout zur Testzeit
+(- InstanceNorm teilweise ausprobieren?)
 - GAN
 - Netzwerk auf eigenen Outputs trainieren
 - Loss auf mehreren Zeitschritten
+- Flow-Loss?
 - Exponential decay für den Loss im Mehrschritttraining
 
 
@@ -21,7 +21,6 @@ Vorschläge aus master:
   2D 'room' (simulation air ventilation, vary positions / size of inlets and out
   lets)
 - add time dependency / dynamics
-- produce some cools animations 
 
 Erledigt:
 - Mantaflow-Ausgabe entfernen
@@ -34,4 +33,6 @@ Erledigt:
 - Visualisierung des Trainings-/Validierungs-/Testfehlers (live? nachher? Konsole?)
 - Struktur: Trainingsbeispiele generieren (MantaFlow)
 - Optimizer?
-
+- nochmal Divergenz-Loss testen
+- "Flow-Norm" statt InstanceNorm?
+- bessere Behandlung von BatchNorm/Dropout zur Testzeit (großteils erledigt)
