@@ -22,15 +22,8 @@ fluidMetadataPath = "fluidSamplesMetadata/"
 # path to trained models
 trainedModelsPath = "trainedModels/"
 
-# path to output
-outputPath = "output/"
-
 # training parameters
 trainingEpochs = 1000
-
-def twoDtoOneD(twoD):
-	n_data = twoD.shape[0]
-	return twoD.reshape([n_data, -1])
 
 # load data
 densities = []
@@ -89,7 +82,7 @@ init = tf.global_variables_initializer()
 sess = tf.Session()
 sess.run(init)
 
-flat_training_data = trainingData #twoDtoOneD(trainingData)
+flat_training_data = trainingData
 trainingInput = trainingInput.reshape(-1, 1)
 print(flat_training_data.shape)
 print(trainingInput.shape)
