@@ -21,8 +21,9 @@ import flow
 # path_to_data = r'C:\Users\Nico\Documents\Ferienakademie\course2\trainingData\trainingKarman_time_1000randu.p'
 path_to_data = r'C:\Users\Nico\Documents\Ferienakademie\course2\trainingData\trainingKarman_time_5000randu.p'
 
-modelPath = r':\Users\Nico\Documents\Ferienakademie\course2\tmp\model_time.ckpt'
-trainingEpochs = 10
+imagePath = r'C:\Users\Nico\Documents\Ferienakademie\course2\results\im'
+modelPath = r'C:\Users\Nico\Documents\Ferienakademie\course2\model\model.ckpt'
+trainingEpochs = 1000
 batchSize = 64
 inSize = 1  # warning - hard coded to scalar values 1
 validationProportion = 0.05
@@ -105,7 +106,6 @@ training_data = training_data[trainingInd]
 trainingInput = position_y[trainingInd]
 trainingSize = len(training_data)
 
-
 # Add ops to save and restore all the variables.
 saver = tf.train.Saver()
 
@@ -155,6 +155,6 @@ for epoch in range(trainingEpochs):
         # scipy.misc.toimage(vout_img[:, :, 0], cmin=0.0, cmax=1.0).save("outx_%d.png" % i)
         # scipy.misc.toimage(vout_img[:, :, 1], cmin=0.0, cmax=1.0).save("outy_%d.png" % i)
         print("Y position:", validationInput[0])
-        flow.plot_flow_triple_sequence(valiData, vout_img)
+        flow.plot_flow_triple_sequence(valiData, vout_img, savePath=imagePath)
 
 print("Done")

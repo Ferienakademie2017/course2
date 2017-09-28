@@ -38,7 +38,7 @@ def plot_flow_triple(real_flow, net_flow):
     plt.show()
     # exit()
 
-def plot_flow_triple_sequence(real_flow_sequence, net_flow_sequence):
+def plot_flow_triple_sequence(real_flow_sequence, net_flow_sequence, savePath = None):
     S = 10  # scaling parameter
     # takes ONE real flow and ONE output from network and compares them
 
@@ -75,6 +75,9 @@ def plot_flow_triple_sequence(real_flow_sequence, net_flow_sequence):
         real_flow_sq = real_flow[:,:,0]**2 + real_flow[:,:,1]**2
         real_norm = math.sqrt(np.sum(real_flow_sq))
         print("Average error: %f" % (diff_norm/real_norm))
+
+        if savePath != None:
+            plt.savefig(savePath + str(k) + '.png')
 
         plt.show(block = False)
         plt.pause(0.05)
