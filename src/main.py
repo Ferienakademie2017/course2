@@ -22,21 +22,7 @@ trainingData, validationData, testData = dataPartition.computeData(data,
                                                                    exampleType=evaluation.MultiStepSimulationCollection,
                                                                    slice=[0, 1], scale=1)
 
-sess = tf.Session()
-
-
-model1 = models.computeMultipleTimeStepNN1(1, reuse=False)
-model2 = models.computeMultipleTimeStepNN1(2, reuse=True)
-model4 = models.computeMultipleTimeStepNN1(4, reuse=True)
-model8 = models.computeMultipleTimeStepNN1(8, reuse=True)
-model16 = models.computeMultipleTimeStepNN1(16, reuse=True)
-
-init = tf.global_variables_initializer()
-sess.run(init)
-
-model1.load(sess, "final")
-
-def trainMultistep(model, multiStepSize, minibatchSize=10, numMinibatches=200):
+def trainMultistep(multiStepSize, trainer, minibatchSize=10, numMinibatches=200):
     global trainingData
     global validationData
     global testData
@@ -44,19 +30,72 @@ def trainMultistep(model, multiStepSize, minibatchSize=10, numMinibatches=200):
     #processedValidationData = evaluation.generateMultiTimeStepExamples(validationData, multiStepSize)
     #processedTestData = evaluation.generateMultiTimeStepExamples(testData, multiStepSize)
 
-    training.trainNetwork(model, training.MinibatchSampler(processedTrainingData), lossLogger, minibatchSize, numMinibatches, sess=sess)
+    trainer.train(training.MinibatchSampler(processedTrainingData), lossLogger, minibatchSize, numMinibatches)
 
 # Save final variables
 
+def multiTrain():
+    sess = tf.Session()
 
-#trainMultistep(sess, 1)
-#trainMultistep(model1, 1, numMinibatches=200)
-trainMultistep(model2, 2, numMinibatches=100)
-trainMultistep(model4, 4, numMinibatches=50)
-trainMultistep(model8, 8, numMinibatches=25)
-trainMultistep(model16, 16, numMinibatches=15)
+    model1 = models.computeMultipleTimeStepNN1(1, reuse=False)
+    model2 = models.computeMultipleTimeStepNN1(2, reuse=True)
+    model4 = models.computeMultipleTimeStepNN1(4, reuse=True)
+    model8 = models.computeMultipleTimeStepNN1(8, reuse=True)
+    model16 = models.computeMultipleTimeStepNN1(16, reuse=True)
 
-model1.save(sess, "final")
+    trainer1 = training.NetworkTrainer(sess, model1)
+    trainer2 = training.NetworkTrainer(sess, model2)
+    trainer4 = training.NetworkTrainer(sess, model4)
+    trainer8 = training.NetworkTrainer(sess, model8)
+    trainer16 = training.NetworkTrainer(sess, model16)
+
+    init = tf.global_variables_initializer()
+    sess.run(init)
+
+    # model1.load(sess, "multistep")
+
+    trainMultistep(1, trainer1, numMinibatches=200)
+    trainMultistep(2, trainer2, numMinibatches=100)
+    trainMultistep(4, trainer4, numMinibatches=50)
+    trainMultistep(8, trainer8, numMinibatches=25)
+    trainMultistep(16, trainer16, numMinibatches=15)
+
+    model1.save(sess, "multistep")
+
+
+def autoencoderTrain():
+    global trainingData
+    global lossLogger
+    processedTrainingData = evaluation.generateAutoencoderExamples(trainingData)
+    autoencoder = models.computeAutoencoderNN1()
+    sess = tf.Session()
+    trainer = training.NetworkTrainer(sess, autoencoder)
+    init = tf.global_variables_initializer()
+    sess.run(init)
+
+    trainer.train(training.MinibatchSampler(processedTrainingData), lossLogger, minibatchSize=20, numMinibatches=200)
+
+    autoencoder.save(sess, "autoencoder")
+
+
+def timeStepTrain():
+    global trainingData
+    processedTrainingData = evaluation.generateTimeStepExamples(trainingData)
+    sess = tf.Session()
+
+    model = models.computeTimeStepNN1()
+    trainer = training.NetworkTrainer(sess, model)
+
+    init = tf.global_variables_initializer()
+    sess.run(init)
+
+    trainer.train(training.MinibatchSampler(processedTrainingData), lossLogger, minibatchSize=20, numMinibatches=200)
+
+    model.save(sess, "timeStep")
+
+multiTrain()
+# autoencoderTrain()
+# timeStepTrain()
 
 # Save the result of the loss logger
 lossLogger.save()

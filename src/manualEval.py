@@ -81,6 +81,6 @@ def randomSample(list, numSamples):
 # if len(testData) >= 1:
 #     generateImgs(sess, model, "test/", randomSample(testData, numImages))
 
-generateMultiSequence(sess, model, "sequenceMulti01/", validationData[0], numSteps=200)
-generateMultiSequence(sess, model, "sequenceMulti02/", validationData[100], numSteps=200)
-generateMultiSequence(sess, model, "sequenceMulti03/", validationData[200], numSteps=200)
+generateMultiSequence(sess, model, "sequenceMulti04/", validationData[0], numSteps=200)
+generateMultiSequence(sess, model, "sequenceMulti05/", validationData[100], numSteps=200)
+generateMultiSequence(sess, model, "sequenceMulti06/", validationData[200], numSteps=200)

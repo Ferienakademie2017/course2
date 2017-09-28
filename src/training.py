@@ -45,23 +45,29 @@ def adam_variables_initializer(adam_opt, var_list):
     adam_vars.extend(list(adam_opt._get_beta_accumulators()))
     return tf.variables_initializer(adam_vars)
 
-def trainNetwork(flagFieldNN, sampler, lossLogger, minibatchSize=4, numMinibatches=100, sess=tf.Session()):
-    with tf.variable_scope("Adam") as scope:
-        #opt = [tf.train.AdamOptimizer(0.02 * math.pow(0.5, j)).minimize(flagFieldNN.loss) for j in range(1)]
+class NetworkTrainer(object):
+    def __init__(self, sess, flagFieldNN):
+        self.sess = sess
+        self.flagFieldNN = flagFieldNN
+
+        self.opt = [tf.train.AdamOptimizer(0.02 * math.pow(0.5, j)).minimize(flagFieldNN.loss) for j in range(1)]
         # opt = tf.train.AdamOptimizer(0.05).minimize(flagFieldNN.loss)
-        opt = [tf.train.GradientDescentOptimizer(0.001 * math.pow(0.3, j)).minimize(flagFieldNN.loss) for j in range(2)]
-        #scope.reuse_variables()
-        #sess.run(tf.initialize_variables(
+        # self.opt = [tf.train.GradientDescentOptimizer(0.001 * math.pow(0.3, j)).minimize(self.flagFieldNN.loss) for j in
+        #        range(2)]
+        # scope.reuse_variables()
+        # sess.run(tf.initialize_variables(
         #    list(tf.get_variable(name) for name in sess.run(tf.report_uninitialized_variables(tf.global_variables())))))
-        #for myopt in opt:
+        # for myopt in opt:
         #    sess.run(adam_variables_initializer(myopt, None))
 
-    for j in range(len(opt)):
-        for i in range(numMinibatches):
-            mb = sampler.nextMinibatch(minibatchSize)
-            optResult, lossResult = sess.run([opt[j], flagFieldNN.loss], evaluation.getFeedDict(flagFieldNN, mb, isTraining=True))
-            lossLogger.logLoss(sampler.getNumTotalSamples(), lossResult)
-            # todo: evtl. hier eine ErrorReporter-Klasse rein
-            # todo: oder gleich Klasse, die auch noch die Abbruchbedingung festlegt oder eine Änderung der Learning Rate
+    def train(self, sampler, lossLogger, minibatchSize=4, numMinibatches=100):
+        for j in range(len(self.opt)):
+            for i in range(numMinibatches):
+                mb = sampler.nextMinibatch(minibatchSize)
+                optResult, lossResult = self.sess.run([self.opt[j], self.flagFieldNN.loss],
+                                                 evaluation.getFeedDict(self.flagFieldNN, mb, isTraining=True))
+                lossLogger.logLoss(sampler.getNumTotalSamples(), lossResult)
+                # todo: evtl. hier eine ErrorReporter-Klasse rein
+                # todo: oder gleich Klasse, die auch noch die Abbruchbedingung festlegt oder eine Änderung der Learning Rate
 
-    return sess
+        return self.sess

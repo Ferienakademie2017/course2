@@ -342,6 +342,7 @@ def timeStepModel2(x, phase):
     convSize = 5
     scaleFactor = 1
 
+
     for i in range(4):
         oldLayer = layer
         layer = tf.contrib.layers.conv2d(layer, numFeatures, [convSize, convSize], [1, 1], "SAME", activation_fn=None,
@@ -365,6 +366,75 @@ def timeStepModel2(x, phase):
                                      biases_initializer=tf.constant_initializer(0.0),scope="output")
 
     return layer
+
+def autoencoderModel1(x, phase):
+    layer = x
+    numFeatures = 8
+    convSize = 5
+    scaleFactor = 1
+    zoomSteps = 3
+    zoomLayers = []
+    halfResLayers = 5
+    encoding = None
+    act = layers.lrelu # tf.nn.relu # tf.tanh
+
+    for i in range(zoomSteps):
+        zoomLayers.append(layer)
+        layer = tf.contrib.layers.conv2d(layer, numFeatures, [convSize, convSize], [2, 2], "SAME",
+                                         activation_fn=act,
+                                         weights_initializer=tf.truncated_normal_initializer(stddev=0.02),
+                                         biases_initializer=tf.constant_initializer(0.0))
+        layer = tf.contrib.layers.batch_norm(layer, decay=0.9, updates_collections=None, epsilon=1e-5, scale=True,
+                                             scope="batch_norm0_{}".format(i), is_training=phase)
+
+    for j in range(2):
+        if j == 2:
+            encoding = layer
+        for i in range(halfResLayers):
+            oldLayer = layer
+            layer = tf.contrib.layers.conv2d(layer, numFeatures, [convSize, convSize], [1, 1], "SAME", activation_fn=None,
+                                             weights_initializer=tf.truncated_normal_initializer(stddev=0.02),
+                                             biases_initializer=tf.constant_initializer(0.0))
+            layer = tf.contrib.layers.batch_norm(layer, decay=0.9, updates_collections=None, epsilon=1e-5, scale=True,
+                                                 scope="batch_norm1_{}_{}".format(j, i), is_training=phase)
+            layer = act(layer)
+            layer = tf.contrib.layers.conv2d(layer, numFeatures, [convSize, convSize], [1, 1], "SAME", activation_fn=None,
+                                             weights_initializer=tf.truncated_normal_initializer(stddev=0.02),
+                                             biases_initializer=tf.constant_initializer(0.0))
+            layer = tf.contrib.layers.batch_norm(layer, decay=0.9, updates_collections=None, epsilon=1e-5, scale=True,
+                                                 scope="batch_norm2_{}_{}".format(j, i), is_training=phase)
+            # layer = tf.nn.relu(layer)
+            layer = layer + oldLayer
+            # layer = tf.nn.dropout(layer, 0.8)
+
+    for i in range(zoomSteps):
+        layer = tf.contrib.layers.conv2d_transpose(layer, numFeatures, [convSize, convSize], [2, 2], "SAME",
+                                                   activation_fn=act,
+                                                   weights_initializer=tf.truncated_normal_initializer(stddev=0.02),
+                                                   biases_initializer=tf.constant_initializer(0.0))
+        layer = tf.contrib.layers.batch_norm(layer, decay=0.9, updates_collections=None, epsilon=1e-5, scale=True,
+                                             scope="batch_norm3_{}".format(i), is_training=phase)
+        layer = tf.concat([layer, zoomLayers[zoomSteps - 1 - i]], 3)
+
+        layer = tf.contrib.layers.conv2d(layer, numFeatures, [convSize, convSize], [1, 1], "SAME",
+                                         activation_fn=act,
+                                         weights_initializer=tf.truncated_normal_initializer(stddev=0.02),
+                                         biases_initializer=tf.constant_initializer(0.0))
+        layer = tf.contrib.layers.batch_norm(layer, decay=0.9, updates_collections=None, epsilon=1e-5, scale=True,
+                                             scope="batch_norm4_{}".format(i), is_training=phase)
+        layer = tf.contrib.layers.conv2d(layer, numFeatures, [convSize, convSize], [1, 1], "SAME",
+                                         activation_fn=act,
+                                         weights_initializer=tf.truncated_normal_initializer(stddev=0.02),
+                                         biases_initializer=tf.constant_initializer(0.0))
+        layer = tf.contrib.layers.batch_norm(layer, decay=0.9, updates_collections=None, epsilon=1e-5, scale=True,
+                                             scope="batch_norm5_{}".format(i), is_training=phase)
+
+    layer = tf.contrib.layers.conv2d(layer, 2, [convSize, convSize], [scaleFactor, scaleFactor], "SAME",
+                                     activation_fn=None,
+                                     weights_initializer=tf.truncated_normal_initializer(stddev=0.02),
+                                     biases_initializer=tf.constant_initializer(0.0))
+
+    return layer, encoding
 
 def simpleLoss1(yPred, y, flagField):
     # loss = tf.reduce_mean(tf.square(yPred - y))
@@ -417,6 +487,11 @@ class FlagFieldNN(NeuralNetwork):
         self.flagField = flagField
 
 
+class AutoencoderNN(FlagFieldNN):
+    def __init__(self, x, y, yPred, loss, phase, flagField, encoding):
+        super(AutoencoderNN, self).__init__(x, y, yPred, loss, phase, flagField)
+        self.encoding = encoding
+
 def computeNN1():
     return computeSimpleNN(simpleModel1, simpleLoss1)
 
@@ -445,10 +520,13 @@ def computeNN9():
     return computeConvNN(simpleModel9, simpleLoss3, scale=1)
 
 def computeTimeStepNN1():
-    return computeTimeStepNN(timeStepModel1, simpleLoss3, scale=1)
+    return computeTimeStepNN(timeStepModel1, simpleLoss3)
 
 def computeMultipleTimeStepNN1(numTimeSteps, reuse=False):
     return computeMultipleTimeStepNN(timeStepModel2, multiStepLoss, scale=1,numTimeSteps=numTimeSteps, reuse=reuse)
+
+def computeAutoencoderNN1():
+    return computeAutoencoderNN(autoencoderModel1, simpleLoss3)
 
 def computeSimpleNN(modelFunc, lossFunc, inputDim = 1, scale=0.25):
     phase = tf.placeholder(tf.bool, name='phase')
@@ -489,7 +567,7 @@ def computeSimpleNNWithReg(modelFunc, lossFunc, inputDim = 1):
 def computeMultipleTimeStepNN(modelFunc, lossFunc, scale=0.25,numTimeSteps = 1, reuse=False):
     phase = tf.placeholder(tf.bool, name='phase')
     x = tf.placeholder(tf.float32, shape=[None, int(64 * scale), int(32 * scale), 3])
-    y = tf.placeholder(tf.float32, shape=[None, int(64 * scale), int(32 * scale), 2,numTimeSteps])
+    y = tf.placeholder(tf.float32, shape=[None, int(64 * scale), int(32 * scale), 2, numTimeSteps])
     network_List = []
     #y_List = []
     with tf.variable_scope("MultiStep", reuse=reuse) as scope:
@@ -505,3 +583,12 @@ def computeMultipleTimeStepNN(modelFunc, lossFunc, scale=0.25,numTimeSteps = 1, 
         flagField = tf.placeholder(tf.float32, shape=[None, int(64 * scale), int(32 * scale)])
         loss = lossFunc(yPreds, y, tf.expand_dims(flagField,-1))
     return FlagFieldNN(x, y, yPreds, loss, phase, flagField)
+
+def computeAutoencoderNN(modelFunc, lossFunc):
+    phase = tf.placeholder(tf.bool, name='phase')
+    x = tf.placeholder(tf.float32, shape=[None, 64, 32, 2])
+    y = tf.placeholder(tf.float32, shape=[None, 64, 32, 2])
+    yPred, encoding = modelFunc(x, phase)
+    flagField = tf.placeholder(tf.float32, shape=[None, 64, 32])
+    loss = lossFunc(yPred, y, flagField)
+    return AutoencoderNN(x, y, yPred, loss, phase, flagField, encoding)
