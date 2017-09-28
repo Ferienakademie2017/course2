@@ -103,7 +103,7 @@ def loadDataTimeSequence(path, filterLimit = 5, loadPrefiltered = False, savePre
 #     plt.show()
 
 if __name__ == "__main__":
-    sourceFile = open( r'C:\Users\Nico\Documents\Ferienakademie\course2\trainingData\trainingKarman1.p', "rb" )
+    sourceFile = open( r'\Ferienakademie\course2\trainingData\trainingKarman1.p', "rb" )
     yPositions = pickle.load(sourceFile)
     trainingSize = yPositions.shape[0]
     fieldSize = (32,64,2)

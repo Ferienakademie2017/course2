@@ -13,10 +13,8 @@ import flow
 # script for first basic neural net where input layer
 # (y coordinate of obstacle) is directly forwarded to output layer with 256 flow values
 
-# path_to_data = r'C:\Users\Annika\Saved Games\Desktop\course2\trainingData\trainingKarman32.p'
-# path_to_data = r'C:\Users\Nico\Documents\Ferienakademie\course2\trainingData\trainingKarman32i100.p'
-# path_to_data = r'C:\Users\Nico\Documents\Ferienakademie\course2\trainingData\trainingKarman32.p'
-path_to_data = r'C:\Users\Nico\Documents\Ferienakademie\course2\trainingData\trainingKarman32_1000randu.p'
+# path_to_data = r'\Ferienakademie\course2\trainingData\trainingKarman32.p'
+path_to_data = r'\Ferienakademie\course2\trainingData\trainingKarman32_1000randu.p'
 trainingEpochs = 5000
 batchSize = 128
 inSize = 1  # warning - hard coded to scalar values 1

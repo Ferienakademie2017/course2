@@ -17,8 +17,7 @@ print("y positions:", yPositions)
 # script_dir = os.path.dirname(__file__)
 # targetFileDir = r'\trainingData\trainingKarman1.p'
 # abs_file_path = os.path.join(script_dir, targetFileDir)
-targetFile = open( r'C:\Users\Nico\Documents\Ferienakademie\course2\trainingData\trainingKarman32.p', "wb" )
-# targetFile = open( r'C:\Users\Annika\Saved Games\Desktop\course2\trainingData\trainingKarman32.p', "wb" )
+targetFile = open( r'\Ferienakademie\course2\trainingData\trainingKarman32.p', "wb" )
 #write params to pickle
 pickle.dump(yPositions, targetFile)
 
@@ -127,4 +126,3 @@ for p in yPositions :
 		if t == t_ref-1:
 			copyGridToArrayVec3(target = npArray, source=vel)
 			pickle.dump(npArray, targetFile)
-			# np.save(r'C:\Users\Nico\Documents\Ferienakademie\course2\trainingData\trainingKarman1.npy',npArray)

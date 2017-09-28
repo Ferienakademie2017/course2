@@ -18,9 +18,7 @@ yPositions = np.random.uniform(0,1,5000)
 # script_dir = os.path.dirname(__file__)
 # targetFileDir = r'\trainingData\trainingKarman1.p'
 # abs_file_path = os.path.join(script_dir, targetFileDir)
-# targetFile = open( r'C:\Users\Nico\Documents\Ferienakademie\course2\trainingData\trainingKarman32.p', "wb" )
-# targetFile = open( r'C:\Users\Annika\Saved Games\Desktop\course2\trainingData\trainingKarman_time.p', "wb" )
-targetFile = open( r'C:\Users\Nico\Documents\Ferienakademie\course2\trainingData\trainingKarman_time_5000randu.p', "wb" )
+targetFile = open( r'\Ferienakademie\course2\trainingData\trainingKarman_time_5000randu.p', "wb" )
 #write params to pickle
 pickle.dump(yPositions, targetFile)
 
@@ -128,5 +126,4 @@ for p in yPositions :
         positionslist.append(npArray.copy())
         if t == t_ref - 1:
             pickle.dump(positionslist, targetFile)
-            # np.save(r'C:\Users\Nico\Documents\Ferienakademie\course2\trainingData\trainingKarman1.npy',npArray)
 
