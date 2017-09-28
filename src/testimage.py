@@ -8,6 +8,7 @@ import utils
 # Test the arrToImage function
 data = np.zeros((64, 32, 3), dtype='f')
 obs = np.zeros((64, 32), dtype='f')
+smoke = np.zeros((64, 32), dtype='f')
 mid = (len(obs) // 2, len(obs[0]) // 2)
 maxdist = math.sqrt(mid[0] ** 2 + mid[1] ** 2)
 for i in range(len(data)):
@@ -27,5 +28,6 @@ for i in range(len(data)):
         data[i][j][0] = dist * math.sin(-angle) / maxdist * 5
         data[i][j][1] = dist * math.cos(angle) / maxdist * 5
         data[i][j][2] = 0
-result = Sim1Result.Sim1Result(data, (0, 0, 0), obs)
-utils.sim1resToImage(result)
+        smoke[i][j] = i / len(data)
+result = Sim1Result.Sim1Result(data, (0, 0, 0), obs, 0)
+utils.sim1resToImage(result, smokeField=smoke)
