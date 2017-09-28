@@ -548,11 +548,11 @@ def computeTimeStepNN1():
 def computeMultipleTimeStepNN1(numTimeSteps, reuse=False):
     return computeMultipleTimeStepNN(timeStepModel2, multiStepLoss, scale=1,numTimeSteps=numTimeSteps, reuse=reuse)
 
-def computeMultipleTimeStepNN2(numTimeSteps):
-    return computeMultipleTimeStepNN(timeStepModel2, multiStepLoss2, scale=1,numTimeSteps=numTimeSteps)
+def computeMultipleTimeStepNN2(numTimeSteps, reuse=False):
+    return computeMultipleTimeStepNN(timeStepModel2, multiStepLoss2, scale=1,numTimeSteps=numTimeSteps, reuse=reuse)
 
-def computeMultipleTimeStepNN3(numTimeSteps):
-    return computeMultipleTimeStepNN(timeStepModel1, multiStepLoss2, scale=1,numTimeSteps=numTimeSteps)
+def computeMultipleTimeStepNN3(numTimeSteps, reuse=False):
+    return computeMultipleTimeStepNN(timeStepModel1, multiStepLoss2, scale=1,numTimeSteps=numTimeSteps, reuse=reuse)
 
 def computeAutoencoderNN1():
     return computeAutoencoderNN(autoencoderModel1, simpleLoss3)
@@ -612,3 +612,12 @@ def computeMultipleTimeStepNN(modelFunc, lossFunc, scale=0.25,numTimeSteps = 1, 
         flagField = tf.placeholder(tf.float32, shape=[None, int(64 * scale), int(32 * scale)])
         loss = lossFunc(yPreds, y, tf.expand_dims(flagField,-1))
     return FlagFieldNN(x, y, yPreds, loss, phase, flagField)
+
+def computeAutoencoderNN(modelFunc, lossFunc):
+    phase = tf.placeholder(tf.bool, name='phase')
+    x = tf.placeholder(tf.float32, shape=[None, 64, 32, 2])
+    y = tf.placeholder(tf.float32, shape=[None, 64, 32, 2])
+    yPred, encoding = modelFunc(x, phase)
+    flagField = tf.placeholder(tf.float32, shape=[None, 64, 32])
+    loss = lossFunc(yPred, y, flagField)
+    return AutoencoderNN(x, y, yPred, loss, phase, flagField, encoding)

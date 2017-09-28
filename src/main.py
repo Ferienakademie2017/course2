@@ -41,7 +41,7 @@ def multiTrain():
     if len(multistepSizes) != len(minibatchCounts):
         raise ValueError("multiTrain(): len(multistepSizes) != len(minibatchCounts)")
 
-    nnModels = [models.computeMultipleTimeStepNN1(n, reuse=(i != 0)) for i, n in enumerate(multistepSizes)]
+    nnModels = [models.computeMultipleTimeStepNN3(n, reuse=(i != 0)) for i, n in enumerate(multistepSizes)]
 
     trainers = [training.NetworkTrainer(sess, model) for model in nnModels]
 
