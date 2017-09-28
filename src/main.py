@@ -8,7 +8,7 @@ import models
 import random
 import tensorflow as tf
 
-trainConfig = utils.deserialize("data/timeStep128x128/trainConfig.p")
+trainConfig = utils.deserialize("data/test_timeStep/trainConfig.p")
 # data = []  # todo
 data = trainConfig.loadGeneratedData()
 dataPartition = evaluation.DataPartition(len(data), 0.8, 0.2)
@@ -123,6 +123,7 @@ def autoStepTrain():
         trainMultistep(multistepSizes[i], trainers[i], numMinibatches=minibatchCounts[i])
     # file_writer = tf.summary.FileWriter('logs', sess.graph)
     nnModels[0].save(sess, "autoStep")
+
 
 multiTrain()
 # autoencoderTrain()

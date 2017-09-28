@@ -109,7 +109,7 @@ class MultiStepSimulationCollection(object):  # todo: join with TimeStepSimulati
     def getExamples(self,numTimeSteps):
         examples = []
         self.numTimeSteps = numTimeSteps
-        for i in range(0, len(self.velFields) - self.numTimeSteps, max(1, self.numTimeSteps/2)):
+        for i in range(0, len(self.velFields) - self.numTimeSteps, max(1, self.numTimeSteps//2)):
             y = np.concatenate([np.expand_dims(self.velFields[i+n],-1) for n in range(self.numTimeSteps)],-1)
             examples.append(TimeStepSimulationExample(self.velFields[i],y, self.flagField))
         return examples
@@ -120,7 +120,7 @@ class MultiStepSimulationCollection(object):  # todo: join with TimeStepSimulati
     def getAutoStepExamples(self, numTimeSteps, sess, model):
         examples = []
         self.numTimeSteps = numTimeSteps
-        for i in range(0, len(self.velFields) - self.numTimeSteps, max(1, self.numTimeSteps / 2)):
+        for i in range(0, len(self.velFields) - self.numTimeSteps, max(1, self.numTimeSteps // 2)):
             y = np.concatenate([np.expand_dims(self.velFields[i + n], -1) for n in range(self.numTimeSteps)], -1)
             examples.append(AutoStepSimulationExample(self.velFields[i], y, self.flagField, sess, model))
         return examples

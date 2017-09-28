@@ -9,7 +9,7 @@ import evaluation
 import models
 import random
 
-def generateMultiSequence(sess, model, folder, example, numSteps=50):
+def generateMultiSequence2(sess, model, folder, example, numSteps=50):
     folder = "images/" + folder
 
     initialCond = example.x
@@ -23,28 +23,44 @@ def generateMultiSequence(sess, model, folder, example, numSteps=50):
         example.x[:,:,0:2] = example.x[:,:,0:2] * example.x[:,:,2:3]
         example.x[0,:,:] = initialCond[0,:,:]
 
-def generateMultiSequenceAdvection(sess, model, folder, example, numSteps=50):
-    folder = "images/" + folder
 
-    initialCond = example.x
-    example.y = np.expand_dims(example.y, -1)
-    dims = tf.shape(example.x).as_List()
-    Gridpoints = np.meshgrid(range(dims(0)),range(dims(1)))
-
-    for i in range(numSteps):
-        result = Sim1Result.Sim1Result(example.x[:,:,0:2], [0], example.x[:,:,2], time=0)
-        utils.sim1resToImage(result, folder=folder)
-        newResult = sess.run(model.yPred, evaluation.getFeedDict(model, [example], isTraining=False))
-        example.x[:,:,0:2] = newResult[0][:,:,:,0]
-        example.x[:,:,0:2] = example.x[:,:,0:2] * example.x[:,:,2:3]
-        prevPointsDouble = Gridpoints - example.x[:,:,0:1]
-        prevPointsInt = tf.to_int32(prevPointsDouble)
-        example.x[0,:,:] = initialCond[0,:,:]
-
-def interpolate(prevPointsDouble,prevPointsInt,v):
+def advect(x,v):
+    """v Geschwindigkeitsfeld"""
+    dt = 1
+    dims = np.shape(v)
+    Gridpoints = np.meshgrid(range(dims[1]), range(dims[0]))
+    Gridpoints = np.concatenate((np.expand_dims(Gridpoints[0], axis=-1), np.expand_dims(Gridpoints[1], axis=-1)),
+                                axis=-1)
+    prevPointsDouble = Gridpoints[:, :, [1, 0]] - dt* v[:, :, 0:2]
+    return  interpolate(prevPointsDouble,x)
 
 
 
+def interpolate(prevPointsDouble, x):
+    dims = np.shape(x)
+    for ind1 in range(dims[0]):
+        for ind2 in range(dims[1]):
+            if prevPointsDouble[ind1,ind2,0] < 0:
+                prevPointsDouble[ind1, ind2, 0] = 0
+            if prevPointsDouble[ind1,ind2,0] > dims[0]-2:
+                prevPointsDouble[ind1, ind2, 0] = dims[0] -1.01
+            if prevPointsDouble[ind1,ind2,1] > dims[1]-2:
+                prevPointsDouble[ind1, ind2, 1] = dims[1] -1.01
+            if prevPointsDouble[ind1, ind2, 1] < 0:
+                prevPointsDouble[ind1, ind2, 1] = 0
+    prevInt = prevPointsDouble.astype("int")
+    x_new = np.zeros(dims,"float")
+    for i1 in range(dims[0]):
+        for i2 in range(dims[1]):
+            a = prevInt[i1,i2,0]
+            b = prevInt[i1,i2,1]
+            if a >=31:
+                a = a
+            x1 = prevPointsDouble[i1,i2,0]-a
+            x2 = prevPointsDouble[i1, i2, 1]-b
+            x_new[i1,i2] = x[a, b] + (x[a, b + 1] - x[a, b]) * x2 + (x[a + 1, b] - x[a, b]) * x1 + (x[a + 1, b + 1] - x[a + 1, b] - x[a, b + 1] + x[a, b]) * x1 * x2
+
+    return x_new
 
 
 def generateSequence(sess, model, folder, example, numSteps=50):
@@ -90,7 +106,7 @@ sess = tf.Session()
 #sess.run(init)
 
 # Load final variables
-model.load(sess, "final")
+model.load(sess, "multistep")
 
 def randomSample(list, numSamples):
     """with replacement"""
