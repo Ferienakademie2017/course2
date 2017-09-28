@@ -16,13 +16,13 @@ utils.serialize(trainConfig.simPath + "dataPartition.p", dataPartition)
 
 #trainingData, validationData, testData = dataPartition.computeData(data, exampleType=evaluation.FlagFieldSimulationExample, slice=[0, 1], scale=1)
 trainingData, validationData, testData = dataPartition.computeData(data, exampleType=evaluation.MultiStepSimulationCollection, slice=[0, 1], scale=1)
-trainingData = evaluation.generateMultiTimeStepExamples(trainingData,5)
-validationData = evaluation.generateMultiTimeStepExamples(validationData,5)
+trainingData = evaluation.generateMultiTimeStepExamples(trainingData,10)
+validationData = evaluation.generateMultiTimeStepExamples(validationData,10)
 testData = evaluation.generateTimeStepExamples(testData)
 
-model = models.computeMultipleTimeStepNN2(5)
+model = models.computeMultipleTimeStepNN3(10)
 minibatchSize = 10
-numMinibatches = 200
+numMinibatches = 1000
 lossLogger = utils.LossLogger()
 sess = tf.Session()
 sess = training.trainNetwork(sess, model, training.MinibatchSampler(trainingData), lossLogger, minibatchSize, numMinibatches)

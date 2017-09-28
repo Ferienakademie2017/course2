@@ -286,7 +286,7 @@ def timeStepModel1(x, phase):
         layer = tf.contrib.layers.conv2d(layer, numFeatures, [convSize, convSize], [2, 2], "SAME",
                                          activation_fn=act,
                                          weights_initializer=tf.truncated_normal_initializer(stddev=0.02),
-                                         biases_initializer=tf.constant_initializer(0.0))
+                                         biases_initializer=tf.constant_initializer(0.0),scope="conv1_{}".format(i))
         layer = tf.contrib.layers.batch_norm(layer, decay=0.9, is_training=phase, updates_collections=None, epsilon=1e-5, scale=True,
                                              scope="batch_norm0_{}".format(i))
 
@@ -294,13 +294,13 @@ def timeStepModel1(x, phase):
         oldLayer = layer
         layer = tf.contrib.layers.conv2d(layer, numFeatures, [convSize, convSize], [1, 1], "SAME", activation_fn=None,
                                          weights_initializer=tf.truncated_normal_initializer(stddev=0.02),
-                                         biases_initializer=tf.constant_initializer(0.0))
+                                         biases_initializer=tf.constant_initializer(0.0),scope="resnet1_{}".format(i))
         layer = tf.contrib.layers.batch_norm(layer, decay=0.9, is_training=phase, updates_collections=None, epsilon=1e-5, scale=True,
                                              scope="batch_norm1_{}".format(i))
         layer = act(layer)
         layer = tf.contrib.layers.conv2d(layer, numFeatures, [convSize, convSize], [1, 1], "SAME", activation_fn=None,
                                          weights_initializer=tf.truncated_normal_initializer(stddev=0.02),
-                                         biases_initializer=tf.constant_initializer(0.0))
+                                         biases_initializer=tf.constant_initializer(0.0),scope="resnet2_{}".format(i))
         layer = tf.contrib.layers.batch_norm(layer, decay=0.9, is_training=phase, updates_collections=None, epsilon=1e-5, scale=True,
                                              scope="batch_norm2_{}".format(i))
         # layer = tf.nn.relu(layer)
@@ -311,7 +311,7 @@ def timeStepModel1(x, phase):
         layer = tf.contrib.layers.conv2d_transpose(layer, numFeatures, [convSize, convSize], [2, 2], "SAME",
                                                    activation_fn=act,
                                                    weights_initializer=tf.truncated_normal_initializer(stddev=0.02),
-                                                   biases_initializer=tf.constant_initializer(0.0))
+                                                   biases_initializer=tf.constant_initializer(0.0),scope="tconv1_{}".format(i))
         layer = tf.contrib.layers.batch_norm(layer, decay=0.9, is_training=phase, updates_collections=None, epsilon=1e-5, scale=True,
                                              scope="batch_norm3_{}".format(i))
         layer = tf.concat([layer, zoomLayers[zoomSteps - 1 - i]], 3)
@@ -319,20 +319,20 @@ def timeStepModel1(x, phase):
         layer = tf.contrib.layers.conv2d(layer, numFeatures, [convSize, convSize], [1, 1], "SAME",
                                          activation_fn=act,
                                          weights_initializer=tf.truncated_normal_initializer(stddev=0.02),
-                                         biases_initializer=tf.constant_initializer(0.0))
+                                         biases_initializer=tf.constant_initializer(0.0),scope="tconv2_{}".format(i))
         layer = tf.contrib.layers.batch_norm(layer, decay=0.9, is_training=phase, updates_collections=None, epsilon=1e-5, scale=True,
                                              scope="batch_norm4_{}".format(i))
         layer = tf.contrib.layers.conv2d(layer, numFeatures, [convSize, convSize], [1, 1], "SAME",
                                          activation_fn=act,
                                          weights_initializer=tf.truncated_normal_initializer(stddev=0.02),
-                                         biases_initializer=tf.constant_initializer(0.0))
+                                         biases_initializer=tf.constant_initializer(0.0),scope="tconv3_{}".format(i))
         layer = tf.contrib.layers.batch_norm(layer, decay=0.9, is_training=phase, updates_collections=None, epsilon=1e-5, scale=True,
                                              scope="batch_norm5_{}".format(i))
 
     layer = tf.contrib.layers.conv2d(layer, 2, [convSize, convSize], [scaleFactor, scaleFactor], "SAME",
                                      activation_fn=None,
                                      weights_initializer=tf.truncated_normal_initializer(stddev=0.02),
-                                     biases_initializer=tf.constant_initializer(0.0))
+                                     biases_initializer=tf.constant_initializer(0.0),scope="output")
 
     return layer
 
@@ -341,6 +341,7 @@ def timeStepModel2(x, phase):
     numFeatures = 3
     convSize = 4
     scaleFactor = 1
+    act = layers.lrelu  # tf.nn.relu # tf.tanh
 
     for i in range(5):
         oldLayer = layer
@@ -349,7 +350,7 @@ def timeStepModel2(x, phase):
                                          biases_initializer=tf.constant_initializer(0.0),scope="resnet1_{}".format(i))
         layer = tf.contrib.layers.batch_norm(layer, decay=0.9, is_training=phase, updates_collections=None, epsilon=1e-5, scale=True,
                                              scope="batch_norm1_{}".format(i))
-        layer = tf.nn.relu(layer)
+        layer = act(layer)
         layer = tf.contrib.layers.conv2d(layer, numFeatures, [convSize, convSize], [1, 1], "SAME", activation_fn=None,
                                          weights_initializer=tf.truncated_normal_initializer(stddev=0.02),
                                          biases_initializer=tf.constant_initializer(0.0),scope="resnet2_{}".format(i))
@@ -365,6 +366,14 @@ def timeStepModel2(x, phase):
                                      biases_initializer=tf.constant_initializer(0.0),scope="output")
 
     return layer
+
+def rungeKuttaModel(x,phase,timeStepModel1,timeStepModel2):
+    layer = timeStepModel1(x,phase)
+    tf.expand_dims(layer,-1)
+    tf.expand_dims(x,-1)
+    layer2 = timeStepModel2(layer,x,phase)
+
+    return layer2
 
 def simpleLoss1(yPred, y, flagField):
     # loss = tf.reduce_mean(tf.square(yPred - y))
@@ -392,7 +401,7 @@ def multiStepLoss(yPred, y, flagField):
 
 def multiStepLoss2(yPred, y, flagField):
     #Exponential Decay
-    a = 1.0
+    a = 0.8
     shape_yPred = yPred.get_shape().as_list()
     a_List = []
     for ind in range(shape_yPred[-1]):
@@ -467,6 +476,9 @@ def computeMultipleTimeStepNN1(numTimeSteps):
 
 def computeMultipleTimeStepNN2(numTimeSteps):
     return computeMultipleTimeStepNN(timeStepModel2, multiStepLoss2, scale=1,numTimeSteps=numTimeSteps)
+
+def computeMultipleTimeStepNN3(numTimeSteps):
+    return computeMultipleTimeStepNN(timeStepModel1, multiStepLoss2, scale=1,numTimeSteps=numTimeSteps)
 
 def computeSimpleNN(modelFunc, lossFunc, inputDim = 1, scale=0.25):
     phase = tf.placeholder(tf.bool, name='phase')
