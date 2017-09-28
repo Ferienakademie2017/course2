@@ -23,20 +23,6 @@ def generateMultiSequence(sess, model, folder, example, numSteps=50):
         example.x[:,:,0:2] = example.x[:,:,0:2] * example.x[:,:,2:3]
         example.x[0,:,:] = initialCond[0,:,:]
 
-def generateMultiSequence(sess, model, folder, example, numSteps=50):
-    folder = "images/" + folder
-
-    initialCond = example.x
-    example.y = np.expand_dims(example.y, -1)
-
-    for i in range(numSteps):
-        result = Sim1Result.Sim1Result(example.x[:,:,0:2], [0], example.x[:,:,2], time=0)
-        utils.sim1resToImage(result, folder=folder)
-        newResult = sess.run(model.yPred, evaluation.getFeedDict(model, [example], isTraining=False))
-        example.x[:,:,0:2] = newResult[0][:,:,:,0]
-        example.x[:,:,0:2] = example.x[:,:,0:2] * example.x[:,:,2:3]
-        example.x[0,:,:] = initialCond[0,:,:]
-
 def generateSequence(sess, model, folder, example, numSteps=50):
     folder = "images/" + folder
 
@@ -66,7 +52,7 @@ def generateImgs(sess, model, folder, examples):
         utils.sim1resToImage(outputTensor, background='error', origRes=outputManta, folder=folder)
 
 
-trainConfig = utils.deserialize("data/test_timeStep/trainConfig.p")
+trainConfig = utils.deserialize("data/timeStep128x128/trainConfig.p")
 dataPartition = utils.deserialize(trainConfig.simPath + "dataPartition.p")
 data = trainConfig.loadGeneratedData()
 trainingData, validationData, testData = dataPartition.computeData(data, exampleType=evaluation.TimeStepSimulationCollection, slice=[0, 1], scale=1)
@@ -80,7 +66,7 @@ sess = tf.Session()
 #sess.run(init)
 
 # Load final variables
-model.load(sess, "final")
+model.load(sess, "multistep")
 
 def randomSample(list, numSamples):
     """with replacement"""
@@ -95,6 +81,6 @@ def randomSample(list, numSamples):
 # if len(testData) >= 1:
 #     generateImgs(sess, model, "test/", randomSample(testData, numImages))
 
-generateMultiSequence(sess, model, "sequenceMulti04/", validationData[0], numSteps=200)
-generateMultiSequence(sess, model, "sequenceMulti05/", validationData[100], numSteps=200)
-generateMultiSequence(sess, model, "sequenceMulti06/", validationData[200], numSteps=200)
+generateMultiSequence(sess, model, "sequences/128_2/", validationData[0], numSteps=200)
+generateMultiSequence(sess, model, "sequences/128_3/", validationData[100], numSteps=200)
+generateMultiSequence(sess, model, "sequences/128_4/", validationData[200], numSteps=200)
