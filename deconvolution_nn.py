@@ -72,10 +72,11 @@ path_vali = filename_vali % (str(vali_num))
 all_vel = list(velocities)
 all_vel.append(np.load(path_vali))
 max_vel = np.amax(all_vel)
-
-vali_vel.append(np.load(path_vali)/max_vel)
 vali_pos=[]
-vali_pos.append([vali_num])
+
+for i in range(0,31):
+	vali_vel.append(np.load(path_vali)/max_vel)
+	vali_pos.append([vali_num])
 
 velocities = velocities / max_vel
 
@@ -87,7 +88,7 @@ loadNum = velocities.shape[0]
 
 
 insize=32*64*2 #np.size(vel) #number of entries
-learning_rate=0.001
+learning_rate=0.005
 trainingEpochs=2000
 
 #batches
@@ -108,46 +109,26 @@ fc_1w = tf.Variable(tf.random_normal([1, layer1], stddev=0.01))
 fc_1b   = tf.Variable(tf.random_normal([layer1], stddev=0.01))
 
 fc1 = tf.add(tf.matmul(x, fc_1w), fc_1b)
-fc1 = tf.nn.relu(fc1)
-#fc1 = tf.nn.tanh(fc1)
+#fc1 = tf.nn.relu(fc1)
+fc1 = tf.nn.tanh(fc1)
 #fc1 = tf.nn.dropout(fc1, 0.9) # plenty of dropout...
 
-#fc1 = np.reshape(fc1, [-1, 8, 16, 16])
+fc1 = tf.reshape(fc1, [-1, 16, 8, 8])
+deconv_1w = tf.Variable(tf.truncated_normal([3,3, 4, 8], stddev=0.01))
+deconv1 = tf.nn.conv2d_transpose(fc1,deconv_1w,[31,16,8,4],[1,1,1,1], padding='SAME') #+deconv_1b
+deconv1 = tf.image.resize_images(deconv1,[32,16]) #desired end number
 
-# Input Layer
-input_layer = tf.reshape(fc1, [-1, 32, 32, 1])
-
-# Convolutional Layer #1
-conv1 = tf.layers.conv2d(inputs=input_layer, filters=32, kernel_size=[5, 5], padding="same", activation=tf.nn.relu)
-
-# Pooling Layer #1
-pool1 = tf.layers.max_pooling2d(inputs=conv1, pool_size=[2, 2], strides=2)
-
-# Convolutional Layer #2 and Pooling Layer #2
-conv2 = tf.layers.conv2d(inputs=pool1, filters=64, kernel_size=[5, 5], padding="same", activation=tf.nn.relu)
-pool2 = tf.layers.max_pooling2d(inputs=conv2, pool_size=[2, 2], strides=2)
-
-# Dense Layer
-pool2_flat = tf.reshape(pool2, [-1, 8 * 8 * 64])
-#dense = tf.layers.dense(inputs=pool2_flat, units=4096, activation=tf.nn.relu)
-dropout = tf.layers.dropout(inputs=pool2_flat, rate=0.4)#, training=mode == tf.estimator.ModeKeys.TRAIN)
-
-
-
-
-
-
-
-#deconv_1w = tf.Variable(tf.truncated_normal([3,3, 16, 8], stddev=0.01))
-#deconv_1b = tf.Variable(tf.random_normal([inSize], stddev=0.01))
-#deconv = deconv_layer(fc1, [3, 3, 512, 512], 512, 'deconv_5_3')
-#deconv1 = tf.nn.conv2d_transpose(fc1,deconv_1w,[8,8,16],[1,1,1,1], padding='same') #+deconv_1b
-#deconv1 = tf.image.resize_images(deconv1,[8,16,32])
-#fc_2w = tf.Variable(tf.random_normal([layer1, inSize], stddev=0.01))  # back to input size
-#fc_2b = tf.Variable(tf.random_normal([inSize], stddev=0.01))
-
-#y_pred = tf.add(tf.matmul(fc1, fc_2w), fc_2b)
-y_pred = tf.reshape( dropout, shape=[-1, 64, 32, 2])
+deconv_1w2 = tf.Variable(tf.truncated_normal([3,3, 2, 4], stddev=0.01))
+deconv2 = tf.nn.conv2d_transpose(deconv1,deconv_1w2,[31,32,16,2],[1,1,1,1], padding='SAME') #+deconv_1b
+deconv2 = tf.image.resize_images(deconv2,[64,32]) 
+deconv2 = tf.reshape(deconv2, [-1, inSize])
+#y_pred = deconv2
+#fc_2w = tf.Variable(tf.random_normal([64, 32, 2], stddev=0.01))  # back to input size
+fc_2w = tf.Variable(tf.random_normal([inSize,inSize], stddev=0.01))
+fc_2b = tf.Variable(tf.random_normal([inSize], stddev=0.01))
+#y_pred =tf.multiply(deconv2,fc_2w)
+y_pred = tf.add(tf.matmul(deconv2, fc_2w), fc_2b)
+y_pred = tf.reshape(y_pred, shape=[-1, 64, 32, 2])
 
 
 cost = tf.nn.l2_loss(y - y_pred) 
@@ -177,7 +158,7 @@ for epoch in range(trainingEpochs):
 
 		print("\n Training done. Writing %d images from validation data to current directory..." % len(vali_pos) )
 		print(vout.shape)
-		for i in range(len(vali_pos)):
+		for i in range(15,16):
 			zeros = np.zeros((64,32,1))
 			vali = np.reshape(vali_vel[i], [64, 32,2])
 			out = np.reshape(vout[i]    , [64, 32,2])
@@ -186,8 +167,8 @@ for epoch in range(trainingEpochs):
 			outname="out_%d" % i
 			plotfunction.plot(vali,valiname)
 			plotfunction.plot(out,outname)
-			plotfunction.plot_error(vali, out,"", "convolution")
-			#plotfunction_cost.plot_cost(epoch_steps,cost_data, 'cost_point16.pdf')
+			plotfunction.plot_error(vali, out, "deconvolution","deconvolution")
+			plotfunction.plot_cost(epoch_steps,cost_data, 'cost_point16.pdf')
 
 
 
