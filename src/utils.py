@@ -1,8 +1,6 @@
 import os
 import os.path
 import numpy as np
-import matplotlib as mpl
-import matplotlib.colors
 import matplotlib.pyplot as plt
 
 import pickle
@@ -44,7 +42,7 @@ def deserialize(filename):
     return result
 
 image_i = 0
-def sim1resToImage(result, background='obstacles', origRes=None, smokeField=None, folder=None):
+def sim1resToImage(result, background='obstacles', origRes=None, folder=None):
     global image_i, fig, ax
     try:
         fig
@@ -87,6 +85,7 @@ def sim1resToImage(result, background='obstacles', origRes=None, smokeField=None
 
     if background == 'obstacles':
         ax.imshow(obstacles, interpolation='none')
+        ax.quiver(y[skipCoord], x[skipCoord], dx[skipData], dy[skipData], scale=widthMin / widthMax, scale_units='x') # scale = widthMin / widthMax
     elif background == 'error':
         orig = origRes.npVel
         if orig.shape[2] == 3:
@@ -103,18 +102,7 @@ def sim1resToImage(result, background='obstacles', origRes=None, smokeField=None
         cb = fig.colorbar(diffAx)
 
         dx, dy = np.transpose(diff, (2, 0, 1))
-
-    if smokeField is not None:
-        smoke = np.transpose(smokeField)
-        cmap = mpl.colors.LinearSegmentedColormap.from_list('white_cmap', ['#ffffffff', '#ffffff00'], 256)
-        cmap._init()
-        alphas = np.linspace(0, 0.8, cmap.N + 3)
-        cmap._lut[:,-1] = alphas
-        ax.imshow(smoke, interpolation='none', cmap=cmap)
-    else:
-        cmap = None
-
-    ax.quiver(y[skipCoord], x[skipCoord], dx[skipData], dy[skipData], scale=widthMin / widthMax, scale_units='x') # scale = widthMin / widthMax
+        ax.quiver(y[skipCoord], x[skipCoord], dx[skipData], dy[skipData], scale=widthMin / widthMax, scale_units='x') # scale = widthMin / widthMax
 
     ax.invert_yaxis()
     # fig.canvas.draw()
