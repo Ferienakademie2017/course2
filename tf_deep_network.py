@@ -23,6 +23,9 @@ single_training_data = -1
 #set the frame which is written to the test_output.npy
 test_output_frame = 4
 
+#number of evaluation data (between 0 and 1) and test data
+validation_rate = 0.3
+
 
 
 
@@ -157,8 +160,10 @@ y = tf.placeholder(tf.float32)
 squared_deltas = tf.square(output - y)
 loss = tf.reduce_sum(squared_deltas)
 
+
 optimizer = tf.train.AdamOptimizer(0.0001)
-train = optimizer.minimize(loss)
+global_step = tf.Variable(0, name='global_step', trainable=False)
+train = optimizer.minimize(loss, global_step=global_step)
 
 init = tf.global_variables_initializer()
 sess.run(init)
@@ -167,13 +172,26 @@ sess.run(init)
 #print(trainingData)
 flat_training_data = twoDtoOneD(trainingData)
 trainingInput = trainingInput.reshape(-1, 1)
+flat_validation_data = twoDtoOneD(validationData)
+validationInput = validationInput.reshape(-1, 1)
+
 print(flat_training_data.shape)
 print(trainingInput.shape)
 
-for i in range(3000):
-	sess.run(train, feed_dict = {input_layer: trainingInput, y: flat_training_data})
+#create a summary
+summary = tf.summary.merge_all()
+summary_writer = tf.summary.FileWriter("training", sess.graph)
+tf.summary.scalar('loss', loss)
 
-print(sess.run([W1, b1]))
+
+for i in range(3):
+	for j in range(1000):
+		loss=sess.run(train, feed_dict = {input_layer: trainingInput, y: flat_training_data})
+		#summary_str = sess.run(summary, feed_dict={input_layer: trainingInput, y: flat_training_data})
+		#summary_writer.add_summary(summary_str, step)
+	#loss=sess.run(train, feed_dict = {input_layer: validationInput, y: flat_validation_data}, is_training=False)
+
+#print(sess.run([W1, b1]))
 
 # test the trained network
 

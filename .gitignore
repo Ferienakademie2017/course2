@@ -8,3 +8,4 @@ densitySamples1608/
 densitySamples6432/
 *.npy
 __pycache__/
+training/
