@@ -14,15 +14,15 @@ import flow
 # script for first basic neural net where input layer
 # (y coordinate of obstacle) is directly forwarded to output layer with 256 flow values
 
-# path_to_data = r'C:\Users\Annika\Saved Games\Desktop\course2\trainingData\trainingKarman32.p'
+path_to_data = r'C:\Users\Annika\Saved Games\Desktop\course2\trainingData\trainingKarman32_1000randu.p'
 # path_to_data = r'C:\Users\Nico\Documents\Ferienakademie\course2\trainingData\trainingKarman32i100.p'
 # path_to_data = r'C:\Users\Nico\Documents\Ferienakademie\course2\trainingData\trainingKarman32.p'
-path_to_data = r'C:\Users\Nico\Documents\Ferienakademie\course2\trainingData\trainingKarman32_1000randu.p'
-trainingEpochs = 1000
+#path_to_data = r'C:\Users\Nico\Documents\Ferienakademie\course2\trainingData\trainingKarman32_1000randu.p'
+trainingEpochs = 500
 batchSize = 128
 inSize = 1  # warning - hard coded to scalar values 1
 validationProportion = 0.05
-learningRate = 0.02
+learningRate = 0.0005
 error = []
 
 # set up the network
@@ -35,6 +35,8 @@ size1 = 64
 size2 = 128
 size3 = 256
 
+mode = False
+
 # fc_1 = layers.fully_connected(xIn,size1,activation_fn=tf.contrib.keras.layers.LeakyReLU(0.2))
 # fc_2 = layers.fully_connected(fc_1,size2,activation_fn=tf.contrib.keras.layers.LeakyReLU(0.2))
 fc_3 = layers.fully_connected(xIn,size3,activation_fn = tf.nn.tanh)
@@ -43,27 +45,81 @@ convIn = tf.reshape(fc_3, shape=[-1, 8, 16, 2])
 # Convolutional Layer #1, 2nd overall layer
 conv1 = tf.layers.conv2d(
     inputs=convIn,
-    filters=64,
-    kernel_size=5,
+    filters=8,
+    kernel_size=3,
     padding="same",
     activation=tf.nn.relu)
+
+drop1 = tf.layers.dropout(
+    conv1,
+    rate=0.5,
+    noise_shape=None,
+    seed=None,
+    training=mode,
+    name=None)
 
 conv2 = tf.layers.conv2d(
-    inputs=conv1,
-    filters=128,
+    inputs=drop1,
+    filters=16,
     kernel_size=5,
     padding="same",
     activation=tf.nn.relu)
+
+drop2 = tf.layers.dropout(
+    conv2,
+    rate=0.5,
+    noise_shape=None,
+    seed=None,
+    training=mode,
+    name=None)
 
 conv3 = tf.layers.conv2d(
-    inputs=conv2,
-    filters=64,
+    inputs=drop2,
+    filters=16,
+    kernel_size=7,
+    padding="same",
+    activation=tf.nn.relu)
+
+drop3 = tf.layers.dropout(
+    conv3,
+    rate=0.5,
+    noise_shape=None,
+    seed=None,
+    training=mode,
+    name=None)
+
+conv4 = tf.layers.conv2d(
+    inputs=drop3,
+    filters=16,
     kernel_size=5,
     padding="same",
     activation=tf.nn.relu)
 
+drop4 = tf.layers.dropout(
+    conv4,
+    rate=0.5,
+    noise_shape=None,
+    seed=None,
+    training=mode,
+    name=None)
+
+conv5 = tf.layers.conv2d(
+    inputs=drop4,
+    filters=8,
+    kernel_size=3,
+    padding="same",
+    activation=tf.nn.relu)
+
+drop5 = tf.layers.dropout(
+    conv5,
+    rate=0.5,
+    noise_shape=None,
+    seed=None,
+    training=mode,
+    name=None)
+
 convOut = tf.layers.conv2d(
-    inputs=conv3,
+    inputs=drop5,
     filters=2,
     kernel_size=3,
     padding="same",
@@ -74,8 +130,8 @@ y_pred = tf.reshape(convOut,shape=[-1,256])
 
 cost = tf.nn.l2_loss((y - y_pred)) / batchSize
 # opt = tf.train.GradientDescentOptimizer(learningRate).minimize(cost)
-opt = tf.train.AdagradOptimizer(learningRate,0.5).minimize(cost)
-
+# opt = tf.train.AdagradOptimizer(learningRate,0.5).minimize(cost)
+opt = tf.train.AdamOptimizer(learningRate).minimize(cost)
 # now we can start training...
 
 # read input  and training data
@@ -121,6 +177,7 @@ for epoch in range(trainingEpochs):
         plt.ylabel("training cost")
         plt.xlabel('iteration')
         plt.show()
+        mode = False
         [valiCost, vout] = sess.run([cost, y_pred], feed_dict={x: validationInput, y: validationData})
         valiCost = valiCost * batchSize / validationNum
         print(" Validation: cost %f " % (valiCost))

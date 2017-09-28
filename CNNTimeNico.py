@@ -20,7 +20,9 @@ import flow
 # path_to_data = r'C:\Users\Nico\Documents\Ferienakademie\course2\trainingData\trainingKarman32_1000randu.p'
 # path_to_data = r'C:\Users\Nico\Documents\Ferienakademie\course2\trainingData\trainingKarman_time_1000randu.p'
 path_to_data = r'C:\Users\Nico\Documents\Ferienakademie\course2\trainingData\trainingKarman_time_5000randu.p'
-trainingEpochs = 1000
+
+modelPath = r':\Users\Nico\Documents\Ferienakademie\course2\tmp\model_time.ckpt'
+trainingEpochs = 10
 batchSize = 64
 inSize = 1  # warning - hard coded to scalar values 1
 validationProportion = 0.05
@@ -103,6 +105,10 @@ training_data = training_data[trainingInd]
 trainingInput = position_y[trainingInd]
 trainingSize = len(training_data)
 
+
+# Add ops to save and restore all the variables.
+saver = tf.train.Saver()
+
 print("Starting training...")
 sess = tf.InteractiveSession()
 sess.run(tf.global_variables_initializer())
@@ -126,6 +132,10 @@ for epoch in range(trainingEpochs):
 
 
     if epoch == trainingEpochs - 1:
+        # Save the variables to disk.
+        save_path = saver.save(sess, modelPath)
+        print("Model saved in file: %s" % save_path)
+
         plt.figure()
         plt.plot(error)
         plt.ylabel("training cost")
