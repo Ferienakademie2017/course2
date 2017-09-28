@@ -1,6 +1,5 @@
 import tensorflow as tf
 import tensorflow.contrib.layers as layers
-import tensorboard
 import numpy as np
 import scipy.misc
 import readTrainingData
@@ -204,5 +203,5 @@ with tf.Session() as sess:
     print("Done")
 
     print("Run the command line:\n"
-              "--> tensorboard --logdir=/tmp/tensorflow_logs "
+              "--> tensorboard --logdir=/logs "
             "\nThen open http://0.0.0.0:6006/ into your web browser")
