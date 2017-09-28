@@ -14,8 +14,10 @@ def bias_variable(shape):
     initial = tf.truncated_normal(shape, stddev=0.1)
     return tf.Variable(initial)
 
+
 def leaky_relu(x, alpha):
     return tf.maximum(x, alpha * x)
+
 
 def to_image_form(data):
     return np.reshape(data, (32, 64, 2))
@@ -41,15 +43,34 @@ def load_time_data():
         for j in range(50):
             path = "../res/timestep_norm/vel{}_{}.npy".format(str(i), str(j))
             training_image.append(np.load(path).flatten())
-            training_val.append((i/32, j))
+            training_val.append((i / 32, j))
 
-    training_data = [np.reshape(training_val, (50*30, 2)), np.array(training_image)]
+    training_data = [np.reshape(training_val, (50 * 30, 2)), np.array(training_image)]
     return training_data
+
+
+def shuffle(data):
+    assert len(data[0]) == len(data[1])
+    perm = np.random.permutation(len(data[0]))
+    return data[0][perm], data[1][perm]
+
+
+def create_mini_batches(data, mbs):
+    x, y = shuffle(data)
+    x_mbs = []
+    y_mbs = []
+    index = 0
+    while index + mbs <= len(x):
+        x_mbs.append(x[index:index + mbs])
+        y_mbs.append(y[index:index + mbs])
+        index += mbs
+    return x_mbs, y_mbs
 
 
 def get_scale_factor(y_pos):
     index = int(y_pos * 32 - 1)
     return np.load("../res/karman_data_norm/scale_factors.npy")[index]
+
 
 def get_time_scale_factor(x):
     index = int(x[0] * 32 - 1) * 50 + x[1]

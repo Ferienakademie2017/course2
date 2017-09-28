@@ -44,10 +44,10 @@ if __name__ == "__main__":
 
     mean = np.load("../res/timestep_norm/mean.npy").flatten()
 
-    for i in range(100):
-        test_input = (5 / 32, i)
+    for i in range(500):
+        test_input = (25 / 32, i)
         net_data = sess.run(output, feed_dict={x: np.reshape([test_input], (1, 2))})
         net_data *= get_time_scale_factor(test_input)
         net_data += mean
-        create_and_save_figure(to_image_form(np.load("../res/timestep/vel5_{}.npy".format(i))), "../res/time_viz_real/{}.png".format(i))
-        print("{}%".format(i*100/100))
+        create_and_save_figure(to_image_form(net_data), "../res/time_viz/{}.png".format(i))
+        print("{}%".format(i*100/500))

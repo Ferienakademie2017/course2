@@ -29,23 +29,6 @@ def create_trainer(output, ground_truth):
     return train_step, loss
 
 
-def shuffle(data):
-    assert len(data[0]) == len(data[1])
-    perm = np.random.permutation(len(data[0]))
-    return data[0][perm], data[1][perm]
-
-
-def create_mini_batches(data, mbs):
-    x, y = shuffle(data)
-    x_mbs = []
-    y_mbs = []
-    index = 0
-    while index + mbs <= len(x):
-        x_mbs.append(x[index:index+mbs])
-        y_mbs.append(y[index:index+mbs])
-        index += mbs
-    return x_mbs, y_mbs
-
 def train():
     x = tf.placeholder(tf.float32, [None, 2], name="x")
     output = create_net(x)
