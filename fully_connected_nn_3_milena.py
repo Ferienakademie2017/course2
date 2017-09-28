@@ -23,14 +23,14 @@ basePath='../sim_data/data_obstacle_pos'
 
 inSize = 64 * 32 * 2
 nTrainingData = 31
-vali_num=16
+vali_num=30
 velocities = []
 obstaclePos = []
 
 
 # reading example images
 tmp = 0
-for i in range(0,16):
+for i in range(0,vali_num):
     filename = "../sim_data/data_obstacle_pos/data%s.npy"
     path = filename % (str(i))
     content = np.load(path)
@@ -39,8 +39,8 @@ for i in range(0,16):
     obstaclePos.append([tmp])
     tmp += 1
 
-tmp=17
-for i in range(17,32):
+tmp=vali_num + 1
+for i in range(vali_num + 1,32):
     filename = "../sim_data/data_obstacle_pos/data%s.npy"
     path = filename % (str(i))
     content = np.load(path)
@@ -75,9 +75,9 @@ loadNum = velocities.shape[0]
 insize=32*64*2 #np.size(vel) #number of entries
 learning_rate=0.001
 trainingEpochs=2000
-layer1 = 512
-layer2 = 1023
-layer3 = 2048
+layer1 = 64
+layer2 = 64
+layer3 = 128
 
 #batches
 batch_vel=velocities
@@ -143,14 +143,23 @@ for epoch in range(trainingEpochs):
 			vali = np.reshape(vali_vel[i], [64, 32,2])
 			out = np.reshape(vout[i]    , [64, 32,2])
 			plot_path='../sim_data/oneLayerNetwork/'
-			valiname=plot_path + "in_epochs%d,layer1_%d,layer2_%d,layer3_%d" % (epoch, layer1, layer2, layer3)
-			outname=plot_path + "out_epoch%d,layer_%d,layer2_%d,layer3_%d" % (epoch, layer1, layer2, layer3)
-			errorname="epochs: %d, layers: 1 -> %d -> %d -> %d ->  64x32x2" % (epoch, layer1, layer2, layer3)
-			costname= plot_path + 'cost_%d,%d,%d,%d' %(epoch,layer1,layer2,layer3)
+			#valiname=plot_path + "in_epochs%d,layer1_%d,layer2_%d,layer3_%d" % (epoch, layer1, layer2, layer3)
+			#outname=plot_path + "out_epoch%d,layer_%d,layer2_%d,layer3_%d" % (epoch, layer1, layer2, layer3)
+			#errorname="epochs: %d, layers: 1 -> %d -> %d -> %d ->  64x32x2" % (epoch, layer1, layer2, layer3)
+			#costname= plot_path + 'cost_%d,%d,%d,%d' %(epoch,layer1,layer2,layer3)
+			#plotfunction.plot(vali,valiname)
+			#plotfunction.plot(out,outname)
+			#plotfunction.plot_error(vali, out, errorname, plot_path + 'error_%d,%d,%d,%d' %(epoch,layer1,layer2,layer3) )
+			#plotfunction.plot_cost(epoch_steps,cost_data,plot_path + 'cost_%d,%d,%d,%d.pdf' %(epoch,layer1,layer2,layer3))
+			
+			valiname=plot_path + "in_positon_%d" % (vali_num)
+			outname=plot_path + "out_position_%d" % (vali_num)
+			errorname="epochs: %d, layers: 1 -> %d -> %d -> %d ->  64x32x2,\n position: %d" % (epoch, layer1, layer2, layer3, vali_num)
+			costname= plot_path + 'position_%d' %(vali_num)
 			plotfunction.plot(vali,valiname)
 			plotfunction.plot(out,outname)
-			plotfunction.plot_error(vali, out, errorname, plot_path + 'error_%d,%d,%d,%d' %(epoch,layer1,layer2,layer3) )
-			plotfunction.plot_cost(epoch_steps,cost_data,plot_path + 'cost_%d,%d,%d,%d.pdf' %(epoch,layer1,layer2,layer3))
+			plotfunction.plot_error(vali, out, errorname, plot_path + 'error_positon_%d' %(vali_num) )
+			plotfunction.plot_cost(epoch_steps,cost_data,plot_path + 'cost_positon_%d' %(vali_num))
 			np.save(outname, out)
 			np.save(costname, cost_data)
 
