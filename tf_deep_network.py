@@ -21,7 +21,8 @@
 single_training_data = -1
 
 #set the frame which is written to the test_output.npy
-test_output_frame = 4
+# even numbers are NOT trained on
+test_output_frame = 6
 
 #number of evaluation data (between 0 and 1) and test data
 validation_rate = 0.3
@@ -49,6 +50,8 @@ import numpy as np
 import scipy.misc
 np.random.seed(13)
 tf.set_random_seed(13)
+
+from utils import get_parameter
 
 # path to fluid sim data
 fluidDataPath = "fluidSamples1608/"
@@ -100,12 +103,14 @@ validationSize = int(sample_count * 0.1) # take 10% as validation samples
 
 
 if single_training_data == -1:
+	validation_indices = get_parameter("validation_indices")
+	training_indices = get_parameter("training_indices")
 	# desired output for validation and training
-	validationData = velocities[sample_count-validationSize:sample_count][:] 
-	trainingData = velocities[0:sample_count-validationSize][:]
+	validationData = velocities[validation_indices][:]
+	trainingData = velocities[training_indices][:]
 	# input for validation and training
-	validationInput = y_positions[sample_count-validationSize:sample_count]
-	trainingInput = y_positions[0:sample_count-validationSize]
+	validationInput = y_positions[validation_indices]
+	trainingInput = y_positions[validation_indices]
 else:
 	# desired output for validation and training
 	trainingData = velocities[single_training_data:single_training_data+1][:]
@@ -113,7 +118,6 @@ else:
 	# input for validation and training
 	validationInput = y_positions[single_training_data:single_training_data+1]
 	trainingInput = y_positions[single_training_data:single_training_data+1]
-
 
 
 print("Split into %d training and %d validation samples" % (len(trainingData), len(validationData)) )
@@ -195,7 +199,7 @@ for i in range(3):
 
 # test the trained network
 
-test_output = sess.run(output, {input_layer: trainingInput[test_output_frame].reshape(1,1)})
+test_output = sess.run(output, {input_layer: y_positions[test_output_frame].reshape(1,1)})
 formatted_test_output = oneDtoTwoD(test_output)
 np.save("test_output", formatted_test_output)
 
