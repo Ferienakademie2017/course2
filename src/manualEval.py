@@ -23,11 +23,13 @@ def generateMultiSequence(sess, model, folder, example, numSteps=50):
         example.x[:,:,0:2] = example.x[:,:,0:2] * example.x[:,:,2:3]
         example.x[0,:,:] = initialCond[0,:,:]
 
-def generateMultiSequence(sess, model, folder, example, numSteps=50):
+def generateMultiSequenceAdvection(sess, model, folder, example, numSteps=50):
     folder = "images/" + folder
 
     initialCond = example.x
     example.y = np.expand_dims(example.y, -1)
+    dims = tf.shape(example.x).as_List()
+    Gridpoints = np.meshgrid(range(dims(0)),range(dims(1)))
 
     for i in range(numSteps):
         result = Sim1Result.Sim1Result(example.x[:,:,0:2], [0], example.x[:,:,2], time=0)
@@ -35,7 +37,15 @@ def generateMultiSequence(sess, model, folder, example, numSteps=50):
         newResult = sess.run(model.yPred, evaluation.getFeedDict(model, [example], isTraining=False))
         example.x[:,:,0:2] = newResult[0][:,:,:,0]
         example.x[:,:,0:2] = example.x[:,:,0:2] * example.x[:,:,2:3]
+        prevPointsDouble = Gridpoints - example.x[:,:,0:1]
+        prevPointsInt = tf.to_int32(prevPointsDouble)
         example.x[0,:,:] = initialCond[0,:,:]
+
+def interpolate(prevPointsDouble,prevPointsInt,v):
+
+
+
+
 
 def generateSequence(sess, model, folder, example, numSteps=50):
     folder = "images/" + folder

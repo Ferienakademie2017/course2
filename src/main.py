@@ -11,7 +11,7 @@ import tensorflow as tf
 trainConfig = utils.deserialize("data/test_timeStep/trainConfig.p")
 # data = []  # todo
 data = trainConfig.loadGeneratedData()
-dataPartition = evaluation.DataPartition(len(data), 0.6, 0.4)
+dataPartition = evaluation.DataPartition(len(data), 0.8, 0.2)
 utils.serialize(trainConfig.simPath + "dataPartition.p", dataPartition)
 
 #trainingData, validationData, testData = dataPartition.computeData(data, exampleType=evaluation.FlagFieldSimulationExample, slice=[0, 1], scale=1)
@@ -22,7 +22,7 @@ testData = evaluation.generateTimeStepExamples(testData)
 
 model = models.computeMultipleTimeStepNN3(10)
 minibatchSize = 10
-numMinibatches = 1000
+numMinibatches = 2000
 lossLogger = utils.LossLogger()
 sess = tf.Session()
 sess = training.trainNetwork(sess, model, training.MinibatchSampler(trainingData), lossLogger, minibatchSize, numMinibatches)
