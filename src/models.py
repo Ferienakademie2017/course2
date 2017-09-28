@@ -276,7 +276,7 @@ def timeStepModel1(x, phase):
     numFeatures = 4
     convSize = 4
     scaleFactor = 1
-    zoomSteps = 1
+    zoomSteps = 2
     act = layers.lrelu # tf.nn.relu # tf.tanh
     zoomLayers = []
     # zoomLayers
@@ -480,7 +480,7 @@ def multiStepLoss2(yPred, y, flagField):
     loss = tf.reduce_mean(tf.abs(yPredDecay))
     divy = obs*yPred
     divField = divy[:, 1:, :-1, 0,:] - divy[:, :-1, :-1, 0,:] + divy[:, :-1, 1:, 1,:] - divy[:, :-1, :-1, 1,:]
-    loss += 0.0003 * tf.nn.l2_loss(divField)
+    loss += 0.0001 * tf.nn.l2_loss(divField)
     return loss
 
 class NeuralNetwork(object):
@@ -560,18 +560,18 @@ def computeAutoencoderNN1():
 def computeSimpleNN(modelFunc, lossFunc, inputDim = 1, scale=0.25):
     phase = tf.placeholder(tf.bool, name='phase')
     x = tf.placeholder(tf.float32, shape=[None, inputDim])
-    y = tf.placeholder(tf.float32, shape=[None, int(64 * scale), int(32 * scale), 2])
+    y = tf.placeholder(tf.float32, shape=[None, None, None, 2])
     yPred = modelFunc(x)
-    flagField = tf.placeholder(tf.float32, shape=[None, int(64 * scale), int(32 * scale)])
+    flagField = tf.placeholder(tf.float32, shape=[None, None, None])
     loss = lossFunc(yPred, y, flagField)
     return FlagFieldNN(x, y, yPred, loss, phase, flagField)
 
 def computeConvNN(modelFunc, lossFunc, scale=0.25):
     phase = tf.placeholder(tf.bool, name='phase')
-    x = tf.placeholder(tf.float32, shape=[None, int(64 * scale), int(32 * scale)])
-    y = tf.placeholder(tf.float32, shape=[None, int(64 * scale), int(32 * scale), 2])
+    x = tf.placeholder(tf.float32, shape=[None, None, None])
+    y = tf.placeholder(tf.float32, shape=[None, None, None, 2])
     yPred = modelFunc(x)
-    flagField = tf.placeholder(tf.float32, shape=[None, int(64 * scale), int(32 * scale)])
+    flagField = tf.placeholder(tf.float32, shape=[None, None, None])
     loss = lossFunc(yPred, y, flagField)
     return FlagFieldNN(x, y, yPred, loss, phase, flagField)
 
@@ -595,8 +595,8 @@ def computeSimpleNNWithReg(modelFunc, lossFunc, inputDim = 1):
 
 def computeMultipleTimeStepNN(modelFunc, lossFunc, scale=0.25,numTimeSteps = 1, reuse=False):
     phase = tf.placeholder(tf.bool, name='phase')
-    x = tf.placeholder(tf.float32, shape=[None, int(64 * scale), int(32 * scale), 3])
-    y = tf.placeholder(tf.float32, shape=[None, int(64 * scale), int(32 * scale), 2, numTimeSteps])
+    x = tf.placeholder(tf.float32, shape=[None, None, None, 3])
+    y = tf.placeholder(tf.float32, shape=[None, None, None, 2, numTimeSteps])
     network_List = []
     #y_List = []
     with tf.variable_scope("MultiStep", reuse=reuse) as scope:
@@ -609,15 +609,15 @@ def computeMultipleTimeStepNN(modelFunc, lossFunc, scale=0.25,numTimeSteps = 1, 
 
         yPreds = tf.concat([tf.expand_dims(network,-1) for network in network_List],-1)
 
-        flagField = tf.placeholder(tf.float32, shape=[None, int(64 * scale), int(32 * scale)])
+        flagField = tf.placeholder(tf.float32, shape=[None, None, None])
         loss = lossFunc(yPreds, y, tf.expand_dims(flagField,-1))
     return FlagFieldNN(x, y, yPreds, loss, phase, flagField)
 
 def computeAutoencoderNN(modelFunc, lossFunc):
     phase = tf.placeholder(tf.bool, name='phase')
-    x = tf.placeholder(tf.float32, shape=[None, 64, 32, 2])
-    y = tf.placeholder(tf.float32, shape=[None, 64, 32, 2])
+    x = tf.placeholder(tf.float32, shape=[None, None, None, 2])
+    y = tf.placeholder(tf.float32, shape=[None, None, None, 2])
     yPred, encoding = modelFunc(x, phase)
-    flagField = tf.placeholder(tf.float32, shape=[None, 64, 32])
+    flagField = tf.placeholder(tf.float32, shape=[None, None, None])
     loss = lossFunc(yPred, y, flagField)
     return AutoencoderNN(x, y, yPred, loss, phase, flagField, encoding)

@@ -8,7 +8,7 @@ import models
 import random
 import tensorflow as tf
 
-trainConfig = utils.deserialize("data/test_timeStep/trainConfig.p")
+trainConfig = utils.deserialize("data/timeStep128x128/trainConfig.p")
 # data = []  # todo
 data = trainConfig.loadGeneratedData()
 dataPartition = evaluation.DataPartition(len(data), 0.6, 0.4)
@@ -22,11 +22,8 @@ trainingData, validationData, testData = dataPartition.computeData(data,
 
 def trainMultistep(multiStepSize, trainer, minibatchSize=10, numMinibatches=200):
     global trainingData
-    global validationData
-    global testData
+
     processedTrainingData = evaluation.generateMultiTimeStepExamples(trainingData, multiStepSize)
-    #processedValidationData = evaluation.generateMultiTimeStepExamples(validationData, multiStepSize)
-    #processedTestData = evaluation.generateMultiTimeStepExamples(testData, multiStepSize)
 
     trainer.train(training.MinibatchSampler(processedTrainingData), lossLogger, minibatchSize, numMinibatches)
 
@@ -37,23 +34,28 @@ def multiTrain():
 
     multistepSizes = [1, 2, 4, 8, 16]
     minibatchCounts = [200, 100, 50, 50, 50]
+    optimizerRates = [0.005, 0.002, 0.001, 0.0005, 0.0002]
 
     if len(multistepSizes) != len(minibatchCounts):
         raise ValueError("multiTrain(): len(multistepSizes) != len(minibatchCounts)")
 
+    if len(multistepSizes) != len(optimizerRates):
+        raise ValueError("multiTrain(): len(multistepSizes) != len(optimizerRates)")
+
     nnModels = [models.computeMultipleTimeStepNN3(n, reuse=(i != 0)) for i, n in enumerate(multistepSizes)]
 
-    trainers = [training.NetworkTrainer(sess, model) for model in nnModels]
+    trainers = [training.NetworkTrainer(sess, model, learningRate) for model, learningRate in
+                zip(nnModels, optimizerRates)]
 
     init = tf.global_variables_initializer()
     sess.run(init)
 
-    # model1.load(sess, "multistep")
+    # nnModels[0].load(sess, "multistep")
 
     for i in range(len(multistepSizes)):
         trainMultistep(multistepSizes[i], trainers[i], numMinibatches=minibatchCounts[i])
     # file_writer = tf.summary.FileWriter('logs', sess.graph)
-    models[0].save(sess, "multistep")
+    nnModels[0].save(sess, "multistep")
 
 
 def autoencoderTrain():
@@ -87,6 +89,40 @@ def timeStepTrain():
     # file_writer = tf.summary.FileWriter('logs', sess.graph)
 
     model.save(sess, "timeStep")
+
+def trainAutoStep(multiStepSize, trainer, minibatchSize=10, numMinibatches=200):
+    global trainingData
+
+    processedTrainingData = evaluation.generateAuto(trainingData, multiStepSize)
+
+    trainer.train(training.MinibatchSampler(processedTrainingData), lossLogger, minibatchSize, numMinibatches)
+
+def autoStepTrain():
+    sess = tf.Session()
+
+    multistepSizes = [1, 2, 4, 8, 16]
+    minibatchCounts = [200, 100, 50, 50, 50]
+    optimizerRates = [0.005, 0.002, 0.001, 0.0005, 0.0002]
+
+    if len(multistepSizes) != len(minibatchCounts):
+        raise ValueError("multiTrain(): len(multistepSizes) != len(minibatchCounts)")
+
+    if len(multistepSizes) != len(optimizerRates):
+        raise ValueError("multiTrain(): len(multistepSizes) != len(optimizerRates)")
+
+    nnModels = [models.computeMultipleTimeStepNN3(n, reuse=(i != 0)) for i, n in enumerate(multistepSizes)]
+
+    trainers = [training.NetworkTrainer(sess, model, learningRate) for model, learningRate in zip(nnModels, optimizerRates)]
+
+    init = tf.global_variables_initializer()
+    sess.run(init)
+
+    # nnModels[0].load(sess, "autoStep")
+
+    for i in range(len(multistepSizes)):
+        trainMultistep(multistepSizes[i], trainers[i], numMinibatches=minibatchCounts[i])
+    # file_writer = tf.summary.FileWriter('logs', sess.graph)
+    nnModels[0].save(sess, "autoStep")
 
 multiTrain()
 # autoencoderTrain()

@@ -46,11 +46,11 @@ def adam_variables_initializer(adam_opt, var_list):
     return tf.variables_initializer(adam_vars)
 
 class NetworkTrainer(object):
-    def __init__(self, sess, flagFieldNN):
+    def __init__(self, sess, flagFieldNN, learningRate = 0.01):
         self.sess = sess
         self.flagFieldNN = flagFieldNN
 
-        self.opt = [tf.train.AdamOptimizer(0.02 * math.pow(0.5, j)).minimize(flagFieldNN.loss) for j in range(1)]
+        self.opt = [tf.train.AdamOptimizer(learningRate * math.pow(0.5, j)).minimize(flagFieldNN.loss) for j in range(1)]
         # opt = tf.train.AdamOptimizer(0.05).minimize(flagFieldNN.loss)
         # self.opt = [tf.train.GradientDescentOptimizer(0.001 * math.pow(0.3, j)).minimize(self.flagFieldNN.loss) for j in
         #        range(2)]
