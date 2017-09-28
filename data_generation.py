@@ -51,7 +51,7 @@ velInflow = vec3(*get_parameter("velocity_in"))
 vel.setConst(velInflow)
 
 # optionally randomize y component
-if 0:
+if 1:
 	noise = s.create(NoiseField, loadFromFile=True, fixedSeed=np.random.randint(-1, 300))
 	noise.posScale = vec3(np.random.randint(100))
 	noise.posOffset = Vec3(np.random.randint(100))

@@ -16,6 +16,9 @@ _PARAMETERS = {
         "downscaling_factors": (0.25, 0.25, 1.0),
         # manta-related
         "show_gui": False,
+        # DL network-related
+        "validation_indices": slice(0, None, 2), # or a list of indices
+        "training_indices": slice(1, None, 2),
         }
 
 def get_parameter(name):

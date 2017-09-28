@@ -1,13 +1,15 @@
-import time
-import os
-import shutil
-import sys
-import math
-import random
+from __future__ import division
 
 import tensorflow as tf
 import numpy as np
-import scipy.misc
+import os
+import shutil
+import os.path
+
+from utils import get_parameter
+from networks import create_1_256_network, create_1_8_256_network,\
+        create_1_32_deconv_256_network
+
 np.random.seed(13)
 tf.set_random_seed(13)
 
@@ -19,15 +21,8 @@ fluidMetadataPath = "fluidSamplesMetadata/"
 # path to trained models
 trainedModelsPath = "trainedModels/"
 
-# path to output
-outputPath = "output/"
-
 # training parameters
 trainingEpochs = 1000
-
-def twoDtoOneD(twoD):
-	n_data = twoD.shape[0]
-	return twoD.reshape([n_data, -1])
 
 # load data
 densities = []
@@ -48,39 +43,27 @@ densities = np.array(densities)
 
 print("Read fluid data samples")
 
-validationSize = int(sample_count * 0.1) # take 10% as validation samples
-validation_start_index = 14
-validation_end_index = validation_start_index + validationSize
-print("Validation data range {}:{}".format(
-    validation_start_index, validation_end_index))
-
+validation_indices = get_parameter("validation_indices")
+training_indices = get_parameter("training_indices")
 # desired output for validation and training
-validationData = densities[validation_start_index:validation_end_index][:]
-trainingData = np.vstack((
-    densities[0:validation_start_index][:],
-    densities[validation_end_index:][:]
-    ))
+validationData = densities[validation_indices]
+trainingData = densities[training_indices]
 
-# input for validation and training
-validationInput = y_positions[validation_start_index:validation_end_index]
-trainingInput = np.hstack((
-    y_positions[:validation_start_index][:],
-    y_positions[validation_end_index:][:]
-    ))
+# input for validation and training, as Xx1 vector
+validationInput = y_positions[validation_indices].reshape(-1, 1)
+trainingInput = y_positions[training_indices].reshape(-1, 1)
 
-print("Split into %d training and %d validation samples" % (len(trainingData), len(validationData)) )
+training_batch_size = len(trainingData)
+print("Split into %d training and %d validation samples" %
+        (training_batch_size, len(validationData)))
+
+print(trainingInput.shape)
 
 # set up network
-sess = tf.Session()
-input_layer = tf.placeholder(tf.float32, shape=(None, 1))
-output_size = 1
-for d in range(1, densities.ndim):
-    output_size *= densities.shape[d]
-
-W = tf.Variable(tf.random_normal([1, output_size], stddev=0.01))
-b = tf.Variable(tf.random_normal([output_size], stddev=0.01))
-
-output = input_layer * W + b
+# input_layer, output = create_1_256_network(densities)
+# input_layer, output = create_1_8_256_network(densities)
+input_layer, output = create_1_32_deconv_256_network(
+        data_shape=density_shape, batch_size=training_batch_size)
 
 y = tf.placeholder(tf.float32)
 squared_deltas = tf.square(output - y)
@@ -90,19 +73,30 @@ optimizer = tf.train.AdamOptimizer(0.0001)
 train = optimizer.minimize(loss)
 
 init = tf.global_variables_initializer()
+sess = tf.Session()
 sess.run(init)
 
-flat_training_data = trainingData #twoDtoOneD(trainingData)
-trainingInput = trainingInput.reshape(-1, 1)
-print(flat_training_data.shape)
-print(trainingInput.shape)
-
 for i in range(trainingEpochs):
-	sess.run(train, feed_dict = {input_layer: trainingInput, y: flat_training_data})
-
-print(sess.run([W, b]))
+    if i % 100 == 99:
+        print("Training epoch {}...".format(i))
+    sess.run(train,
+            feed_dict={input_layer: trainingInput, y: trainingData})
 
 # test the trained network
-test_output = sess.run(output, {input_layer: validationInput[0].reshape(1,1)})
-formatted_test_output = test_output.reshape(density_shape)
-np.save("test_output", formatted_test_output)
+test_output = sess.run(output, {input_layer: validationInput})
+formatted_test_output = test_output.reshape(
+        (training_batch_size, ) + density_shape)
+
+script_dir = os.path.dirname(os.path.abspath(__file__))
+test_outputs_dir = os.path.join(script_dir, "testOutputs")
+if os.path.isdir(test_outputs_dir):
+    shutil.rmtree(test_outputs_dir)
+os.makedirs(test_outputs_dir)
+
+# output filename == validation index (visualization derives position of
+# obstacle on that)
+indices = list(range(densities.shape[0]))[validation_indices]
+for i in range(formatted_test_output.shape[0]):
+    np.save(os.path.join(
+        test_outputs_dir, "{:04d}".format(indices[i])),
+            formatted_test_output[i])

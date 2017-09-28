@@ -35,6 +35,8 @@ import random
 import tensorflow as tf
 import numpy as np
 import scipy.misc
+
+from networks import create_1_8_256_network
 np.random.seed(13)
 tf.set_random_seed(13)
 
@@ -107,30 +109,7 @@ else:
 print("Split into %d training and %d validation samples" % (len(trainingData), len(validationData)) )
 
 # set up network
-
-#NETWORK ARCHITECTURE:
-#   Input        Layer1          Output-Layer
-#   1 (lin)  ->  8 (tanh)   ->   256 (lin)
-input_size = 1
-layer1_size = 8
-output_size = 256
-
-
-sess = tf.Session()
-
-input_layer = tf.placeholder(tf.float32, shape=(None, 1))
-
-W1 = tf.Variable(tf.random_normal([1, layer1_size], stddev=0.01))
-b1 = tf.Variable(tf.random_normal([layer1_size], stddev=0.01))
-layer1 = tf.matmul(input_layer, W1) + b1
-layer1 = tf.tanh(layer1)
-
-W2 = tf.Variable(tf.random_normal([layer1_size, output_size], stddev=0.01))
-b2 = tf.Variable(tf.random_normal([output_size], stddev=0.01))
-layer2 = tf.matmul(layer1, W2) + b2
-
-output = layer2
-
+input_layer, output = create_1_8_256_network(velocities)
 
 y = tf.placeholder(tf.float32)
 squared_deltas = tf.square(output - y)
@@ -139,6 +118,7 @@ loss = tf.reduce_sum(squared_deltas)
 optimizer = tf.train.AdamOptimizer(0.0001)
 train = optimizer.minimize(loss)
 
+sess = tf.Session()
 init = tf.global_variables_initializer()
 sess.run(init)
 
@@ -152,67 +132,8 @@ print(trainingInput.shape)
 for i in range(1000):
 	sess.run(train, feed_dict = {input_layer: trainingInput, y: flat_training_data})
 
-print(sess.run([W1, b1]))
-
 # test the trained network
 
 test_output = sess.run(output, {input_layer: trainingInput[test_output_frame].reshape(1,1)})
 formatted_test_output = oneDtoTwoD(test_output)
 np.save("test_output", formatted_test_output)
-
-
-# set up the network
-#
-#x = tf.placeholder(tf.float32, shape=[None, 64,64, 1])
-#y = tf.placeholder(tf.float32, shape=[None, 64,64, 1])
-#
-#xIn = tf.reshape(x, shape=[-1, inSize ]) # flatten
-#fc_1w = tf.Variable(tf.random_normal([inSize, 50], stddev=0.01))
-#fc_1b   = tf.Variable(tf.random_normal([50], stddev=0.01))
-#
-#fc1 = tf.add(tf.matmul(xIn, fc_1w), fc_1b)
-#fc1 = tf.nn.tanh(fc1)
-#fc1 = tf.nn.dropout(fc1, 0.5) # plenty of dropout...
-#
-#fc_2w = tf.Variable(tf.random_normal([50, inSize], stddev=0.01))  # back to input size
-#fc_2b = tf.Variable(tf.random_normal([inSize], stddev=0.01))
-#
-#y_pred = tf.add(tf.matmul(fc1, fc_2w), fc_2b)
-#y_pred = tf.reshape( y_pred, shape=[-1, 64, 64, 1])
-#
-#cost = tf.nn.l2_loss(y - y_pred) 
-#opt  = tf.train.AdamOptimizer(0.0001).minimize(cost)
-#
-
-
-# now we can start training...
-
-#print("Starting training...")
-#sess = tf.InteractiveSession()
-#sess.run(tf.global_variables_initializer())
-#
-#for epoch in range(trainingEpochs):
-#	c = (epoch * batchSize) % densities.shape[0]
-#	batch = []
-#	for currNo in range(0, batchSize):
-#		r = random.randint(0, loadNum-1) 
-#		batch.append( densities[r] )
-#
-#	_ , currentCost = sess.run([opt, cost], feed_dict={x: batch, y: batch})
-#	#print("Epoch %d/%d: cost %f " % (epoch, trainingEpochs, currentCost) ) # debug, always output cost
-#	
-#	if epoch%10==9 or epoch==trainingEpochs-1:
-#		[valiCost,vout] = sess.run([cost, y_pred], feed_dict={x: valiData, y: valiData})
-#		print("Epoch %d/%d: cost %f , validation cost %f " % (epoch, trainingEpochs, currentCost, valiCost) )
-#
-#		if epoch==trainingEpochs-1:
-#			print("\n Training done. Writing %d images from validation data to current directory..." % len(valiData) )
-#			for i in range(len(valiData)):
-#				scipy.misc.toimage( np.reshape(valiData[i], [64, 64]) , cmin=0.0, cmax=1.0).save("in_%d.png" % i)
-#				scipy.misc.toimage( np.reshape(vout[i]    , [64, 64]) , cmin=0.0, cmax=1.0).save("out_%d.png" % i)
-#
-#
-#
-#print("Done")
-#
-#
