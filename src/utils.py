@@ -42,7 +42,7 @@ def deserialize(filename):
     return result
 
 image_i = 0
-def sim1resToImage(result, background='obstacles', origRes=None, folder=None):
+def sim1resToImage(result, background='obstacles', origRes=None, folder=None, smokeField=None):
     global image_i, fig, ax
     try:
         fig
@@ -84,7 +84,11 @@ def sim1resToImage(result, background='obstacles', origRes=None, folder=None):
     ax.set(aspect=1, title='Vector field')
 
     if background == 'obstacles':
-        ax.imshow(obstacles, interpolation='none')
+        if smokeField is None:
+            ax.imshow(obstacles, interpolation='none')
+        else:
+            smokeField = np.transpose(smokeField)
+            ax.imshow(np.concatenate([np.expand_dims(obstacles, -1), np.expand_dims(smokeField, -1), np.expand_dims(smokeField, -1)], -1), interpolation='none')
         ax.quiver(y[skipCoord], x[skipCoord], dx[skipData], dy[skipData], scale=widthMin / widthMax, scale_units='x') # scale = widthMin / widthMax
     elif background == 'error':
         orig = origRes.npVel
