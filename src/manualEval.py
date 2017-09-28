@@ -23,7 +23,6 @@ def generateMultiSequence2(sess, model, folder, example, numSteps=50):
         example.x[:,:,0:2] = example.x[:,:,0:2] * example.x[:,:,2:3]
         example.x[0,:,:] = initialCond[0,:,:]
 
-
 def advect(x,v):
     """v Geschwindigkeitsfeld"""
     dt = 1
@@ -61,8 +60,6 @@ def interpolate(prevPointsDouble, x):
             x_new[i1,i2] = x[a, b] + (x[a, b + 1] - x[a, b]) * x2 + (x[a + 1, b] - x[a, b]) * x1 + (x[a + 1, b + 1] - x[a + 1, b] - x[a, b + 1] + x[a, b]) * x1 * x2
 
     return x_new
-
-
 def generateSequence(sess, model, folder, example, numSteps=50):
     folder = "images/" + folder
 
@@ -92,7 +89,7 @@ def generateImgs(sess, model, folder, examples):
         utils.sim1resToImage(outputTensor, background='error', origRes=outputManta, folder=folder)
 
 
-trainConfig = utils.deserialize("data/test_timeStep/trainConfig.p")
+trainConfig = utils.deserialize("data/timeStep128x128/trainConfig.p")
 dataPartition = utils.deserialize(trainConfig.simPath + "dataPartition.p")
 data = trainConfig.loadGeneratedData()
 trainingData, validationData, testData = dataPartition.computeData(data, exampleType=evaluation.TimeStepSimulationCollection, slice=[0, 1], scale=1)
@@ -121,6 +118,6 @@ def randomSample(list, numSamples):
 # if len(testData) >= 1:
 #     generateImgs(sess, model, "test/", randomSample(testData, numImages))
 
-generateMultiSequence(sess, model, "sequenceMulti04/", validationData[0], numSteps=200)
-generateMultiSequence(sess, model, "sequenceMulti05/", validationData[100], numSteps=200)
-generateMultiSequence(sess, model, "sequenceMulti06/", validationData[200], numSteps=200)
+generateMultiSequence(sess, model, "sequences/128_2/", validationData[0], numSteps=200)
+generateMultiSequence(sess, model, "sequences/128_3/", validationData[100], numSteps=200)
+generateMultiSequence(sess, model, "sequences/128_4/", validationData[200], numSteps=200)
