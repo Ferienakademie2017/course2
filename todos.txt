@@ -9,6 +9,7 @@
 - GAN
 - Netzwerk auf eigenen Outputs trainieren
 - Flow-Loss?
+- Autoencoder und Zeitschritte auf Latent Space
 
 
 Vorschläge aus master:
