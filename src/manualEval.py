@@ -9,13 +9,15 @@ import evaluation
 import models
 import random
 
-def getInitialSmoke(shape):
+def getInitialSmoke(shape, flagField):
     xSize = shape[0]
     ySize = shape[1]
     smokeField = np.zeros([xSize, ySize])
     for x in range(xSize):
         for y in range(ySize):
-            if (float(x) / xSize - 0.1) ** 2 < 0.1 ** 2 and (float(y) / ySize - 0.5) ** 2 < 0.3 ** 2:
+            if (float(x) / xSize - 0.1) ** 2 < 0.1 ** 2 \
+                    and (float(y) / ySize - 0.5) ** 2 < 0.3 ** 2 \
+                    and flagField[x, y] > 0.2:
                 smokeField[x, y] = 1.0
 
     return smokeField
@@ -40,13 +42,13 @@ def generateMultiSequence2(sess, model, folder, example, numSteps=50):
     initialCond = example.x
     example.y = np.expand_dims(example.y, -1)
 
-    smoke = getInitialSmoke(example.x.shape[0:2])
+    smokeField = getInitialSmoke(example.x.shape[0:2], example.flagField)
 
     for i in range(numSteps):
         result = Sim1Result.Sim1Result(example.x[:,:,0:2], [0], example.x[:,:,2], time=0)
-        utils.sim1resToImage(result, folder=folder)
+        utils.sim1resToImage(result, folder=folder, smokeField = smokeField)
         for t in range(4):
-            advect(smoke, example.x[:, :, 0:2])
+            advect(smokeField, example.x[:, :, 0:2])
         newResult = sess.run(model.yPred, evaluation.getFeedDict(model, [example], isTraining=False))
         example.x[:,:,0:2] = newResult[0][:,:,:,0]
         example.x[:,:,0:2] = example.x[:,:,0:2] * example.x[:,:,2:3]
