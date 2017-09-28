@@ -144,7 +144,7 @@ class DataPartition(object):
         self.dataSize = dataSize
         self.trainingFraction = trainingFraction
         self.validationFraction = validationFraction
-        indices = [i for i in range(dataSize)]
+        indices = list(range(dataSize))
         random.shuffle(indices)
         trainingEnd = int(dataSize * trainingFraction)
         validationEnd = int(dataSize * (trainingFraction + validationFraction))
@@ -161,6 +161,7 @@ class DataPartition(object):
         testData = [exampleType(data[i], slice, scale) for i in self.testIndices]
 
         return trainingData, validationData, testData
+
 
 def getFeedDict(network, data, isTraining):
     xValues = np.array([ex.x for ex in data])
@@ -181,3 +182,4 @@ def validateModel(flagFieldNN, validationData, name="final"):
     flagFieldNN.load(sess, name)
     yPred, lossResult = sess.run([flagFieldNN.yPred, flagFieldNN.loss], getFeedDict(flagFieldNN, validationData, isTraining=False))
     print("Validation loss: {}".format(lossResult))
+

@@ -8,7 +8,6 @@
 (- InstanceNorm teilweise ausprobieren?)
 - GAN
 - Netzwerk auf eigenen Outputs trainieren
-- Loss auf mehreren Zeitschritten
 - Flow-Loss?
 - Autoencoder und Zeitschritte auf Latent Space
 
@@ -36,3 +35,5 @@ Erledigt:
 - nochmal Divergenz-Loss testen
 - "Flow-Norm" statt InstanceNorm?
 - bessere Behandlung von BatchNorm/Dropout zur Testzeit (großteils erledigt)
+- Loss auf mehreren Zeitschritten
+- Exponential decay für den Loss im Mehrschritttraining

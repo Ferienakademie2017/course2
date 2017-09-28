@@ -14,8 +14,6 @@ data = trainConfig.loadGeneratedData()
 dataPartition = evaluation.DataPartition(len(data), 0.6, 0.4)
 utils.serialize(trainConfig.simPath + "dataPartition.p", dataPartition)
 
-
-
 #trainingData, validationData, testData = dataPartition.computeData(data, exampleType=evaluation.FlagFieldSimulationExample, slice=[0, 1], scale=1)
 lossLogger = utils.LossLogger()
 trainingData, validationData, testData = dataPartition.computeData(data,
@@ -54,7 +52,7 @@ def multiTrain():
 
     for i in range(len(multistepSizes)):
         trainMultistep(multistepSizes[i], trainers[i], numMinibatches=minibatchCounts[i])
-
+    # file_writer = tf.summary.FileWriter('logs', sess.graph)
     models[0].save(sess, "multistep")
 
 
@@ -69,7 +67,7 @@ def autoencoderTrain():
     sess.run(init)
 
     trainer.train(training.MinibatchSampler(processedTrainingData), lossLogger, minibatchSize=20, numMinibatches=200)
-
+    # file_writer = tf.summary.FileWriter('logs', sess.graph)
     autoencoder.save(sess, "autoencoder")
 
 
@@ -85,6 +83,8 @@ def timeStepTrain():
     sess.run(init)
 
     trainer.train(training.MinibatchSampler(processedTrainingData), lossLogger, minibatchSize=20, numMinibatches=200)
+    
+    # file_writer = tf.summary.FileWriter('logs', sess.graph)
 
     model.save(sess, "timeStep")
 
