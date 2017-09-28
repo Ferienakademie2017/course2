@@ -37,30 +37,25 @@ def trainMultistep(multiStepSize, trainer, minibatchSize=10, numMinibatches=200)
 def multiTrain():
     sess = tf.Session()
 
-    model1 = models.computeMultipleTimeStepNN1(1, reuse=False)
-    model2 = models.computeMultipleTimeStepNN1(2, reuse=True)
-    model4 = models.computeMultipleTimeStepNN1(4, reuse=True)
-    model8 = models.computeMultipleTimeStepNN1(8, reuse=True)
-    model16 = models.computeMultipleTimeStepNN1(16, reuse=True)
+    multistepSizes = [1, 2, 4, 8, 16]
+    minibatchCounts = [200, 100, 50, 50, 50]
 
-    trainer1 = training.NetworkTrainer(sess, model1)
-    trainer2 = training.NetworkTrainer(sess, model2)
-    trainer4 = training.NetworkTrainer(sess, model4)
-    trainer8 = training.NetworkTrainer(sess, model8)
-    trainer16 = training.NetworkTrainer(sess, model16)
+    if len(multistepSizes) != len(minibatchCounts):
+        raise ValueError("multiTrain(): len(multistepSizes) != len(minibatchCounts)")
+
+    nnModels = [models.computeMultipleTimeStepNN1(n, reuse=(i != 0)) for i, n in enumerate(multistepSizes)]
+
+    trainers = [training.NetworkTrainer(sess, model) for model in nnModels]
 
     init = tf.global_variables_initializer()
     sess.run(init)
 
     # model1.load(sess, "multistep")
 
-    trainMultistep(1, trainer1, numMinibatches=200)
-    trainMultistep(2, trainer2, numMinibatches=100)
-    trainMultistep(4, trainer4, numMinibatches=50)
-    trainMultistep(8, trainer8, numMinibatches=25)
-    trainMultistep(16, trainer16, numMinibatches=15)
+    for i in range(len(multistepSizes)):
+        trainMultistep(multistepSizes[i], trainers[i], numMinibatches=minibatchCounts[i])
 
-    model1.save(sess, "multistep")
+    models[0].save(sess, "multistep")
 
 
 def autoencoderTrain():
