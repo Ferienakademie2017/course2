@@ -1,5 +1,6 @@
 import tensorflow as tf
 import tensorflow.contrib.layers as layers
+import tensorboard
 import numpy as np
 import scipy.misc
 import readTrainingData
@@ -18,7 +19,7 @@ path_to_data = r'C:\Users\Annika\Saved Games\Desktop\course2\trainingData\traini
 # path_to_data = r'C:\Users\Nico\Documents\Ferienakademie\course2\trainingData\trainingKarman32i100.p'
 # path_to_data = r'C:\Users\Nico\Documents\Ferienakademie\course2\trainingData\trainingKarman32.p'
 #path_to_data = r'C:\Users\Nico\Documents\Ferienakademie\course2\trainingData\trainingKarman32_1000randu.p'
-trainingEpochs = 500
+trainingEpochs = 50
 batchSize = 128
 inSize = 1  # warning - hard coded to scalar values 1
 validationProportion = 0.05
@@ -27,8 +28,8 @@ error = []
 
 # set up the network
 
-x = tf.placeholder(tf.float32)
-y = tf.placeholder(tf.float32)  # training data
+x = tf.placeholder(tf.float32, name='InputData')
+y = tf.placeholder(tf.float32, name='LabelData')  # training data
 
 xIn = tf.reshape(x, shape=[-1, inSize])  # flatten
 size1 = 64
@@ -128,10 +129,12 @@ convOut = tf.layers.conv2d(
 y_pred = tf.reshape(convOut,shape=[-1,256])
 # y_pred = fc_3
 
-cost = tf.nn.l2_loss((y - y_pred)) / batchSize
+with tf.name_scope('Loss'):
+    cost = tf.nn.l2_loss((y - y_pred)) / batchSize
 # opt = tf.train.GradientDescentOptimizer(learningRate).minimize(cost)
 # opt = tf.train.AdagradOptimizer(learningRate,0.5).minimize(cost)
-opt = tf.train.AdamOptimizer(learningRate).minimize(cost)
+with tf.name_scope('Adam'):
+    opt = tf.train.AdamOptimizer(learningRate).minimize(cost)
 # now we can start training...
 
 # read input  and training data
@@ -149,47 +152,57 @@ training_data = training_data[trainingInd]
 trainingInput = position_y[trainingInd]
 trainingSize = len(training_data)
 
+# Create a summary to monitor cost tensor
+tf.summary.scalar("Loss", cost)
+merged_summary_op = tf.summary.merge_all()
+
 print("Starting training...")
-sess = tf.InteractiveSession()
-sess.run(tf.global_variables_initializer())
+#sess = tf.InteractiveSession()
+with tf.Session() as sess:
+    sess.run(tf.global_variables_initializer())
+    file_writer = tf.summary.FileWriter(r'\logs', sess.graph)
 
-for epoch in range(trainingEpochs):
-    # c = (epoch * batchSize) % training_data.shape[0]
-    batch_training_out = []
-    batch_training_in = []
-    for currNo in range(0, batchSize):
-        r = random.randint(0, trainingSize - 1)
-        batch_training_out.append(training_data[r, :])
-        batch_training_in.append(trainingInput[r])
-    # batch_xs, batch_ys = training_data[c:c+batchSize,:], training_data[c:c+batchSize,:]
+    for epoch in range(trainingEpochs):
+        # c = (epoch * batchSize) % training_data.shape[0]
+        batch_training_out = []
+        batch_training_in = []
+        for currNo in range(0, batchSize):
+            r = random.randint(0, trainingSize - 1)
+            batch_training_out.append(training_data[r, :])
+            batch_training_in.append(trainingInput[r])
+        # batch_xs, batch_ys = training_data[c:c+batchSize,:], training_data[c:c+batchSize,:]
 
-    _, currentCost = sess.run([opt, cost], feed_dict={x: batch_training_in, y: batch_training_out})
-    print("Epoch %d/%d: cost %f " % (epoch + 1, trainingEpochs, currentCost))
-    error.append(currentCost)
+        _, currentCost = sess.run([opt, cost], feed_dict={x: batch_training_in, y: batch_training_out})
+        print("Epoch %d/%d: cost %f " % (epoch + 1, trainingEpochs, currentCost))
+        error.append(currentCost)
 
-    # #test convergence
-    # if epoch % 3000 == 0 and epoch != 0:
+        # #test convergence
+        # if epoch % 3000 == 0 and epoch != 0:
 
 
-    if epoch == trainingEpochs - 1:
-        plt.figure()
-        plt.plot(error)
-        plt.ylabel("training cost")
-        plt.xlabel('iteration')
-        plt.show()
-        mode = False
-        [valiCost, vout] = sess.run([cost, y_pred], feed_dict={x: validationInput, y: validationData})
-        valiCost = valiCost * batchSize / validationNum
-        print(" Validation: cost %f " % (valiCost))
+        if epoch == trainingEpochs - 1:
+            plt.figure()
+            plt.plot(error)
+            plt.ylabel("training cost")
+            plt.xlabel('iteration')
+            plt.show()
+            mode = False
+            [valiCost, vout] = sess.run([cost, y_pred], feed_dict={x: validationInput, y: validationData})
+            valiCost = valiCost * batchSize / validationNum
+            print(" Validation: cost %f " % (valiCost))
 
-        # for i in range(validationNum):
-        valiData = readTrainingData.transformToImage(validationData[0, :], [8, 16, 2])
-        vout_img = readTrainingData.transformToImage(vout[0, :], [8, 16, 2])
-        # scipy.misc.toimage(valiData[:,:,0], cmin=0.0, cmax=1.0).save("inx_%d.png" % i)
-        # scipy.misc.toimage(valiData[:, :, 1], cmin=0.0, cmax=1.0).save("iny_%d.png" % i)
-        # scipy.misc.toimage(vout_img[:, :, 0], cmin=0.0, cmax=1.0).save("outx_%d.png" % i)
-        # scipy.misc.toimage(vout_img[:, :, 1], cmin=0.0, cmax=1.0).save("outy_%d.png" % i)
-        print("Y position:", validationInput[0])
-        flow.plot_flow_triple(valiData, vout_img)
+            # for i in range(validationNum):
+            valiData = readTrainingData.transformToImage(validationData[0, :], [8, 16, 2])
+            vout_img = readTrainingData.transformToImage(vout[0, :], [8, 16, 2])
+            # scipy.misc.toimage(valiData[:,:,0], cmin=0.0, cmax=1.0).save("inx_%d.png" % i)
+            # scipy.misc.toimage(valiData[:, :, 1], cmin=0.0, cmax=1.0).save("iny_%d.png" % i)
+            # scipy.misc.toimage(vout_img[:, :, 0], cmin=0.0, cmax=1.0).save("outx_%d.png" % i)
+            # scipy.misc.toimage(vout_img[:, :, 1], cmin=0.0, cmax=1.0).save("outy_%d.png" % i)
+            print("Y position:", validationInput[0])
+            flow.plot_flow_triple(valiData, vout_img)
 
-print("Done")
+    print("Done")
+
+    print("Run the command line:\n"
+              "--> tensorboard --logdir=/tmp/tensorflow_logs "
+            "\nThen open http://0.0.0.0:6006/ into your web browser")
