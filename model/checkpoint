@@ -1,0 +1,2 @@
+model_checkpoint_path: "C:\\Users\\Nico\\Documents\\Ferienakademie\\course2\\model\\model.ckpt"
+all_model_checkpoint_paths: "C:\\Users\\Nico\\Documents\\Ferienakademie\\course2\\model\\model.ckpt"

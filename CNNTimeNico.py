@@ -21,8 +21,10 @@ import flow
 # path_to_data = r'C:\Users\Nico\Documents\Ferienakademie\course2\trainingData\trainingKarman_time_1000randu.p'
 path_to_data = r'C:\Users\Nico\Documents\Ferienakademie\course2\trainingData\trainingKarman_time_5000randu.p'
 
-imagePath = r'C:\Users\Nico\Documents\Ferienakademie\course2\results\im'
+# imagePath = r'C:\Users\Nico\Documents\Ferienakademie\course2\results2\im'
+imagePath = None
 modelPath = r'C:\Users\Nico\Documents\Ferienakademie\course2\model\model.ckpt'
+loadModel = True
 trainingEpochs = 1000
 batchSize = 64
 inSize = 1  # warning - hard coded to scalar values 1
@@ -113,48 +115,52 @@ print("Starting training...")
 sess = tf.InteractiveSession()
 sess.run(tf.global_variables_initializer())
 
-for epoch in range(trainingEpochs):
-    # c = (epoch * batchSize) % training_data.shape[0]
-    batch_training_out = []
-    batch_training_in = []
-    for currNo in range(0, batchSize):
-        r = random.randint(0, trainingSize - 1)
-        batch_training_out.append(training_data[r, :])
-        batch_training_in.append(trainingInput[r])
-    # batch_xs, batch_ys = training_data[c:c+batchSize,:], training_data[c:c+batchSize,:]
+if not loadModel:
+    for epoch in range(trainingEpochs):
+        # c = (epoch * batchSize) % training_data.shape[0]
+        batch_training_out = []
+        batch_training_in = []
+        for currNo in range(0, batchSize):
+            r = random.randint(0, trainingSize - 1)
+            batch_training_out.append(training_data[r, :])
+            batch_training_in.append(trainingInput[r])
+        # batch_xs, batch_ys = training_data[c:c+batchSize,:], training_data[c:c+batchSize,:]
 
-    _, currentCost = sess.run([opt, cost], feed_dict={x: batch_training_in, y: batch_training_out})
-    print("Epoch %d/%d: cost %f " % (epoch + 1, trainingEpochs, currentCost))
-    error.append(currentCost)
+        _, currentCost = sess.run([opt, cost], feed_dict={x: batch_training_in, y: batch_training_out})
+        print("Epoch %d/%d: cost %f " % (epoch + 1, trainingEpochs, currentCost))
+        error.append(currentCost)
 
-    # #test convergence
-    # if epoch % 3000 == 0 and epoch != 0:
+        # #test convergence
+        # if epoch % 3000 == 0 and epoch != 0:
 
+# Save the variables to disk.
+if not loadModel:
+    save_path = saver.save(sess, modelPath)
+    print("Model saved in file: %s" % save_path)
+else:
+    # Restore variables from disk.
+    saver.restore(sess, modelPath)
+    print("Model restored.")
 
-    if epoch == trainingEpochs - 1:
-        # Save the variables to disk.
-        save_path = saver.save(sess, modelPath)
-        print("Model saved in file: %s" % save_path)
+plt.figure()
+plt.plot(error)
+plt.ylabel("training cost")
+plt.xlabel('iteration')
+plt.show()
+[valiCost, vout] = sess.run([cost, y_pred], feed_dict={x: validationInput, y: validationData})
+valiCost = valiCost * batchSize / validationNum
+print(" Validation: cost %f " % (valiCost))
 
-        plt.figure()
-        plt.plot(error)
-        plt.ylabel("training cost")
-        plt.xlabel('iteration')
-        plt.show()
-        [valiCost, vout] = sess.run([cost, y_pred], feed_dict={x: validationInput, y: validationData})
-        valiCost = valiCost * batchSize / validationNum
-        print(" Validation: cost %f " % (valiCost))
-
-        # for i in range(validationNum):
-        # valiData = readTrainingData.transformToImage(validationData[0, :], [8, 16, 2])
-        # vout_img = readTrainingData.transformToImage(vout[0, :], [8, 16, 2])
-        valiData = validationData[0, :, :, :]
-        vout_img = vout[0, :, :, :]
-        # scipy.misc.toimage(valiData[:,:,0], cmin=0.0, cmax=1.0).save("inx_%d.png" % i)
-        # scipy.misc.toimage(valiData[:, :, 1], cmin=0.0, cmax=1.0).save("iny_%d.png" % i)
-        # scipy.misc.toimage(vout_img[:, :, 0], cmin=0.0, cmax=1.0).save("outx_%d.png" % i)
-        # scipy.misc.toimage(vout_img[:, :, 1], cmin=0.0, cmax=1.0).save("outy_%d.png" % i)
-        print("Y position:", validationInput[0])
-        flow.plot_flow_triple_sequence(valiData, vout_img, savePath=imagePath)
+# for i in range(validationNum):
+# valiData = readTrainingData.transformToImage(validationData[0, :], [8, 16, 2])
+# vout_img = readTrainingData.transformToImage(vout[0, :], [8, 16, 2])
+valiData = validationData[0, :, :, :]
+vout_img = vout[0, :, :, :]
+# scipy.misc.toimage(valiData[:,:,0], cmin=0.0, cmax=1.0).save("inx_%d.png" % i)
+# scipy.misc.toimage(valiData[:, :, 1], cmin=0.0, cmax=1.0).save("iny_%d.png" % i)
+# scipy.misc.toimage(vout_img[:, :, 0], cmin=0.0, cmax=1.0).save("outx_%d.png" % i)
+# scipy.misc.toimage(vout_img[:, :, 1], cmin=0.0, cmax=1.0).save("outy_%d.png" % i)
+print("Y position:", validationInput[0])
+flow.plot_flow_triple_sequence(valiData, vout_img, savePath=imagePath)
 
 print("Done")
