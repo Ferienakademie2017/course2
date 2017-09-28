@@ -9,7 +9,18 @@ import evaluation
 import models
 import random
 
-def generateMultiSequence2(sess, model, folder, example, numSteps=50):
+def getInitialSmoke(shape):
+    xSize = shape[0]
+    ySize = shape[1]
+    smokeField = np.zeros([xSize, ySize])
+    for x in range(xSize):
+        for y in range(ySize):
+            if (float(x) / xSize - 0.1) ** 2 < 0.1 ** 2 and (float(y) / ySize - 0.5) ** 2 < 0.3 ** 2:
+                smokeField[x, y] = 1.0
+
+    return smokeField
+
+def generateMultiSequence(sess, model, folder, example, numSteps=50):
     folder = "images/" + folder
 
     initialCond = example.x
@@ -23,20 +34,38 @@ def generateMultiSequence2(sess, model, folder, example, numSteps=50):
         example.x[:,:,0:2] = example.x[:,:,0:2] * example.x[:,:,2:3]
         example.x[0,:,:] = initialCond[0,:,:]
 
+def generateMultiSequence2(sess, model, folder, example, numSteps=50):
+    folder = "images/" + folder
+
+    initialCond = example.x
+    example.y = np.expand_dims(example.y, -1)
+
+    smoke = getInitialSmoke(example.x.shape[0:2])
+
+    for i in range(numSteps):
+        result = Sim1Result.Sim1Result(example.x[:,:,0:2], [0], example.x[:,:,2], time=0)
+        utils.sim1resToImage(result, folder=folder)
+        for t in range(4):
+            advect(smoke, example.x[:, :, 0:2])
+        newResult = sess.run(model.yPred, evaluation.getFeedDict(model, [example], isTraining=False))
+        example.x[:,:,0:2] = newResult[0][:,:,:,0]
+        example.x[:,:,0:2] = example.x[:,:,0:2] * example.x[:,:,2:3]
+        example.x[0,:,:] = initialCond[0,:,:]
+
+
 def advect(x,v):
     """v Geschwindigkeitsfeld"""
     dt = 1
-    dims = np.shape(v)
-    Gridpoints = np.meshgrid(range(dims[1]), range(dims[0]))
-    Gridpoints = np.concatenate((np.expand_dims(Gridpoints[0], axis=-1), np.expand_dims(Gridpoints[1], axis=-1)),
+    dims = v.shape
+    gridPoints = np.meshgrid(range(dims[1]), range(dims[0]))
+    gridPoints = np.concatenate((np.expand_dims(gridPoints[0], axis=-1), np.expand_dims(gridPoints[1], axis=-1)),
                                 axis=-1)
-    prevPointsDouble = Gridpoints[:, :, [1, 0]] - dt* v[:, :, 0:2]
-    return  interpolate(prevPointsDouble,x)
-
+    prevPointsDouble = gridPoints[:, :, [1, 0]] - dt * v[:, :, 0:2]
+    return interpolate(prevPointsDouble, x)
 
 
 def interpolate(prevPointsDouble, x):
-    dims = np.shape(x)
+    dims = x.shape
     for ind1 in range(dims[0]):
         for ind2 in range(dims[1]):
             if prevPointsDouble[ind1,ind2,0] < 0:
@@ -60,6 +89,7 @@ def interpolate(prevPointsDouble, x):
             x_new[i1,i2] = x[a, b] + (x[a, b + 1] - x[a, b]) * x2 + (x[a + 1, b] - x[a, b]) * x1 + (x[a + 1, b + 1] - x[a + 1, b] - x[a, b + 1] + x[a, b]) * x1 * x2
 
     return x_new
+
 def generateSequence(sess, model, folder, example, numSteps=50):
     folder = "images/" + folder
 
@@ -118,6 +148,6 @@ def randomSample(list, numSamples):
 # if len(testData) >= 1:
 #     generateImgs(sess, model, "test/", randomSample(testData, numImages))
 
-generateMultiSequence(sess, model, "sequences/128_2/", validationData[0], numSteps=200)
-generateMultiSequence(sess, model, "sequences/128_3/", validationData[100], numSteps=200)
-generateMultiSequence(sess, model, "sequences/128_4/", validationData[200], numSteps=200)
+generateMultiSequence2(sess, model, "sequences/128_smoke_0/", validationData[0], numSteps=200)
+generateMultiSequence2(sess, model, "sequences/128_smoke_1/", validationData[100], numSteps=200)
+generateMultiSequence2(sess, model, "sequences/128_smoke_2/", validationData[200], numSteps=200)
