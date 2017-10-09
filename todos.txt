@@ -10,6 +10,7 @@
 - Netzwerk auf eigenen Outputs trainieren
 - Flow-Loss?
 - Autoencoder und Zeitschritte auf Latent Space
+- Ausführung des bereits trainierten Fully-Convolutional-Nets auf einem 
 
 
 Vorschläge aus master:

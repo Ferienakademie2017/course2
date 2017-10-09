@@ -9,13 +9,35 @@ import evaluation
 import models
 import random
 
-def setInitialSmoke(smokeField, flagField, relX = 0.15, relY = 0.5, width=0.15, height=0.4):
+def setInitialSmokeEllipse(smokeField, flagField, relX = 0.15, relY = 0.5, width=0.15, height=0.4):
     xSize = smokeField.shape[0]
     ySize = smokeField.shape[1]
     for x in range(xSize):
         for y in range(ySize):
-            if ((float(x) / xSize - relX) / width) ** 2 + ((float(y) / ySize - relY) / height) ** 2 <= 1.0 and flagField[x, y] >= 0.5:
+            mahalanobisDist = ((float(x) / xSize - relX) / width) ** 2 + ((float(y) / ySize - relY) / height) ** 2
+            if mahalanobisDist <= 1.0 and flagField[x, y] >= 0.5:
                 smokeField[x, y] = 1.0
+
+    return smokeField
+
+def setInitialSmoke(smokeField, flagField, yCenter=0.8, yDeviation=0.2):
+    ySize = smokeField.shape[1]
+    for y in range(ySize):
+        yrel = float(y) / ySize
+        if yrel >= yCenter - yDeviation and yrel <= yCenter + yDeviation and flagField[0, y] >= 0.5:
+            smokeField[0, y] = max(smokeField[0, y], 1.0 - ((yrel - yCenter)/yDeviation) ** 2)
+
+    return smokeField
+
+def setInitialSmokeRect(smokeField, flagField):
+    xSize = smokeField.shape[0]
+    ySize = smokeField.shape[1]
+    for x in range(xSize):
+        for y in range(ySize):
+            xrel = float(x) / xSize
+            yrel = float(y) / ySize
+            if xrel < 0.05 and yrel >= 0.3 and yrel <= 0.7 and flagField[x, y] >= 0.5:
+                smokeField[x, y] = max(smokeField[x, y], 1.0)
 
     return smokeField
 
@@ -122,18 +144,28 @@ def generateImgs(sess, model, folder, examples):
 trainConfig = utils.deserialize("data/timeStep128x128/trainConfig.p")
 dataPartition = utils.deserialize(trainConfig.simPath + "dataPartition.p")
 data = trainConfig.loadGeneratedData()
+print("Loaded Data")
+
 trainingData, validationData, testData = dataPartition.computeData(data, exampleType=evaluation.TimeStepSimulationCollection, slice=[0, 1], scale=1)
+print("Splitted Data")
+
 trainingData = evaluation.generateTimeStepExamples(trainingData)
 validationData = evaluation.generateTimeStepExamples(validationData)
 testData = evaluation.generateTimeStepExamples(testData)
 
+print("Preprocessed Data")
+
 model = models.computeMultipleTimeStepNN3(1)
 init = tf.global_variables_initializer()
 sess = tf.Session()
+
+print("Computed Model")
 #sess.run(init)
 
 # Load final variables
 model.load(sess, "multistep")
+
+print("Loaded Model")
 
 def randomSample(list, numSamples):
     """with replacement"""
@@ -148,6 +180,6 @@ def randomSample(list, numSamples):
 # if len(testData) >= 1:
 #     generateImgs(sess, model, "test/", randomSample(testData, numImages))
 
-generateMultiSequence2(sess, model, "sequences/128_smoke_0/", validationData[0], numSteps=200)
+# generateMultiSequence2(sess, model, "sequences/128_smoke_0/", validationData[0], numSteps=200)
 generateMultiSequence2(sess, model, "sequences/128_smoke_1/", validationData[100], numSteps=200)
 generateMultiSequence2(sess, model, "sequences/128_smoke_2/", validationData[200], numSteps=200)

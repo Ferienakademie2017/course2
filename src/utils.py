@@ -88,7 +88,9 @@ def sim1resToImage(result, background='obstacles', origRes=None, folder=None, sm
             ax.imshow(obstacles, interpolation='none')
         else:
             smokeField = np.transpose(smokeField)
-            ax.imshow(np.concatenate([np.expand_dims(obstacles, -1), np.expand_dims(smokeField, -1), np.expand_dims(smokeField, -1)], -1), interpolation='none')
+            exObs = np.expand_dims(obstacles, -1)
+            exSmoke = np.expand_dims(smokeField, -1)
+            ax.imshow(np.concatenate([0.3 * exObs + 0.7 * exSmoke, 0.3 * exObs + 0.7 * exSmoke, exObs], -1), interpolation='none')
         ax.quiver(y[skipCoord], x[skipCoord], dx[skipData], dy[skipData], scale=widthMin / widthMax, scale_units='x') # scale = widthMin / widthMax
     elif background == 'error':
         orig = origRes.npVel

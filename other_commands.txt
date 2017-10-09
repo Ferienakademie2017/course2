@@ -10,3 +10,9 @@ Numpy kompilieren (im manta-Ordner):
 cd build
 cmake .. -DGUI=ON -DOPENMP=ON -DNUMPY=ON -DUSE64=ON
 make -j4
+
+
+Bildsequenzen in ein Video konvertieren:
+ffmpeg -r 25 -f image2 -s 800x600 -i fig_%d.png -vcodec libx264 -crf 15 -pix_fmt yuv420p seq0.mp4
+Falls die Bildnummern nicht bei 0 anfangen:
+ffmpeg -r 25 -f image2 -s 800x600 -start_number 200 -i fig_%d.png -vcodec libx264 -crf 15 -pix_fmt yuv420p seq2.mp4
