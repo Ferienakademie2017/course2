@@ -74,6 +74,27 @@ def generateMultiSequence2(sess, model, folder, example, numSteps=50):
         example.x[:,:,0:2] = example.x[:,:,0:2] * example.x[:,:,2:3]
         example.x[0,:,:] = initialCond[0,:,:]
 
+def generateAutoStepSequence1(stepSess, codeSess, model, autoencoder, decoder, folder, example, numSteps=50):
+    folder = "images/" + folder
+
+    initialCond = example.x
+    latent = codeSess.run(autoencoder.encoding, {autoencoder.x: np.expand_dims(example.x[:,:,0:2], 0), autoencoder.phase: False})
+    example.y = np.expand_dims(example.y, -1)
+
+    smokeField = np.zeros(example.x.shape[0:2])
+
+    for i in range(numSteps):
+        setInitialSmoke(smokeField, example.flagField)
+        result = Sim1Result.Sim1Result(example.x[:,:,0:2], [0], example.x[:,:,2], time=0)
+        utils.sim1resToImage(result, folder=folder, smokeField=smokeField)
+        for t in range(4):
+            smokeField = advect(smokeField, example.x[:, :, 0:2])
+        latent = stepSess.run(model.yPred, {model.x: latent, model.phase: False})[:,:,:,:,0]
+        decoded = codeSess.run(decoder.yPred, {decoder.x: latent, decoder.phase: False})
+        example.x[:,:,0:2] = decoded[0,:,:,:]
+        # example.x[:,:,0:2] = example.x[:,:,0:2] * example.x[:,:,2:3]
+        example.x[0,:,:] = initialCond[0,:,:]
+
 
 def advect(x,v):
     """v Geschwindigkeitsfeld"""
@@ -149,37 +170,83 @@ print("Loaded Data")
 trainingData, validationData, testData = dataPartition.computeData(data, exampleType=evaluation.TimeStepSimulationCollection, slice=[0, 1], scale=1)
 print("Splitted Data")
 
-trainingData = evaluation.generateTimeStepExamples(trainingData)
-validationData = evaluation.generateTimeStepExamples(validationData)
-testData = evaluation.generateTimeStepExamples(testData)
-
-print("Preprocessed Data")
-
-model = models.computeMultipleTimeStepNN3(1)
-init = tf.global_variables_initializer()
-sess = tf.Session()
-
-print("Computed Model")
-#sess.run(init)
-
-# Load final variables
-model.load(sess, "multistep")
-
-print("Loaded Model")
 
 def randomSample(list, numSamples):
     """with replacement"""
     return [list[i] for i in sorted(random.sample(xrange(len(list)), numSamples))]
 
 
-# numImages = 20
-# if len(trainingData) >= 1:
-#     generateImgs(sess, model, "training/", randomSample(trainingData, numImages))
-# if len(validationData) >= 1:
-#     generateImgs(sess, model, "validation/", randomSample(validationData, numImages))
-# if len(testData) >= 1:
-#     generateImgs(sess, model, "test/", randomSample(testData, numImages))
+def executeMultiTimeStepNN():
+    global trainingData
+    global validationData
+    global testData
+    processedTrainingData = evaluation.generateTimeStepExamples(trainingData)
+    processedValidationData = evaluation.generateTimeStepExamples(validationData)
+    processedTestData = evaluation.generateTimeStepExamples(testData)
 
-# generateMultiSequence2(sess, model, "sequences/128_smoke_0/", validationData[0], numSteps=200)
-generateMultiSequence2(sess, model, "sequences/128_smoke_1/", validationData[100], numSteps=200)
-generateMultiSequence2(sess, model, "sequences/128_smoke_2/", validationData[200], numSteps=200)
+    print("Preprocessed Data")
+
+    model = models.computeMultipleTimeStepNN3(1)
+    init = tf.global_variables_initializer()
+    sess = tf.Session()
+
+    print("Computed Model")
+    #sess.run(init)
+
+    # Load final variables
+    model.load(sess, "multistep-padding")
+
+    print("Loaded Model")
+
+    # numImages = 20
+    # if len(processedTrainingData) >= 1:
+    #     generateImgs(sess, model, "training/", randomSample(processedTrainingData, numImages))
+    # if len(processedValidationData) >= 1:
+    #     generateImgs(sess, model, "validation/", randomSample(processedValidationData, numImages))
+    # if len(processedTestData) >= 1:
+    #     generateImgs(sess, model, "test/", randomSample(processedTestData, numImages))
+
+    generateMultiSequence2(sess, model, "sequences/128_smoke_3/", processedValidationData[0], numSteps=200)
+    #generateMultiSequence2(sess, model, "sequences/128_smoke_1/", processedValidationData[100], numSteps=200)
+    #generateMultiSequence2(sess, model, "sequences/128_smoke_2/", processedValidationData[200], numSteps=200)
+
+def executeAutoStepNN():
+    global trainingData
+    global validationData
+    global testData
+    processedTrainingData = evaluation.generateTimeStepExamples(trainingData)
+    processedValidationData = evaluation.generateTimeStepExamples(validationData)
+    processedTestData = evaluation.generateTimeStepExamples(testData)
+
+    print("Preprocessed Data")
+
+    autoencoder = models.computeAutoencoderNN1()
+    decoder = models.computeAutodecoderNN1()
+    #init = tf.global_variables_initializer()
+    print("Computed Models")
+    codeSess = tf.Session()
+    autoencoder.load(codeSess, "autoencoder")
+    stepSess = tf.Session()
+    model = models.computeAutoStepNN1(1)
+
+
+
+    #sess.run(init)
+
+    # Load final variables
+    model.load(stepSess, "autoStep")
+
+    print("Loaded Models")
+
+    # numImages = 20
+    # if len(processedTrainingData) >= 1:
+    #     generateImgs(sess, model, "training/", randomSample(processedTrainingData, numImages))
+    # if len(processedValidationData) >= 1:
+    #     generateImgs(sess, model, "validation/", randomSample(processedValidationData, numImages))
+    # if len(processedTestData) >= 1:
+    #     generateImgs(sess, model, "test/", randomSample(processedTestData, numImages))
+
+    generateAutoStepSequence1(stepSess, codeSess, model, autoencoder, decoder, "sequences/128_smoke_4/", processedValidationData[0], numSteps=200)
+
+# executeMultiTimeStepNN()
+executeAutoStepNN()

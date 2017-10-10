@@ -51,8 +51,10 @@ class TimeStepSimulationExample(object):
 
 class AutoStepSimulationExample(object):
     def __init__(self, x, y, flagField, sess, autoencoder):
-        self.x = sess.run(autoencoder.encoding, {autoencoder.x: x, autoencoder.flagField: flagField})
-        self.y = sess.run(autoencoder.encoding, {autoencoder.x: y, autoencoder.flagField: flagField})
+        self.x = sess.run(autoencoder.encoding, {autoencoder.x: np.expand_dims(x, 0), autoencoder.flagField: np.expand_dims(flagField, 0), autoencoder.phase: False})
+        self.x = self.x[0, :, :, :]
+        self.y = sess.run(autoencoder.encoding, {autoencoder.x: np.transpose(y, (3, 0, 1, 2)), autoencoder.flagField: np.expand_dims(flagField, 0), autoencoder.phase: False})
+        self.y = np.transpose(self.y, (1, 2, 3, 0))
         self.flagField = flagField
 
 class AutoencoderExample(object):
@@ -132,10 +134,10 @@ def generateAutoencoderExamples(collectionList):
         result.extend(l.getAutoencoderExamples())
     return result
 
-def generateAutoStepExamples(collectionList):
+def generateAutoStepExamples(collectionList, numTimeSteps, sess, model):
     result = []
     for l in collectionList:
-        result.extend(l.getAutoStepExamples())
+        result.extend(l.getAutoStepExamples(numTimeSteps, sess, model))
     return result
 
 def generateMultiTimeStepExamples(collectionList,numTimeSteps):
